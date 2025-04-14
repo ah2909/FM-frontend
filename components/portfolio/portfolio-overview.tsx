@@ -6,29 +6,13 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js"
 
 ChartJS.register(ArcElement, Tooltip, Legend)
 
-interface PortfolioOverviewProps {
-  portfolio: {
-    id: string
-    name: string
-    description: string
-    totalValue: number
-    tokens: {
-      id: string
-      name: string
-      symbol: string
-      amount: number
-      value: number
-      icon: string
-    }[]
-  }
-}
-
-export function PortfolioOverview({ portfolio }: PortfolioOverviewProps) {
+export function PortfolioOverview({ portfolio }: { portfolio: any }) {
   const chartData = {
-    labels: portfolio.tokens.map((token) => token.name),
+    labels: portfolio.assets.map((token: any) => token.symbol.toUpperCase()),
     datasets: [
       {
-        data: portfolio.tokens.map((token) => token.value),
+        data: portfolio.assets.map((token: any) => token.value.toFixed(2)),
+        label: "Asset Allocation",
         backgroundColor: [
           "rgba(255, 99, 132, 0.6)",
           "rgba(54, 162, 235, 0.6)",
@@ -55,8 +39,8 @@ export function PortfolioOverview({ portfolio }: PortfolioOverviewProps) {
           <CardTitle>Portfolio Value</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-bold">${portfolio.totalValue.toLocaleString()}</div>
-          <div className="text-sm text-muted-foreground mt-2">{portfolio.tokens.length} tokens in this portfolio</div>
+          <div className="text-3xl font-bold">${portfolio.totalValue.toFixed(2)}</div>
+          <div className="text-sm text-muted-foreground mt-2">{portfolio.assets.length} tokens in this portfolio</div>
         </CardContent>
       </Card>
       <Card>

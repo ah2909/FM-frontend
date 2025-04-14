@@ -11,6 +11,15 @@ import { PortfolioTokens } from "@/components/portfolio/portfolio-tokens"
 import { PortfolioOverview } from "@/components/portfolio/portfolio-overview"
 import { UseDispatch, useSelector } from "react-redux"
 import { Portfolio } from "@/lib/store/services/portfolio-api"
+import { ImportDataButton } from "@/components/portfolio/import-data-button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 interface PortfolioPageProps {
   params: {
@@ -31,22 +40,33 @@ export default function PortfolioPage({ params }: PortfolioPageProps) {
     <DashboardShell>
       <DashboardHeader heading={portfolio.name} text={portfolio.description}>
         <div className="flex space-x-2">
-          <Link href={`/portfolios/${portfolioId}/edit`}>
-            <Button variant="outline">Edit Portfolio</Button>
-          </Link>
-          <Link href={`/portfolios/${portfolioId}/add-token`}>
-            <Button>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Add Token
-            </Button>
-          </Link>
+          <ImportDataButton portfolio_id={portfolioId}/>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Edit
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56"> 
+              <DropdownMenuItem>
+                <Link href={`/portfolios/${portfolioId}/edit`}>
+                  Edit Portfolio
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Link href={`/portfolios/${portfolioId}/add-token`}>
+                  Add Token
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </DashboardHeader>
 
       <div className="grid gap-8">
-        {/* <PortfolioOverview portfolio={portfolio} /> */}
-        {/* <PortfolioTokens portfolioId={portfolioId} tokens={portfolio.tokens} /> */}
-        <p>Wait for update...</p>
+        {portfolio.assets.length > 0 && <PortfolioOverview portfolio={portfolio} />}
+        <PortfolioTokens portfolioId={portfolioId} tokens={portfolio.assets} />
       </div>
     </DashboardShell>
   )

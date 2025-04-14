@@ -36,7 +36,7 @@ import {
 	useDeletePortfolioMutation
 } from "@/lib/store/services/portfolio-api";
 import { formatDate } from "@/lib/utils";
-import { useDispatch, UseDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { setPortfolios } from "@/lib/store/features/portfolios-slice";
 
 export function PortfolioList() {
@@ -49,7 +49,7 @@ export function PortfolioList() {
 
 	useEffect(() => {
 		if(isLoading) return;
-		if(typeof data !== 'undefined')
+		if(data)
 			dispatch(setPortfolios(data))
 	}, [data, isLoading])
 
@@ -129,15 +129,15 @@ export function PortfolioList() {
 									Total Value:
 								</span>
 								<span className="font-bold">
-									${portfolio.totalValue?.toLocaleString() ?? 0}
+									${portfolio.totalValue.toFixed(2)}
 								</span>
 							</div>
-							<div className="flex items-center justify-between">
+							{/* <div className="flex items-center justify-between">
 								<span className="text-sm font-medium">
 									Tokens:
 								</span>
 								<span>{portfolio.tokenCount ?? 0}</span>
-							</div>
+							</div> */}
 							<div className="flex items-center justify-between">
 								<span className="text-sm font-medium">
 									Created:

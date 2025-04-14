@@ -4,21 +4,12 @@ export interface Portfolio {
   id: number
   name: string
   description: string
-  tokenCount: number
   totalValue: number
   created_at: string
 }
-
-export interface Exchange {
-  id: number
-  name: string
-  img_url: string
-  is_connected: boolean
-}
-
 export interface Response {
   error_code: number
-  data: Portfolio[] | Exchange[]
+  data: any
 }
 
 // Replace with your actual API base URL
@@ -36,7 +27,7 @@ export const portfolioApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ["Portfolio", "Asset", "Exchange"],
+  tagTypes: ["Portfolio", "Asset"],
   endpoints: (builder) => ({
     getPortfoliosByUserID: builder.query<Portfolio[], void>({
       query: () => "portfolio",
@@ -65,16 +56,21 @@ export const portfolioApi = createApi({
       }),
       invalidatesTags: ["Portfolio"],
     }),
-    getSupportedCEX: builder.query<Response, void>({
-      query: () => "exchange/supported-cex",
-      providesTags: ["Exchange"],
-    }),
-    connectExchange: builder.mutation<void, {apiKey: string, apiSecret: string}>({
-      query: () => ({
-        url: `exchange/connect`,
+    addTokenToPortfolio: builder.mutation<void, { portfolio_id: number, token: any[] }>({
+      query: (token) => ({
+        url: `/portfolio/asset`,
         method: "POST",
+        body: token,
       }),
-      invalidatesTags: ["Exchange"]
+      invalidatesTags: ["Portfolio"],
+    }),
+    removeTokenFromPortfolio: builder.mutation<void, { portfolio_id: number, token: string }>({
+      query: (token) => ({
+        url: `/portfolio/asset/remove`,
+        method: "POST",
+        body: token,
+      }),
+      invalidatesTags: ["Portfolio"],
     }),
   }),
 })
@@ -84,7 +80,7 @@ export const {
   useCreatePortfolioMutation,
   useUpdatePortfolioMutation,
   useDeletePortfolioMutation,
-  useGetSupportedCEXQuery,
-  useConnectExchangeMutation,
+  useAddTokenToPortfolioMutation,
+  useRemoveTokenFromPortfolioMutation,
 } = portfolioApi
 

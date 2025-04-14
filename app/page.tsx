@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 export default async function DashboardPage() {
   return (
     <DashboardShell>
-      <DashboardHeader heading="Dashboard" text="Overview of your crypto portfolio">
+      <DashboardHeader heading="Dashboard" text="Overview of your crypto portfolio" showBackButton={false}>
         <Link href="/portfolios/new">
           <Button>Create Portfolio</Button>
         </Link>

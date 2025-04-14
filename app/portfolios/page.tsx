@@ -6,8 +6,6 @@ import { Button } from "@/components/ui/button"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 import { PortfolioList } from "@/components/portfolio/portfolio-list"
-import { ImportDataButton } from "@/components/portfolio/import-data-button"
-import { ConnectedExchanges } from "@/components/portfolio/connected-exchanges"
 
 export const metadata: Metadata = {
   title: "Portfolios",
@@ -17,7 +15,7 @@ export const metadata: Metadata = {
 export default async function PortfoliosPage() {
   return (
     <DashboardShell>
-      <DashboardHeader heading="Portfolios" text="Manage your crypto portfolios">
+      <DashboardHeader heading="Portfolios" text="Manage your crypto portfolios" showBackButton={false}>
         <div>
           <Link href="/portfolios/new">
             <Button className="mr-4 mb-2">
@@ -25,11 +23,9 @@ export default async function PortfoliosPage() {
               New Portfolio
             </Button>
           </Link>
-          <ImportDataButton />
         </div>
       </DashboardHeader>
       <PortfolioList />
-      <ConnectedExchanges />
     </DashboardShell>
   )
 }

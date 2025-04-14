@@ -8,6 +8,7 @@ import { SiteHeader } from "@/components/site-header";
 import { Toaster } from "sonner";
 import { store } from "@/lib/store/store";
 import { Provider } from "react-redux";
+import { WebSocketProvider } from '../contexts/WebSocketContext';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,6 +20,7 @@ export default function RootLayout({
 	return (
 		<html lang="en">
 			<body className={inter.className}>
+				<WebSocketProvider>
 				<Provider store={store}>
 				<ThemeProvider
 					attribute="class"
@@ -32,6 +34,7 @@ export default function RootLayout({
 					<Toaster richColors />
 				</ThemeProvider>
 				</Provider>
+				</WebSocketProvider>
 			</body>
 		</html>
 	);

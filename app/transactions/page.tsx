@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 export default async function TransactionsPage() {
   return (
     <DashboardShell>
-      <DashboardHeader heading="Transactions" text="Manage your crypto transactions">
+      <DashboardHeader heading="Transactions" text="Manage your crypto transactions" showBackButton={false}>
         <Link href="/transactions/new">
           <Button>
             <PlusCircle className="mr-2 h-4 w-4" />

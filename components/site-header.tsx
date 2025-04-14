@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Bitcoin, LayoutDashboard, PieChart, Wallet2 } from "lucide-react"
+import { Bitcoin, LayoutDashboard, PieChart, Wallet2, Globe } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { ModeToggle } from "@/components/mode-toggle"
@@ -48,6 +48,16 @@ export function SiteHeader() {
             >
               <Wallet2 className="mr-1 h-4 w-4" />
               Transactions
+            </Link>
+            <Link
+              href="/exchanges"
+              className={cn(
+                "flex items-center text-sm font-medium text-muted-foreground",
+                pathname?.startsWith("/exchanges") && "text-foreground",
+              )}
+            >
+              <Globe className="mr-1 h-4 w-4" />
+              Exchanges
             </Link>
           </nav>
         </div>

@@ -29,6 +29,7 @@ export interface TokenExchange {
   amount: number
   value: number
   img_url: string
+  exchanges: string[]
 }
 
 export function ExchangeAssetSelector({ onAssetsSelected }: ExchangeAssetSelectorProps) {
@@ -110,7 +111,7 @@ export function ExchangeAssetSelector({ onAssetsSelected }: ExchangeAssetSelecto
                             {asset.symbol}
                           </Label>
                           <p className="text-sm text-muted-foreground">
-                            {asset.amount} {asset.symbol} (${asset.value ?? 0})
+                            {asset.amount} {asset.symbol} (${asset.value ?? Number(asset.amount*asset.price).toFixed(2)})
                           </p>
                         </div>
                       </div>

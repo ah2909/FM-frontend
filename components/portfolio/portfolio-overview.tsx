@@ -11,7 +11,7 @@ export function PortfolioOverview({ portfolio }: { portfolio: any }) {
     labels: portfolio.assets.map((token: any) => token.symbol.toUpperCase()),
     datasets: [
       {
-        data: portfolio.assets.map((token: any) => token.value.toFixed(2)),
+        data: portfolio.assets.map((token: any) => token.value?.toFixed(2)),
         label: "Asset Allocation",
         backgroundColor: [
           "rgba(255, 99, 132, 0.6)",
@@ -39,7 +39,7 @@ export function PortfolioOverview({ portfolio }: { portfolio: any }) {
           <CardTitle>Portfolio Value</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-bold">${portfolio.totalValue.toFixed(2)}</div>
+          <div className="text-3xl font-bold">${portfolio.totalValue?.toFixed(2)}</div>
           <div className="text-sm text-muted-foreground mt-2">{portfolio.assets.length} tokens in this portfolio</div>
         </CardContent>
       </Card>

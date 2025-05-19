@@ -4,28 +4,36 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { BaseHeader } from "@/components/base-header";
 import { BaseShell } from "@/components/base-shell";
-import { PortfolioForm } from "@/components/portfolio/portfolio-form";
+import { AddTokenForm } from "@/components/portfolio/add-token-form";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 export const metadata: Metadata = {
-	title: "Create Portfolio",
-	description: "Create a new crypto portfolio",
+	title: "Add Token",
+	description: "Add a token to your portfolio",
 };
 
-export default function NewPortfolioPage() {
+interface AddTokenPageProps {
+	params: {
+		id: string;
+	};
+}
+
+export default function AddTokenPage({ params }: AddTokenPageProps) {
+	const portfolioId = params.id;
+
 	return (
 		<ProtectedRoute>
 			<BaseShell>
 				<BaseHeader
-					heading="Create Portfolio"
-					text="Create a new crypto portfolio"
+					heading="Add Token"
+					text="Add a new token to your portfolio"
 				>
-					<Link href="/portfolios">
+					<Link href={`/portfolios/${portfolioId}`}>
 						<Button variant="outline">Cancel</Button>
 					</Link>
 				</BaseHeader>
 				<div className="grid gap-8">
-					<PortfolioForm />
+					<AddTokenForm portfolioId={portfolioId} />
 				</div>
 			</BaseShell>
 		</ProtectedRoute>

@@ -33,6 +33,7 @@ export function ImportDataButton({ portfolio_id }: ImportDataButtonProps) {
         token: assets.map((asset) => ({
           symbol: asset.symbol, 
           amount: asset.amount,
+          exchange: asset.exchanges,
         })) 
     })
       toast.success(`${assets.length} assets added to portfolio`)

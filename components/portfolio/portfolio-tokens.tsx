@@ -38,55 +38,62 @@ import {
 } from "@/components/ui/table";
 import { Skeleton } from "../ui/skeleton";
 import { toast } from "sonner";
-import { 
-	useGetPortfoliosByUserIDQuery,
-	useRemoveTokenFromPortfolioMutation
+import {
+	useRemoveTokenFromPortfolioMutation,
 } from "@/lib/store/services/portfolio-api";
 import { useDispatch } from "react-redux";
 import { setPortfolios } from "@/lib/store/features/portfolios-slice";
 import { useWebSocketEvent } from "@/hooks/useWebSocketEvent";
 
 interface Token {
-  id: number
-  symbol: string
-  name: string
-  price: number
-  amount: number
-  value: number
-  img_url: string
-  avg_price: number
+	id: number;
+	symbol: string;
+	name: string;
+	price: number;
+	amount: number;
+	value: number;
+	img_url: string;
+	avg_price: number;
 }
 interface PortfolioTokensProps {
-	portfolioId: number;
-	tokens: Token[];
+	portfolio: any;
 }
 
-export function PortfolioTokens({ portfolioId, tokens }: PortfolioTokensProps) {
+export function PortfolioTokens({ portfolio }: PortfolioTokensProps) {
 	const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 	const [tokenToDelete, setTokenToDelete] = useState<string | null>(null);
+	const tokens = portfolio.assets || [];
 	const dispatch = useDispatch();
-	const { data, isLoading } = useGetPortfoliosByUserIDQuery();
 	const [removeTokenFromPortfolio] = useRemoveTokenFromPortfolioMutation();
-	const stream = '/stream?streams=' + tokens.map((token) => token.symbol.toLowerCase() + 'usdt@ticker').join('/');
+	const stream =
+		"/stream?streams=" +
+		tokens
+			.map((token: Token) => token.symbol.toLowerCase() + "usdt@ticker")
+			.join("/");
 	const [priceData, setPriceData] = useState<any>({});
-
-	useEffect(() => {
-		if(isLoading) return;
-		if(data)
-			dispatch(setPortfolios(data))
-	}, [data, isLoading])
-
-	if(tokens.length > 0) {
-		useWebSocketEvent('ticker', stream, (data: any) => {
-			let token = tokens.find((token) => token.symbol + 'USDT' === data.s);
-			if(token) setPriceData((prev: any) => ({ ...prev, [token.symbol]: data.c }));
-		})
-	}
-	else {
-		// Handle error Error: Rendered more hooks than during the previous render
-		useWebSocketEvent('', stream, () => {});
-	}
 	
+	// useEffect(() => {
+	// 	if (isLoading) return;
+	// 	if (data?.data?.length === 0) router.push('/welcome');
+	// 	dispatch(setPortfolios(data?.data));
+	// }, [data, isLoading]);
+
+	if (tokens.length > 0) {
+		useWebSocketEvent("ticker", stream, (data: any) => {
+			let token = tokens.find(
+				(token: Token) => token.symbol.toUpperCase() + "USDT" === data.s
+			);
+			if (token)
+				setPriceData((prev: any) => ({
+					...prev,
+					[token.symbol]: data.c,
+				}));
+		});
+	} else {
+		// Handle error Error: Rendered more hooks than during the previous render
+		useWebSocketEvent("", stream, () => {});
+	}
+
 	const handleDeleteClick = (token: string) => {
 		setTokenToDelete(token);
 		setOpenDeleteDialog(true);
@@ -96,12 +103,10 @@ export function PortfolioTokens({ portfolioId, tokens }: PortfolioTokensProps) {
 		if (tokenToDelete) {
 			// Here you would call a server action to delete the token
 			await removeTokenFromPortfolio({
-				portfolio_id: portfolioId,
+				portfolio_id: portfolio.id,
 				token: tokenToDelete,
 			});
-			toast.success(
-				"The token has been removed from your portfolio."
-			);
+			toast.success("The token has been removed from your portfolio.");
 			setOpenDeleteDialog(false);
 			setTokenToDelete(null);
 		}
@@ -116,7 +121,7 @@ export function PortfolioTokens({ portfolioId, tokens }: PortfolioTokensProps) {
 						Manage your tokens in this portfolio
 					</CardDescription>
 				</div>
-				<Link href={`/portfolios/${portfolioId}/add-token`}>
+				<Link href={`/portfolios/${portfolio.id}/add-token`}>
 					<Button size="sm">
 						<Plus className="mr-2 h-4 w-4" />
 						Add Token
@@ -132,101 +137,188 @@ export function PortfolioTokens({ portfolioId, tokens }: PortfolioTokensProps) {
 							</p>
 						</div>
 					) : (
-					<Table>
-						<TableHeader>
-						<TableRow>
-							<TableHead>Token</TableHead>
-							<TableHead className="text-center">Price</TableHead>
-							<TableHead className="text-center">Value</TableHead>
-							<TableHead className="text-center">Unrealize PnL</TableHead>
-							<TableHead className="text-right">Actions</TableHead>
-						</TableRow>
-						</TableHeader>
-						<TableBody>
-						{tokens.map((token) => {
-						const unrealizedPnL = priceData[token.symbol]
-						? Number(
-							priceData[token.symbol] * token.amount -
-								token.avg_price * token.amount
-							).toFixed(2)
-						: null;
-						return (
-						<TableRow key={token.id}>
-							<TableCell>
-								<div className="flex items-center">
-								<Avatar className="h-9 w-9">
-									<AvatarImage src={token.img_url} alt={token.symbol} />
-									<AvatarFallback>{token.symbol.toUpperCase()}</AvatarFallback>
-								</Avatar>
-								<div className="ml-4">
-									<p className="font-medium">{token.name}</p>
-									<p className="text-sm text-muted-foreground">
-										{token.symbol.toUpperCase()}
-									</p>
-								</div>
-								</div>
-							</TableCell>
-							<TableCell className="text-center">
-								<div className="font-medium">
-									{priceData[token.symbol] 
-									? '$' + Number(priceData[token.symbol])?.toFixed(2) 
-									: <Skeleton className="h-4 w-16 mx-auto" />}
-								</div>
-							</TableCell>
-							<TableCell className="text-center">
-								<div>
-									<div className="font-medium">
-										{priceData[token.symbol] 
-										? '$' + Number(priceData[token.symbol] * token.amount)?.toFixed(2) 
-										: <Skeleton className="h-4 w-16 mx-auto" />}
-									</div>
-									<p className="text-sm text-muted-foreground">
-										{token.amount} {token.symbol.toUpperCase()}
-									</p>
-								</div>
-							</TableCell>
-							<TableCell className="text-center">
-								<div
-									className={`font-medium ${
-										unrealizedPnL && Number(unrealizedPnL) > 0
-										? "text-green-700"
-										: "text-red-700"}`
-									}
-								>
-									{unrealizedPnL ? (`$${unrealizedPnL}`) : <Skeleton className="h-4 w-16 mx-auto" />}
-								</div>
-							</TableCell>
-							<TableCell className="text-right">
-								<DropdownMenu>
-								<DropdownMenuTrigger asChild>
-									<Button variant="ghost" size="icon">
-									<MoreHorizontal className="h-4 w-4" />
-									<span className="sr-only">Open menu</span>
-									</Button>
-								</DropdownMenuTrigger>
-								<DropdownMenuContent align="end">
-									<DropdownMenuItem asChild>
-									<Link href={``}>
-										<Plus className="mr-2 h-4 w-4" />
-										Add Transaction
-									</Link>
-									</DropdownMenuItem>
-									<DropdownMenuItem
-									onClick={() => handleDeleteClick(token.symbol)}
-									className="text-destructive"
-									>
-									<Trash2 className="mr-2 h-4 w-4" />
-									Remove Token
-									</DropdownMenuItem>
-								</DropdownMenuContent>
-								</DropdownMenu>
-							</TableCell>
-							</TableRow>
-						)})}
-						</TableBody>
-					</Table>
+						<Table>
+							<TableHeader>
+								<TableRow>
+									<TableHead>Token</TableHead>
+									<TableHead className="text-center">
+										Portfolio (%)
+									</TableHead>
+									<TableHead className="text-center">
+										Price
+									</TableHead>
+									<TableHead className="text-center">
+										Value
+									</TableHead>
+									<TableHead className="text-center">
+										Unrealize PnL
+									</TableHead>
+									<TableHead className="text-right">
+										Actions
+									</TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{tokens.map((token: Token) => {
+									const unrealizedPnL = priceData[
+										token.symbol
+									]
+										? Number(
+												priceData[token.symbol] *
+													token.amount -
+													token.avg_price *
+														token.amount
+										  ).toFixed(2)
+										: null;
+									const allocation = Number(
+										((priceData[token.symbol] *
+											token.amount) /
+											portfolio.totalValue) *
+											100
+									).toFixed(0);
+									return (
+										<TableRow key={token.id}>
+											<TableCell>
+												<div className="flex items-center">
+													<Avatar className="h-9 w-9">
+														<AvatarImage
+															src={token.img_url}
+															alt={token.symbol}
+														/>
+														<AvatarFallback>
+															{token.symbol.toUpperCase()}
+														</AvatarFallback>
+													</Avatar>
+													<div className="ml-4">
+														<p className="font-medium">
+															{token.name}
+														</p>
+														<p className="text-sm text-muted-foreground">
+															{token.symbol.toUpperCase()}
+														</p>
+													</div>
+												</div>
+											</TableCell>
+											<TableCell className="text-center">
+												{/* Portfolio allocation percentage could be calculated here */}
+												<div className="flex items-center gap-2">
+													<span>{allocation}%</span>
+													<div
+														className="w-24 h-2 rounded-full overflow-hidden"
+														style={{
+															backgroundColor:
+																"hsl(var(--muted))",
+														}}
+													>
+														<div
+															className="h-full rounded-full"
+															style={{
+																width: `${allocation}%`,
+																backgroundColor:
+																	"hsl(var(--primary))",
+															}}
+														></div>
+													</div>
+												</div>
+											</TableCell>
+											<TableCell className="text-center">
+												<div className="font-medium">
+													{priceData[token.symbol] ? (
+														"$" +
+														Number(
+															priceData[
+																token.symbol
+															]
+														)?.toFixed(2)
+													) : (
+														<Skeleton className="h-4 w-16 mx-auto" />
+													)}
+												</div>
+											</TableCell>
+											<TableCell className="text-center">
+												<div>
+													<div className="font-medium">
+														{priceData[
+															token.symbol
+														] ? (
+															"$" +
+															Number(
+																priceData[
+																	token.symbol
+																] * token.amount
+															)?.toFixed(2)
+														) : (
+															<Skeleton className="h-4 w-16 mx-auto" />
+														)}
+													</div>
+													<p className="text-sm text-muted-foreground">
+														{token.amount}{" "}
+														{token.symbol.toUpperCase()}
+													</p>
+												</div>
+											</TableCell>
+											<TableCell className="text-center">
+												<div
+													className={`font-medium ${
+														unrealizedPnL &&
+														Number(unrealizedPnL) >
+															0
+															? "text-green-700"
+															: "text-red-700"
+													}`}
+												>
+													{unrealizedPnL ? (
+														`$${unrealizedPnL}`
+													) : (
+														<Skeleton className="h-4 w-16 mx-auto" />
+													)}
+												</div>
+											</TableCell>
+											<TableCell className="text-right">
+												<DropdownMenu>
+													<DropdownMenuTrigger
+														asChild
+													>
+														<Button
+															variant="ghost"
+															size="icon"
+														>
+															<MoreHorizontal className="h-4 w-4" />
+															<span className="sr-only">
+																Open menu
+															</span>
+														</Button>
+													</DropdownMenuTrigger>
+													<DropdownMenuContent align="end">
+														<DropdownMenuItem
+															asChild
+														>
+															<Link href={``}>
+																<Plus className="mr-2 h-4 w-4" />
+																Add Transaction
+															</Link>
+														</DropdownMenuItem>
+														<DropdownMenuItem
+															onClick={() =>
+																handleDeleteClick(
+																	token.symbol
+																)
+															}
+															className="text-destructive"
+														>
+															<Trash2 className="mr-2 h-4 w-4" />
+															Remove Token
+														</DropdownMenuItem>
+													</DropdownMenuContent>
+												</DropdownMenu>
+											</TableCell>
+										</TableRow>
+									);
+								})}
+							</TableBody>
+						</Table>
 					)}
-				</div>	
+				</div>
 			</CardContent>
 
 			<AlertDialog

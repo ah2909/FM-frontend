@@ -47,17 +47,11 @@ export function ModeToggle() {
             size="icon"
             className="relative overflow-hidden transition-all duration-300 hover:bg-muted"
           >
-            <Sun
-              className={cn(
-                "h-[1.2rem] w-[1.2rem] transition-all duration-300",
-                theme === "dark" ? "rotate-90 scale-0 opacity-0" : "rotate-0 scale-100 opacity-100",
-              )}
-            />
-            <Moon
-              className={cn(
-                "absolute h-[1.2rem] w-[1.2rem] transition-all duration-300",
-                theme === "dark" ? "rotate-0 scale-100 opacity-100" : "rotate-90 scale-0 opacity-0",
-              )}
+            <Settings
+              scale={1.2}
+              className={
+                theme === "dark" ? "text-white" : "text-black"
+              }
             />
             <span className="sr-only">Toggle theme</span>
           </Button>
@@ -87,17 +81,10 @@ export function ModeToggle() {
                 <p className="text-xs leading-none text-muted-foreground">{data.user.email}</p>
               </div>
             </div>
-            <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <Link href="/profile" className="cursor-pointer flex items-center">
                 <User className="mr-2 h-4 w-4" />
                 <span>Profile</span>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href="/settings" className="cursor-pointer flex items-center">
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />

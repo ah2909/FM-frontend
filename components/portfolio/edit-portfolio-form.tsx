@@ -49,15 +49,14 @@ export function EditPortfolioForm({ portfolio }: EditPortfolioFormProps) {
 
 	async function onSubmit(values: z.infer<typeof formSchema>) {
 		try {
-			// Here you would typically call a server action to update the portfolio
 			await updatePortfolio({
 				id: portfolio.id, 
-				portfolio: portfolio
+				portfolio: values
 			}).unwrap()
 
 			toast.success("Your portfolio has been updated successfully.");
 
-			router.push(`/portfolios/${portfolio.id}`);
+			router.push(`/portfolios`);
 		} catch (error) {
 			toast.error("Something went wrong. Please try again.");
 		}

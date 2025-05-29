@@ -37,9 +37,7 @@ export const portfolioApi = baseApi.injectEndpoints({
 				method: "PUT",
 				body: portfolio,
 			}),
-			invalidatesTags: (_result, _err, { id }) => [
-				{ type: "Portfolio", id },
-			],
+			invalidatesTags: ["Portfolio"]
 		}),
 		deletePortfolio: builder.mutation<void, number>({
 			query: (id: number) => ({

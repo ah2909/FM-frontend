@@ -2,28 +2,38 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit"
 import type { Portfolio } from "../services/portfolio-api"
 
 interface PortfoliosState {
-  selectedPortfolioId: string | null
-  portfolios: Portfolio[]
+  portfolio: any
+  assets: any[]
+  transactions: any[]
+  totalUnrealizedPNL: number
 }
 
 const initialState: PortfoliosState = {
-  selectedPortfolioId: null,
-  portfolios: [],
+  portfolio: {},
+  assets: [],
+  transactions: [],
+  totalUnrealizedPNL: 0,
 }
 
 export const portfoliosSlice = createSlice({
   name: "portfolios",
   initialState,
   reducers: {
-    setSelectedPortfolio: (state, action: PayloadAction<string | null>) => {
-      state.selectedPortfolioId = action.payload
+    setPortfolio: (state, action: PayloadAction<Portfolio>) => {
+      state.portfolio = action.payload
     },
-    setPortfolios: (state, action: PayloadAction<Portfolio[]>) => {
-      state.portfolios = action.payload
+    setAssets: (state, action: PayloadAction<any[]>) => {
+      state.assets = action.payload
     },
+    setTransactions: (state, action: PayloadAction<any[]>) => {
+      state.transactions = action.payload
+    },
+    setTotalUnrealizedPNL: (state, action: PayloadAction<number>) => {
+      state.totalUnrealizedPNL = action.payload
+    }
   },
 })
 
-export const { setSelectedPortfolio, setPortfolios } = portfoliosSlice.actions
+export const { setPortfolio, setAssets, setTransactions, setTotalUnrealizedPNL } = portfoliosSlice.actions
 export default portfoliosSlice.reducer
 

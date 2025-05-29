@@ -39,7 +39,7 @@ export function SiteHeader() {
               <PieChart className="mr-1 h-4 w-4" />
               Portfolios
             </Link>
-            <Link
+            {/* <Link
               href="/transactions"
               className={cn(
                 "flex items-center text-sm font-medium text-muted-foreground",
@@ -48,7 +48,7 @@ export function SiteHeader() {
             >
               <Wallet2 className="mr-1 h-4 w-4" />
               Transactions
-            </Link>
+            </Link> */}
             <Link
               href="/exchanges"
               className={cn(

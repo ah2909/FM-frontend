@@ -8,19 +8,10 @@ import { BaseHeader } from "@/components/base-header";
 import { BaseShell } from "@/components/base-shell";
 import { EditPortfolioForm } from "@/components/portfolio/edit-portfolio-form";
 import { UseDispatch, useSelector } from "react-redux";
-import { Portfolio } from "@/lib/store/services/portfolio-api";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
-interface EditPortfolioPageProps {
-	params: {
-		id: number;
-	};
-}
-
-export default function EditPortfolioPage({ params }: EditPortfolioPageProps) {
-	const portfolioId = params.id;
-	const local = useSelector((state: any) => state.portfolios.portfolios);
-	const portfolio = local.find((port: Portfolio) => port.id == portfolioId);
+export default function EditPortfolioPage() {
+	const portfolio = useSelector((state: any) => state.portfolios.portfolio);
 
 	if (!portfolio) {
 		notFound();
@@ -33,7 +24,7 @@ export default function EditPortfolioPage({ params }: EditPortfolioPageProps) {
 					heading="Edit Portfolio"
 					text="Update your portfolio details"
 				>
-					<Link href={`/portfolios/${portfolioId}`}>
+					<Link href={`/portfolios`}>
 						<Button variant="outline">Cancel</Button>
 					</Link>
 				</BaseHeader>

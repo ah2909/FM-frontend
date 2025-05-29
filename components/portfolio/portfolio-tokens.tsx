@@ -42,7 +42,7 @@ import {
 	useRemoveTokenFromPortfolioMutation,
 } from "@/lib/store/services/portfolio-api";
 import { useDispatch } from "react-redux";
-import { setPortfolios } from "@/lib/store/features/portfolios-slice";
+import { setTotalUnrealizedPNL } from "@/lib/store/features/portfolios-slice";
 import { useWebSocketEvent } from "@/hooks/useWebSocketEvent";
 
 interface Token {
@@ -71,23 +71,18 @@ export function PortfolioTokens({ portfolio }: PortfolioTokensProps) {
 			.map((token: Token) => token.symbol.toLowerCase() + "usdt@ticker")
 			.join("/");
 	const [priceData, setPriceData] = useState<any>({});
-	
-	// useEffect(() => {
-	// 	if (isLoading) return;
-	// 	if (data?.data?.length === 0) router.push('/welcome');
-	// 	dispatch(setPortfolios(data?.data));
-	// }, [data, isLoading]);
 
 	if (tokens.length > 0) {
 		useWebSocketEvent("ticker", stream, (data: any) => {
 			let token = tokens.find(
 				(token: Token) => token.symbol.toUpperCase() + "USDT" === data.s
 			);
-			if (token)
+			if (token) {
 				setPriceData((prev: any) => ({
 					...prev,
 					[token.symbol]: data.c,
 				}));
+			}
 		});
 	} else {
 		// Handle error Error: Rendered more hooks than during the previous render
@@ -121,7 +116,7 @@ export function PortfolioTokens({ portfolio }: PortfolioTokensProps) {
 						Manage your tokens in this portfolio
 					</CardDescription>
 				</div>
-				<Link href={`/portfolios/${portfolio.id}/add-token`}>
+				<Link href={`/portfolios/add-token`}>
 					<Button size="sm">
 						<Plus className="mr-2 h-4 w-4" />
 						Add Token
@@ -160,9 +155,7 @@ export function PortfolioTokens({ portfolio }: PortfolioTokensProps) {
 							</TableHeader>
 							<TableBody>
 								{tokens.map((token: Token) => {
-									const unrealizedPnL = priceData[
-										token.symbol
-									]
+									const unrealizedPnL = priceData[token.symbol]
 										? Number(
 												priceData[token.symbol] *
 													token.amount -
@@ -202,7 +195,7 @@ export function PortfolioTokens({ portfolio }: PortfolioTokensProps) {
 											<TableCell className="text-center">
 												{/* Portfolio allocation percentage could be calculated here */}
 												<div className="flex items-center gap-2">
-													<span>{allocation}%</span>
+													{!isNaN(Number(allocation)) ? (<span>{allocation}%</span>) : <Skeleton className="h-4 w-4" />}
 													<div
 														className="w-24 h-2 rounded-full overflow-hidden"
 														style={{
@@ -213,7 +206,7 @@ export function PortfolioTokens({ portfolio }: PortfolioTokensProps) {
 														<div
 															className="h-full rounded-full"
 															style={{
-																width: `${allocation}%`,
+																width: `${!isNaN(Number(allocation)) ? allocation : 0}%`,
 																backgroundColor:
 																	"hsl(var(--primary))",
 															}}
@@ -225,11 +218,7 @@ export function PortfolioTokens({ portfolio }: PortfolioTokensProps) {
 												<div className="font-medium">
 													{priceData[token.symbol] ? (
 														"$" +
-														Number(
-															priceData[
-																token.symbol
-															]
-														)?.toFixed(2)
+														Number(priceData[token.symbol])?.toFixed(2)
 													) : (
 														<Skeleton className="h-4 w-16 mx-auto" />
 													)}
@@ -242,12 +231,8 @@ export function PortfolioTokens({ portfolio }: PortfolioTokensProps) {
 															token.symbol
 														] ? (
 															"$" +
-															Number(
-																priceData[
-																	token.symbol
-																] * token.amount
-															)?.toFixed(2)
-														) : (
+															Number(priceData[token.symbol] * token.amount)?.toFixed(2)) 
+														: (
 															<Skeleton className="h-4 w-16 mx-auto" />
 														)}
 													</div>
@@ -293,9 +278,9 @@ export function PortfolioTokens({ portfolio }: PortfolioTokensProps) {
 														<DropdownMenuItem
 															asChild
 														>
-															<Link href={``}>
+															<Link href={`/transactions?id=${token.id}`}>
 																<Plus className="mr-2 h-4 w-4" />
-																Add Transaction
+																View Transaction
 															</Link>
 														</DropdownMenuItem>
 														<DropdownMenuItem

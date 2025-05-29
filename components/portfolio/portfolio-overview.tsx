@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Doughnut } from "react-chartjs-2"
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js"
+import { PortfolioPerformance } from "@/components/portfolio/portfolio-performance"
 
 ChartJS.register(ArcElement, Tooltip, Legend)
 
@@ -31,34 +32,54 @@ export function PortfolioOverview({ portfolio }: { portfolio: any }) {
       },
     ],
   }
+  const totalCost = portfolio.assets.reduce((acc: number, token: any) => {
+    if(token.avg_price !== 0) {
+      return acc + token.amount * token.avg_price
+    }
+    else return acc + token.amount * token.price
+  }, 0)
+
+  const performanceMetrics = {
+    totalCost: totalCost,
+    currentValue: portfolio.totalValue,
+    unrealizedPnl: portfolio.totalValue - totalCost,
+    unrealizedPnlPercentage: (portfolio.totalValue - totalCost) / totalCost * 100,
+    allTimeHigh: 1000,
+    allTimeLow: 100,
+    change24h: 10,
+    change7d: 50,
+  }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2">
-      <Card>
-        <CardHeader>
-          <CardTitle>Portfolio Value</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-3xl font-bold">${portfolio.totalValue?.toFixed(2)}</div>
-          <div className="text-sm text-muted-foreground mt-2">{portfolio.assets.length} tokens in this portfolio</div>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>Asset Allocation</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-[200px] flex justify-center">
-            <Doughnut
-              data={chartData}
-              options={{
-                responsive: true,
-                maintainAspectRatio: false,
-              }}
-            />
-          </div>
-        </CardContent>
-      </Card>
+    <div className="space-y-6">
+      <PortfolioPerformance metrics={performanceMetrics} />
+      {/* <div className="grid gap-4 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Portfolio Value</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">${portfolio.totalValue?.toFixed(2)}</div>
+            <div className="text-sm text-muted-foreground mt-2">{portfolio.assets.length} tokens in this portfolio</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Asset Allocation</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[200px] flex justify-center">
+              <Doughnut
+                data={chartData}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                }}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      </div> */}
     </div>
   )
 }

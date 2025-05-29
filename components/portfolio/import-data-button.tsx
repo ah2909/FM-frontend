@@ -28,15 +28,21 @@ export function ImportDataButton({ portfolio_id }: ImportDataButtonProps) {
   const handleAssetsSelected = async (assets: TokenExchange[]) => {
     if (assets.length === 0) return
     try {
-      await addTokenToPortfolio({ 
+      const response = await addTokenToPortfolio({ 
         portfolio_id: portfolio_id, 
         token: assets.map((asset) => ({
           symbol: asset.symbol, 
           amount: asset.amount,
           exchange: asset.exchanges,
         })) 
-    })
-      toast.success(`${assets.length} assets added to portfolio`)
+      })
+      if (response.data?.success) {
+        toast.success(`${assets.length} assets added to portfolio`)
+      } else {
+        toast.error( 
+          "Failed to add assets to portfolio."		
+        );
+      }
       setIsOpen(false)
     } catch (error) {
       toast.error("Failed to add assets to portfolio")

@@ -33,7 +33,7 @@ const formSchema = z.object({
 });
 
 interface AddTokenFormProps {
-	portfolioId: number;
+	portfolioId: string;
 }
 
 export function AddTokenForm({ portfolioId }: AddTokenFormProps) {
@@ -93,18 +93,24 @@ export function AddTokenForm({ portfolioId }: AddTokenFormProps) {
 	async function onSubmit(values: z.infer<typeof formSchema>) {
 		try {
 			console.log(values);
-			await addTokenToPortfolioManual({ 
-				portfolio_id: portfolioId, 
+			const response = await addTokenToPortfolioManual({ 
+				portfolio_id: parseInt(portfolioId), 
 				token: {
 					symbol: values.symbol.toUpperCase(),
 					amount: Number(values.amount),
 				}
 			}) 
-			toast.success(
-				"The token has been added to your portfolio."
-			);
+			if (response.data?.success) {
+				toast.success(
+					"The token has been added to your portfolio."
+				);
+			} else {
+				toast.error( 
+					"Failed to add assets to portfolio."		
+				);
+			}
 
-			router.push(`/portfolios/${portfolioId}`);
+			router.push(`/portfolios`);
 		} catch (error) {
 			toast.error( 
         		"Failed to add assets to portfolio."		

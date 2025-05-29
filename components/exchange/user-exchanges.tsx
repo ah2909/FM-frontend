@@ -34,6 +34,7 @@ import {
 	useConnectExchangeMutation,
   Exchange,
 } from "@/lib/store/services/exchange-api";
+import Image from "next/image"
 
 const formSchema = z.object({
 	api_key: z.string().min(1, { message: "API Key is required" }),
@@ -78,7 +79,6 @@ export function UserExchanges() {
     };
   
     async function onSubmit(data: FormValues) {
-        console.log(data)
         const exchange = exchanges?.data?.find((e: Exchange) => e.id === selectedExchange);
         data.cex_name = exchange?.name;
   
@@ -123,6 +123,19 @@ export function UserExchanges() {
       }
     }
   }
+
+  const mappingExchangesLogo = (exchange_id: number) => {
+		switch (exchange_id) {
+			case 1:
+				return "/binance.png";
+			case 2:
+				return "/okx.png";
+			case 3:
+				return "/bybit.png";
+			default:
+				return "/placeholder-logo.png";
+		}
+	}
 
   const connectedExchanges = exchanges?.data?.filter((exchange: Exchange) => exchange.is_connected) || []
 
@@ -244,33 +257,33 @@ export function UserExchanges() {
                                             handleExchangeSelect(exchange.id)
                                         }
                                     >
-                                        <CardHeader className="flex flex-row items-center justify-between py-4">
-                                            <div className="flex items-center space-x-2">
-                                                {exchange.img_url && (
-                                                    <img
-                                                        src={exchange.img_url || "/placeholder.svg"}
-                                                        alt={exchange.name}
-                                                        className="h-8 w-8"
-                                                    />
-                                                )}
-                                                <CardTitle className="text-lg">
-                                                    {exchange.name}
-                                                </CardTitle>
-                                            </div>
-                                            {exchange.is_connected ? (
-                                                <Check className="h-5 w-5 text-green-500" />
-                                            )
-                                            : (
-                                                <X className="h-5 w-5 text-red-500" />
-                                            )}
-                                        </CardHeader>
-                                        <CardContent className="pb-4">
-                                            <CardDescription>
-                                                {exchange.is_connected
-                                                    ? "Connected"
-                                                    : "Connect to import your balances and transactions"}
-                                            </CardDescription>
-                                        </CardContent>
+                                      <CardHeader className="flex flex-row items-center justify-between py-4">
+                                          <div className="flex items-center space-x-2">
+                                            <Image
+                                                src={mappingExchangesLogo(exchange.id)}
+                                                alt={exchange.name}
+                                                width={40}
+                                                height={40}
+                                                className="rounded-md"
+                                            />  
+                                            <CardTitle className="text-lg">
+                                                {exchange.name}
+                                            </CardTitle>
+                                          </div>
+                                          {exchange.is_connected ? (
+                                              <Check className="h-5 w-5 text-green-500" />
+                                          )
+                                          : (
+                                              <X className="h-5 w-5 text-red-500" />
+                                          )}
+                                      </CardHeader>
+                                      <CardContent className="pb-4">
+                                          <CardDescription>
+                                              {exchange.is_connected
+                                                  ? "Connected"
+                                                  : "Connect to import your balances and transactions"}
+                                          </CardDescription>
+                                      </CardContent>
                                     </Card>
                                 ))
                             )}
@@ -295,13 +308,17 @@ export function UserExchanges() {
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {connectedExchanges.map((exchange) => (
+          {connectedExchanges.map((exchange: any) => (
             <Card key={exchange.id}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <div className="flex items-center space-x-2">
-                  {exchange.icon && (
-                    <img src={exchange.icon || "/placeholder.svg"} alt={exchange.name} className="h-6 w-6" />
-                  )}
+                  <Image 
+                    src={mappingExchangesLogo(exchange.id)} 
+                    alt={exchange.name} 
+                    width={40}
+                    height={40}
+                    className="rounded-md"
+                  />
                   <CardTitle>{exchange.name}</CardTitle>
                 </div>
               </CardHeader>

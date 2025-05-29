@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useGetPortfoliosByUserIDQuery } from "@/lib/store/services/portfolio-api";
-import { setPortfolios } from "@/lib/store/features/portfolios-slice";
+import { setPortfolio, setAssets, setTransactions } from "@/lib/store/features/portfolios-slice";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Loading from "@/components/Loading";
@@ -28,14 +28,17 @@ import Loading from "@/components/Loading";
 export default function PortfolioPage() {
 	const dispatch = useDispatch();
 	const { data, isLoading } = useGetPortfoliosByUserIDQuery();
-	const portfolio = useSelector((state: any) => state.portfolios.portfolios);
-	const tokens = portfolio?.assets || [];
+	const portfolio = useSelector((state: any) => state.portfolios.portfolio);
+	const tokens = useSelector((state: any) => state.portfolios.assets);
 	const router = useRouter();
 
 	useEffect(() => {
 		if (isLoading) return;
-		if (data?.data?.length === 0) router.push('/welcome');
-		dispatch(setPortfolios(data?.data));
+		if (data?.data?.length === 0) router.push("/welcome");
+		
+		dispatch(setPortfolio(data?.data));
+		dispatch(setAssets(data?.data?.assets));
+		dispatch(setTransactions(data?.data?.transactions));
 	}, [data, isLoading, dispatch]);
 
 	return (
@@ -45,43 +48,44 @@ export default function PortfolioPage() {
 					<Loading />
 				) : (
 					<>
-					<BaseHeader
-						heading={portfolio.name}
-						text={portfolio.description}
-					>
-						<div className="flex space-x-2">
-							<ImportDataButton portfolio_id={portfolio.id} />
-							<DropdownMenu>
-								<DropdownMenuTrigger asChild>
-									<Button variant="outline">
-										<PlusCircle className="mr-2 h-4 w-4" />
-										Edit
-									</Button>
-								</DropdownMenuTrigger>
-								<DropdownMenuContent className="w-56">
-									<DropdownMenuItem>
-										<Link href={`/portfolios/edit`}>
-											Edit Portfolio
-										</Link>
-									</DropdownMenuItem>
-									<DropdownMenuItem>
-										<Link
-											href={`/portfolios/add-token`}
-										>
-											Add Token
-										</Link>
-									</DropdownMenuItem>
-								</DropdownMenuContent>
-							</DropdownMenu>
-						</div>
-					</BaseHeader>
+						<BaseHeader
+							heading={portfolio.name}
+							text={portfolio.description}
+							showBackButton={false}
+						>
+							<div className="flex space-x-2">
+								<ImportDataButton portfolio_id={portfolio.id} />
+								<DropdownMenu>
+									<DropdownMenuTrigger asChild>
+										<Button variant="outline">
+											<PlusCircle className="mr-2 h-4 w-4" />
+											Edit
+										</Button>
+									</DropdownMenuTrigger>
+									<DropdownMenuContent className="w-56">
+										<DropdownMenuItem>
+											<Link href={`/portfolios/edit`}>
+												Edit Portfolio
+											</Link>
+										</DropdownMenuItem>
+										<DropdownMenuItem>
+											<Link
+												href={`/portfolios/add-token`}
+											>
+												Add Token
+											</Link>
+										</DropdownMenuItem>
+									</DropdownMenuContent>
+								</DropdownMenu>
+							</div>
+						</BaseHeader>
 
-					<div className="grid gap-8">
-						{tokens.length > 0 && (
-							<PortfolioOverview portfolio={portfolio} />
-						)}
-						<PortfolioTokens portfolio={portfolio} />
-					</div>
+						<div className="grid gap-8">
+							{tokens.length > 0 && (
+								<PortfolioOverview portfolio={portfolio} />
+							)}
+							<PortfolioTokens portfolio={portfolio} />
+						</div>
 					</>
 				)}
 			</BaseShell>

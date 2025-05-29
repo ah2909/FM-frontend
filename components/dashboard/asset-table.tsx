@@ -108,15 +108,15 @@ export function AssetTable({ tokens, totalValue }: AssetTableProps) {
 								<TableCell>
 									{/* Portfolio allocation percentage could be calculated here */}
 									<div className="flex items-center gap-2">
-										<span>{allocation}%</span>
+										{!isNaN(Number(allocation)) ? (<span>{allocation}%</span>) : <Skeleton className="h-4 w-4" />}
 										<div
-										className="w-24 h-2 rounded-full overflow-hidden"
-										style={{ backgroundColor: "hsl(var(--muted))" }}
+											className="w-24 h-2 rounded-full overflow-hidden"
+											style={{ backgroundColor: "hsl(var(--muted))" }}
 										>
 										<div
 											className="h-full rounded-full"
 											style={{
-											width: `${allocation}%`,
+											width: `${!isNaN(Number(allocation)) ? allocation : 0}%`,
 											backgroundColor: "hsl(var(--primary))",
 											}}
 										></div>

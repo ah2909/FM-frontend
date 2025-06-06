@@ -44,6 +44,7 @@ import {
 import { useDispatch } from "react-redux";
 import { setTotalUnrealizedPNL } from "@/lib/store/features/portfolios-slice";
 import { useWebSocketEvent } from "@/hooks/useWebSocketEvent";
+import { removeSymbol } from "@/lib/store/features/portfolios-slice";
 
 interface Token {
 	id: number;
@@ -62,9 +63,10 @@ interface PortfolioTokensProps {
 export function PortfolioTokens({ portfolio }: PortfolioTokensProps) {
 	const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 	const [tokenToDelete, setTokenToDelete] = useState<string | null>(null);
-	const tokens = portfolio.assets || [];
-	const dispatch = useDispatch();
+	const [tokens, setTokens] = useState(portfolio.assets || []);
 	const [removeTokenFromPortfolio] = useRemoveTokenFromPortfolioMutation();
+	const dispatch = useDispatch();
+
 	const stream =
 		"/stream?streams=" +
 		tokens
@@ -89,6 +91,12 @@ export function PortfolioTokens({ portfolio }: PortfolioTokensProps) {
 		useWebSocketEvent("", stream, () => {});
 	}
 
+	useEffect(() => {
+		if (portfolio.assets) {
+			setTokens(portfolio.assets);
+		}
+	}, [portfolio.assets]);
+	
 	const handleDeleteClick = (token: string) => {
 		setTokenToDelete(token);
 		setOpenDeleteDialog(true);
@@ -101,6 +109,7 @@ export function PortfolioTokens({ portfolio }: PortfolioTokensProps) {
 				portfolio_id: portfolio.id,
 				token: tokenToDelete,
 			});
+			dispatch(removeSymbol(tokenToDelete));
 			toast.success("The token has been removed from your portfolio.");
 			setOpenDeleteDialog(false);
 			setTokenToDelete(null);

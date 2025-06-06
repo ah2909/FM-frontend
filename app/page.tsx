@@ -13,7 +13,6 @@ import { BaseShell } from "@/components/base-shell";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useGetPortfoliosByUserIDQuery } from "@/lib/store/services/portfolio-api";
 import { useDispatch, useSelector } from "react-redux";
-import { setPortfolio, setAssets, setTransactions } from "@/lib/store/features/portfolios-slice";
 import { useRouter } from "next/navigation";
 import Loading from "@/components/Loading";
 
@@ -24,15 +23,11 @@ export default function DashboardPage() {
 	const { data, isLoading } = useGetPortfoliosByUserIDQuery();
 
 	const portfolio = useSelector((state: any) => state.portfolios.portfolio);
-	const tokens = useSelector((state: any) => state.portfolios.assets);
-
+	const tokens = useSelector((state: any) => state.portfolios.assets ?? []);
+	
 	useEffect(() => {
 		if (isLoading) return;
 		if (data?.data?.length === 0) router.push("/welcome");
-
-		dispatch(setPortfolio(data?.data));
-		dispatch(setAssets(data?.data?.assets));
-		dispatch(setTransactions(data?.data?.transactions));
 	}, [data, isLoading, dispatch]);
 
 	return (

@@ -20,6 +20,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { useUpdatePortfolioMutation } from "@/lib/store/services/portfolio-api"
+import { useDispatch } from "react-redux";
+import { editPortfolio } from "@/lib/store/features/portfolios-slice";
 
 const formSchema = z.object({
 	name: z.string().min(2, {
@@ -46,14 +48,15 @@ export function EditPortfolioForm({ portfolio }: EditPortfolioFormProps) {
 		},
 	});
 	const [updatePortfolio, {isLoading}] = useUpdatePortfolioMutation();
+	const dispatch = useDispatch();
 
 	async function onSubmit(values: z.infer<typeof formSchema>) {
 		try {
 			await updatePortfolio({
 				id: portfolio.id, 
 				portfolio: values
-			}).unwrap()
-
+			}).unwrap();
+			dispatch(editPortfolio(values));
 			toast.success("Your portfolio has been updated successfully.");
 
 			router.push(`/portfolios`);

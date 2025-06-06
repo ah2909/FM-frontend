@@ -92,7 +92,6 @@ export function AddTokenForm({ portfolioId }: AddTokenFormProps) {
 
 	async function onSubmit(values: z.infer<typeof formSchema>) {
 		try {
-			console.log(values);
 			const response = await addTokenToPortfolioManual({ 
 				portfolio_id: parseInt(portfolioId), 
 				token: {

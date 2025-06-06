@@ -10,17 +10,8 @@ import { PortfolioTokens } from "@/components/portfolio/portfolio-tokens";
 import { PortfolioOverview } from "@/components/portfolio/portfolio-overview";
 import { useDispatch, useSelector } from "react-redux";
 import { ImportDataButton } from "@/components/portfolio/import-data-button";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuLabel,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useGetPortfoliosByUserIDQuery } from "@/lib/store/services/portfolio-api";
-import { setPortfolio, setAssets, setTransactions } from "@/lib/store/features/portfolios-slice";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Loading from "@/components/Loading";
@@ -31,15 +22,11 @@ export default function PortfolioPage() {
 	const portfolio = useSelector((state: any) => state.portfolios.portfolio);
 	const tokens = useSelector((state: any) => state.portfolios.assets);
 	const router = useRouter();
-
+	
 	useEffect(() => {
 		if (isLoading) return;
 		if (data?.data?.length === 0) router.push("/welcome");
-		
-		dispatch(setPortfolio(data?.data));
-		dispatch(setAssets(data?.data?.assets));
-		dispatch(setTransactions(data?.data?.transactions));
-	}, [data, isLoading, dispatch]);
+	}, [isLoading, data, dispatch]);
 
 	return (
 		<ProtectedRoute>
@@ -55,28 +42,12 @@ export default function PortfolioPage() {
 						>
 							<div className="flex space-x-2">
 								<ImportDataButton portfolio_id={portfolio.id} />
-								<DropdownMenu>
-									<DropdownMenuTrigger asChild>
-										<Button variant="outline">
-											<PlusCircle className="mr-2 h-4 w-4" />
-											Edit
-										</Button>
-									</DropdownMenuTrigger>
-									<DropdownMenuContent className="w-56">
-										<DropdownMenuItem>
-											<Link href={`/portfolios/edit`}>
-												Edit Portfolio
-											</Link>
-										</DropdownMenuItem>
-										<DropdownMenuItem>
-											<Link
-												href={`/portfolios/add-token`}
-											>
-												Add Token
-											</Link>
-										</DropdownMenuItem>
-									</DropdownMenuContent>
-								</DropdownMenu>
+								<Button variant="outline">
+									<PlusCircle className="mr-2 h-4 w-4" />
+									<Link href={`/portfolios/edit`}>
+										Edit Portfolio
+									</Link>
+								</Button>		
 							</div>
 						</BaseHeader>
 

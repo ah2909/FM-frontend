@@ -70,8 +70,6 @@ export function TransactionForm() {
 	async function onSubmit(values: z.infer<typeof formSchema>) {
 		try {
 			// Here you would typically call a server action to create the transaction
-			console.log(values);
-
 			toast.success(
 				"Your transaction has been added successfully."
 			);

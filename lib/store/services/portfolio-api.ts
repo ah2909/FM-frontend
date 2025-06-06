@@ -37,7 +37,7 @@ export const portfolioApi = baseApi.injectEndpoints({
 				method: "PUT",
 				body: portfolio,
 			}),
-			invalidatesTags: ["Portfolio"]
+			// invalidatesTags: ["Portfolio"]
 		}),
 		deletePortfolio: builder.mutation<void, number>({
 			query: (id: number) => ({
@@ -77,7 +77,7 @@ export const portfolioApi = baseApi.injectEndpoints({
 				method: "POST",
 				body: token,
 			}),
-			invalidatesTags: ["Portfolio"],
+			// invalidatesTags: ["Portfolio"],
 		}),
 	}),
 });

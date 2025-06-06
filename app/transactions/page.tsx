@@ -11,7 +11,6 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import { useSearchParams } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
 import { useGetPortfoliosByUserIDQuery } from "@/lib/store/services/portfolio-api";
-import { setPortfolio, setAssets, setTransactions } from "@/lib/store/features/portfolios-slice";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Loading from "@/components/Loading";
@@ -28,10 +27,6 @@ export default function TransactionsPage() {
 	useEffect(() => {
 		if (isLoading) return;
 		if (data?.data?.length === 0) router.push("/welcome");
-		
-		dispatch(setPortfolio(data?.data));
-		dispatch(setAssets(data?.data?.assets));
-		dispatch(setTransactions(data?.data?.transactions));
 	}, [data, isLoading, dispatch]);
 	
 	return (

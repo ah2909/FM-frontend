@@ -79,6 +79,13 @@ export const portfolioApi = baseApi.injectEndpoints({
 			}),
 			// invalidatesTags: ["Portfolio"],
 		}),
+		syncTransactions: builder.mutation<Response, { portfolio_id: number }>({
+			query: (data) => ({
+				url: `/portfolio/sync-transactions`,
+				method: "POST",
+				body: data,
+			}),
+		})
 	}),
 });
 
@@ -90,4 +97,5 @@ export const {
 	useAddTokenToPortfolioMutation,
 	useAddTokenToPortfolioManualMutation,
 	useRemoveTokenFromPortfolioMutation,
+	useSyncTransactionsMutation,
 } = portfolioApi;

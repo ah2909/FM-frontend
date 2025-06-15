@@ -9,8 +9,9 @@ export const useWebSocketEvent = <T>(
 ): void => {
   const { socket, isConnected, subscribe, unsubscribe } = useWebSocket();
 
+  //For connecting CEXs stream
   useEffect(() => {
-    if (!socket || !isConnected || !eventName) return;
+    if (!socket || !isConnected || !eventName || stream === '') return;
 
     subscribe(stream);
     const handler = (data: T) => callback(data);
@@ -21,4 +22,14 @@ export const useWebSocketEvent = <T>(
         unsubscribe(stream);
     };
   }, [stream]);
+
+  //For in-app event
+  useEffect(() => {
+    if (stream !== '') return;
+    const handler = (data: T) => callback(data);
+    socket?.on('sync-transactions', handler)
+    return () => {
+        socket?.off(eventName, handler);
+    };
+  }, [stream]); 
 };

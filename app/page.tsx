@@ -15,6 +15,7 @@ import { useGetPortfoliosByUserIDQuery } from "@/lib/store/services/portfolio-ap
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import Loading from "@/components/Loading";
+import { TransactionSyncButton } from "@/components/dashboard/transaction-sync-button";
 
 export default function DashboardPage() {
 	const router = useRouter();
@@ -41,17 +42,11 @@ export default function DashboardPage() {
 						text="View your portfolio performance and manage your assets"
 						showBackButton={false}
 					>
-						<div className="flex items-center justify-between mb-4">
-							<Button
-								style={{
-									backgroundColor: "hsl(var(--primary))",
-									color: "hsl(var(--primary-foreground))",
-								}}
-							>
-								<Plus className="mr-2 h-4 w-4" /> Create
-								transaction
-							</Button>
-						</div>
+						{tokens.length > 0 && (
+							<div className="flex items-center justify-between mb-4">
+								<TransactionSyncButton portfolio_id={portfolio.id}/>
+							</div>
+						)}
 					</BaseHeader>
 
 					<Card>

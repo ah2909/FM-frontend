@@ -5,14 +5,14 @@ import { portfolioApi } from "../services/portfolio-api"
 interface PortfoliosState {
   portfolio: any
   assets: any[]
-  transactions: any[]
+  transactions: any
   totalUnrealizedPNL: number
 }
 
 const initialState: PortfoliosState = {
   portfolio: {},
   assets: [],
-  transactions: [],
+  transactions: {},
   totalUnrealizedPNL: 0,
 }
 
@@ -25,9 +25,6 @@ export const portfoliosSlice = createSlice({
     },
     setAssets: (state, action: PayloadAction<any[]>) => {
       state.assets = action.payload
-    },
-    setTransactions: (state, action: PayloadAction<any[]>) => {
-      state.transactions = action.payload
     },
     setTotalUnrealizedPNL: (state, action: PayloadAction<number>) => {
       state.totalUnrealizedPNL = action.payload
@@ -43,6 +40,10 @@ export const portfoliosSlice = createSlice({
       const updatedPortfolio = action.payload
       state.portfolio.name = updatedPortfolio.name
       state.portfolio.description = updatedPortfolio.description
+    },
+    syncTransactionsByAssetID: (state, action: PayloadAction<{ assetId: string, transactions: any[] }>) => {
+      const { assetId, transactions } = action.payload;
+      state.transactions[assetId] = [...state.transactions[assetId], transactions];
     }
   },
   extraReducers: (builder) => {
@@ -51,12 +52,14 @@ export const portfoliosSlice = createSlice({
     (state, { payload }) => {
       state.portfolio = payload.data;
       state.assets = payload.data.assets;
-      state.transactions = payload.data.transactions;
+      payload.data.assets.map((asset: any) => {
+        state.transactions[asset.id] = payload.data.transactions.filter((transaction: any) => transaction.asset_id === asset.id);
+      })
     }
   );
 }
 })
 
-export const { setPortfolio, setAssets, setTransactions, setTotalUnrealizedPNL, removeSymbol, editPortfolio } = portfoliosSlice.actions
+export const { setPortfolio, setAssets, setTotalUnrealizedPNL, removeSymbol, editPortfolio, syncTransactionsByAssetID } = portfoliosSlice.actions
 export default portfoliosSlice.reducer
 

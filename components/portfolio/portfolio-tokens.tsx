@@ -93,7 +93,7 @@ export function PortfolioTokens({ portfolio }: PortfolioTokensProps) {
 
 	useEffect(() => {
 		if (portfolio.assets) {
-			setTokens(portfolio.assets);
+			setTokens([...portfolio.assets].sort((a: Token, b: Token) => b.value - a.value));
 		}
 	}, [portfolio.assets]);
 	

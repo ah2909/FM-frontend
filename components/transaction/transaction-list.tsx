@@ -54,7 +54,7 @@ export function TransactionList({ selectedToken }: TransactionListProps) {
 	>(null);
 
 	const transactions = useSelector((state: any) => state.portfolios.transactions);
-	const transByAsset = transactions.filter((tran: any) => tran.asset_id === selectedToken?.id).reverse();
+	const transByAsset = [...transactions[selectedToken?.id]].reverse();
 
 	const handleDeleteClick = (transactionId: string) => {
 		setTransactionToDelete(transactionId);

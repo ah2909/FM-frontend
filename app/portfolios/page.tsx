@@ -41,7 +41,10 @@ export default function PortfolioPage() {
 							showBackButton={false}
 						>
 							<div className="flex space-x-2">
-								<ImportDataButton portfolio_id={portfolio.id} />
+								<ImportDataButton 
+									portfolio_id={portfolio.id} 
+									assets_array={tokens?.map((token: any) => token.symbol.toUpperCase())} 
+								/>
 								<Button variant="outline">
 									<PlusCircle className="mr-2 h-4 w-4" />
 									<Link href={`/portfolios/edit`}>

@@ -18,9 +18,10 @@ import { useAddTokenToPortfolioMutation } from "@/lib/store/services/portfolio-a
 
 interface ImportDataButtonProps {
   portfolio_id: number
+  assets_array: any[]
 }
 
-export function ImportDataButton({ portfolio_id }: ImportDataButtonProps) {
+export function ImportDataButton({ portfolio_id, assets_array }: ImportDataButtonProps) {
   const [isOpen, setIsOpen] = useState(false)
 
   const [ addTokenToPortfolio ] = useAddTokenToPortfolioMutation()
@@ -59,14 +60,14 @@ export function ImportDataButton({ portfolio_id }: ImportDataButtonProps) {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Import Exchange Data</DialogTitle>
-          <DialogDescription>Select assets from your connected exchanges to add to this portfolio.</DialogDescription>
+          <DialogTitle>Import Assets from Exchanges</DialogTitle>
+          <DialogDescription>Select assets from your connected exchanges to include in this portfolio.</DialogDescription>
         </DialogHeader>
-
-        <div className="py-4">
-          <ExchangeAssetSelector onAssetsSelected={handleAssetsSelected} />
+        <div className="py-2">
+          <ExchangeAssetSelector onAssetsSelected={handleAssetsSelected} setIsOpen={setIsOpen} assets_array={assets_array} />
         </div>
       </DialogContent>
+      
     </Dialog>
   )
 }

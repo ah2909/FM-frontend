@@ -1,15 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { toast } from "sonner"
-import { ChevronRight } from "lucide-react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
-import { 
-  useGetInfoExchangeQuery,
-} from "@/lib/store/services/exchange-api"
+import { useGetInfoExchangeQuery } from "@/lib/store/services/exchange-api"
 import { Loader2 } from "lucide-react"
 
 interface ExchangeAssetSelectorProps {
@@ -53,10 +49,12 @@ export function ExchangeAssetSelector({ onAssetsSelected, setIsOpen, assets_arra
   }
 
   const handleConfirm = () => {
-    if (selectedAssets.length === 0) return;
+    if (selectedAssets.length === 0) return
 
     // Get the full asset objects for selected assets
-    const selectedAssetObjects = account_asset?.data.filter((asset: TokenExchange) => selectedAssets.includes(asset.symbol))
+    const selectedAssetObjects = account_asset?.data.filter((asset: TokenExchange) =>
+      selectedAssets.includes(asset.symbol),
+    )
     setIsLoading(true)
     onAssetsSelected(selectedAssetObjects)
   }
@@ -69,8 +67,8 @@ export function ExchangeAssetSelector({ onAssetsSelected, setIsOpen, assets_arra
         <div className="py-4 text-center text-muted-foreground">No assets found in this exchange.</div>
       ) : (
         <div className="space-y-4">
-          <div className="flex justify-between items-center px-2">
-             <div className="text-sm text-muted-foreground">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center px-2 gap-2">
+            <div className="text-sm text-muted-foreground">
               {selectedAssets.length} of {account_asset.data?.length - assets_array?.length} available assets selected
               {assets_array?.length > 0 && (
                 <span className="block text-xs mt-1">
@@ -79,73 +77,79 @@ export function ExchangeAssetSelector({ onAssetsSelected, setIsOpen, assets_arra
                 </span>
               )}
             </div>
-            <Button variant="outline" size="sm" onClick={handleSelectAll}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSelectAll}
+              className="w-full sm:w-auto text-xs bg-transparent"
+            >
               {selectedAssets.length === account_asset.data?.length - assets_array?.length
                 ? "Deselect All"
                 : "Select All Available"}
             </Button>
           </div>
 
-          <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
+          <div className="space-y-2 max-h-[250px] sm:max-h-[300px] overflow-y-auto pr-2">
             {account_asset?.data.map((asset: TokenExchange, index: number) => (
-              <div 
-                key={index} 
-                className={`flex items-center justify-between p-2 border rounded-md transition-colors 
-                    ${assets_set?.has(asset.symbol)
-                      ? "opacity-60 bg-muted/20" 
-                      : "hover:bg-muted/30"
-                    }`}
+              <div
+                key={index}
+                className={`flex items-center justify-between p-2 sm:p-3 border rounded-md transition-colors 
+                    ${assets_set?.has(asset.symbol) ? "opacity-60 bg-muted/20" : "hover:bg-muted/30"}`}
               >
-                <div className="flex items-center">
+                <div className="flex items-center min-w-0 flex-1">
                   <Checkbox
                     id={asset.symbol}
                     checked={selectedAssets.includes(asset.symbol) || assets_set?.has(asset.symbol)}
                     onCheckedChange={() => handleAssetToggle(asset.symbol)}
                     disabled={assets_set?.has(asset.symbol)}
+                    className="flex-shrink-0"
                   />
-                  <div className="flex items-center ml-3">
-                    <Avatar className="h-8 w-8 mr-2">
-                      <AvatarImage src={asset.img_url} alt={asset.symbol} />
+                  <div className="flex items-center ml-2 sm:ml-3 min-w-0 flex-1">
+                    <Avatar className="h-6 w-6 sm:h-8 sm:w-8 mr-2 flex-shrink-0">
+                      <AvatarImage src={asset.img_url || "/placeholder.svg"} alt={asset.symbol} />
                       <AvatarFallback>{asset.symbol}</AvatarFallback>
                     </Avatar>
-                    <div>
-                      <Label className="font-medium cursor-pointer">
-                        {asset.symbol}
-                      </Label>
-                      <p className="text-sm text-muted-foreground">
+                    <div className="min-w-0 flex-1">
+                      <Label className="font-medium cursor-pointer text-sm truncate block">{asset.symbol}</Label>
+                      <p className="text-xs sm:text-sm text-muted-foreground truncate">
                         {asset.amount.toFixed(4)} {asset.symbol}
                       </p>
                     </div>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="font-semibold text-sm">${asset.value.toFixed(4) ?? Number(asset.amount*asset.price).toFixed(4)}</div>
+                <div className="text-right flex-shrink-0 ml-2">
+                  <div className="font-semibold text-xs sm:text-sm">
+                    ${asset.value.toFixed(4) ?? Number(asset.amount * asset.price).toFixed(4)}
+                  </div>
                 </div>
               </div>
             ))}
           </div>
 
-          <div className="flex justify-end space-x-2 pt-4">
-            <Button variant="outline" onClick={() => {setIsOpen(false); setIsLoading(false);}}>
+          <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2 pt-4">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsOpen(false)
+                setIsLoading(false)
+              }}
+              className="w-full sm:w-auto"
+            >
               Cancel
             </Button>
             {isLoading ? (
-              <Button size="sm" disabled>
-                <Loader2 className="animate-spin" />
+              <Button size="sm" disabled className="w-full sm:w-auto">
+                <Loader2 className="animate-spin mr-2 h-4 w-4" />
                 Please wait
               </Button>
             ) : (
-              <Button 
-                onClick={handleConfirm} 
-                disabled={selectedAssets.length === 0}
-              >
+              <Button onClick={handleConfirm} disabled={selectedAssets.length === 0} className="w-full sm:w-auto">
                 Add {selectedAssets.length} Assets
               </Button>
             )}
           </div>
         </div>
-        )}
+      )}
     </div>
   )
 }
-

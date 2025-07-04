@@ -16,24 +16,24 @@ interface TransactionSyncButtonProps {
   portfolio_id: number
 }
 
-export function TransactionSyncButton({className = "", portfolio_id}: TransactionSyncButtonProps) {
+export function TransactionSyncButton({ className = "", portfolio_id }: TransactionSyncButtonProps) {
   const [syncStatus, setSyncStatus] = useState<SyncStatus>("")
   const [errorMessage, setErrorMessage] = useState("")
-  const [syncTransactions] = useSyncTransactionsMutation();
+  const [syncTransactions] = useSyncTransactionsMutation()
   const syncStatusKey = `sync-transactions-${portfolio_id}`
   const dispatch = useDispatch()
   const assets = useSelector((state: any) => state.portfolios.assets)
-  const hasInitialSync = useRef(false);
+  const hasInitialSync = useRef(false)
 
   //TODO: Change to button sync, avoid duplicate request
   useEffect(() => {
-    const savedStatus = sessionStorage.getItem(syncStatusKey);
+    const savedStatus = sessionStorage.getItem(syncStatusKey)
     if (savedStatus) {
-      setSyncStatus(savedStatus as SyncStatus);
+      setSyncStatus(savedStatus as SyncStatus)
     } else if (!hasInitialSync.current) {
-      hasInitialSync.current = true;
-      startSync();
-      sessionStorage.setItem(syncStatusKey, 'syncing');
+      hasInitialSync.current = true
+      startSync()
+      sessionStorage.setItem(syncStatusKey, "syncing")
     }
   }, [])
 
@@ -43,25 +43,25 @@ export function TransactionSyncButton({className = "", portfolio_id}: Transactio
 
     try {
       const res = await syncTransactions({ portfolio_id }).unwrap()
-      const status = res.data?.status || "error";
+      const status = res.data?.status || "error"
       setSyncStatus(status)
       sessionStorage.setItem(syncStatusKey, status)
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : "Synchronization failed"
       setSyncStatus("error")
-      sessionStorage.setItem(syncStatusKey, 'error')
+      sessionStorage.setItem(syncStatusKey, "error")
       setErrorMessage(errorMsg)
     }
   }
 
   const getExchangeId = useCallback((exchange: string) => {
     const exchangeMap: Record<string, number> = {
-      "Binance": 1,
-      "OKX": 2,
-      "Bybit": 3
-    };
-    return exchangeMap[exchange] ?? null;
-  }, []);
+      Binance: 1,
+      OKX: 2,
+      Bybit: 3,
+    }
+    return exchangeMap[exchange] ?? null
+  }, [])
 
   // Memoize sync content
   const syncContent = useMemo(() => {
@@ -80,32 +80,36 @@ export function TransactionSyncButton({className = "", portfolio_id}: Transactio
         icon: <XCircle className="h-4 w-4" />,
         text: "Sync failed",
         className: "bg-red-100 text-red-700 border border-red-200",
-      }
-    };
-    return content[syncStatus as keyof typeof content] || content.syncing;
-  }, [syncStatus]);
+      },
+    }
+    return content[syncStatus as keyof typeof content] || content.syncing
+  }, [syncStatus])
 
-  useWebSocketEvent('sync-transactions', '', (data: any) => {
+  useWebSocketEvent("sync-transactions", "", (data: any) => {
     setSyncStatus(data?.status)
     sessionStorage.setItem(syncStatusKey, data?.status || "error")
-    
-    if(data?.status === "success" && data?.data.length > 0) {
+
+    if (data?.status === "success" && data?.data.length > 0) {
       data.data.forEach((transaction: any) => {
-        const asset = assets.find((asset: any) => asset.symbol.toUpperCase() + '/USDT' === transaction.symbol)
+        const asset = assets.find((asset: any) => asset.symbol.toUpperCase() + "/USDT" === transaction.symbol)
         console.log(asset)
         if (asset) {
-          dispatch(syncTransactionsByAssetID({
-            assetId: asset.id,
-            transactions: [{
-              portfolio_id: portfolio_id,
-              asset_id: asset.id,
-              exchange_id: getExchangeId(transaction.exchange),
-              quantity: transaction.amount,
-              price: transaction.price,
-              type: transaction.side.toUpperCase(),
-              transact_date: new Date(transaction.timestamp).toISOString().slice(0, 19).replace('T', ' ')
-            }]
-          }))
+          dispatch(
+            syncTransactionsByAssetID({
+              assetId: asset.id,
+              transactions: [
+                {
+                  portfolio_id: portfolio_id,
+                  asset_id: asset.id,
+                  exchange_id: getExchangeId(transaction.exchange),
+                  quantity: transaction.amount,
+                  price: transaction.price,
+                  type: transaction.side.toUpperCase(),
+                  transact_date: new Date(transaction.timestamp).toISOString().slice(0, 19).replace("T", " "),
+                },
+              ],
+            }),
+          )
         }
       })
     }
@@ -165,29 +169,30 @@ export function TransactionSyncButton({className = "", portfolio_id}: Transactio
 
       {syncStatus !== "error" && (
         <div className={`button-transition visible`}>
-            <Button
-              disabled={true}
-              className={`${syncContent?.className} min-w-[160px] transition-all duration-200`}
-            >
-                <div className={`flex items-center gap-2 ${syncStatus === "success" ? "success-pulse" : ""}`}>
-                    {syncContent?.icon}
-                    {syncContent?.text}
-                </div>
-            </Button>
+          <Button
+            disabled={true}
+            className={`${syncContent?.className} min-w-[120px] sm:min-w-[160px] transition-all duration-200 text-xs sm:text-sm`}
+          >
+            <div className={`flex items-center gap-1 sm:gap-2 ${syncStatus === "success" ? "success-pulse" : ""}`}>
+              {syncContent?.icon}
+              <span className="hidden sm:inline">{syncContent?.text}</span>
+              <span className="sm:hidden">{syncContent?.text.split(" ")[0]}</span>
+            </div>
+          </Button>
         </div>
       )}
-      
+
       {/* Error Message with Retry Options */}
       {syncStatus === "error" && (
         <div className={`alert-transition mt-4 visible`}>
           <Alert className="border-red-200 bg-red-50">
             <AlertTriangle className="h-4 w-4 text-red-600" />
             <AlertDescription className="text-red-800">
-              <div className="mb-3">
+              <div className="mb-3 text-sm">
                 <strong>Synchronization failed:</strong> {errorMessage}
               </div>
-              <div className="flex gap-2">
-                <Button size="sm" onClick={startSync} className="bg-red-600 hover:bg-red-700 text-white">
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button size="sm" onClick={startSync} className="bg-red-600 hover:bg-red-700 text-white text-xs">
                   <RefreshCw className="h-3 w-3 mr-1" />
                   Retry Sync
                 </Button>
@@ -195,7 +200,7 @@ export function TransactionSyncButton({className = "", portfolio_id}: Transactio
                   size="sm"
                   variant="outline"
                   onClick={startSync}
-                  className="border-red-300 text-red-700 hover:bg-red-50"
+                  className="border-red-300 text-red-700 hover:bg-red-50 text-xs bg-transparent"
                 >
                   Cancel
                 </Button>

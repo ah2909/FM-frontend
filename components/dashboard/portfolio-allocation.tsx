@@ -69,10 +69,10 @@ export function PortfolioAllocation({ tokens, totalValue }: PortfolioAllocationP
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Portfolio Allocation</CardTitle>
+        <CardTitle className="text-lg sm:text-xl">Portfolio Allocation</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-[300px]">
+        <div className="h-[250px] sm:h-[300px]">
           <Doughnut data={data} options={options} />
         </div>
       </CardContent>

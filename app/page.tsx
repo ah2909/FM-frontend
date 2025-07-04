@@ -68,22 +68,30 @@ export default function DashboardPage() {
           />
 
           {/* Main Content Grid */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+          <div className="grid gap-4 grid-cols-1 lg:grid-cols-7">
             {/* Portfolio Chart - Takes up more space */}
-            <Card className="col-span-4">
+            <Card className="lg:col-span-4">
               <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle>Portfolio Performance</CardTitle>
-                  <Tabs defaultValue={timeframe} onValueChange={setTimeframe} className="w-auto">
-                    <TabsList className="grid grid-cols-3">
-                      <TabsTrigger value="1w">1W</TabsTrigger>
-                      <TabsTrigger value="1m">1M</TabsTrigger>
-                      <TabsTrigger value="1y">1Y</TabsTrigger>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <CardTitle className="text-lg sm:text-xl">Portfolio Performance</CardTitle>
+                  <Tabs defaultValue={timeframe} onValueChange={setTimeframe} className="w-full sm:w-auto">
+                    <TabsList className="grid grid-cols-3 w-full sm:w-auto">
+                      <TabsTrigger value="1w" className="text-xs sm:text-sm">
+                        1W
+                      </TabsTrigger>
+                      <TabsTrigger value="1m" className="text-xs sm:text-sm">
+                        1M
+                      </TabsTrigger>
+                      <TabsTrigger value="1y" className="text-xs sm:text-sm">
+                        1Y
+                      </TabsTrigger>
                     </TabsList>
                   </Tabs>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-3xl font-bold">${Number(portfolio?.totalValue || 0).toLocaleString()}</span>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                  <span className="text-2xl sm:text-3xl font-bold">
+                    ${Number(portfolio?.totalValue || 0).toLocaleString()}
+                  </span>
                   {balanceData?.data?.[0]?.balance
                     ? (() => {
                         const prev = balanceData.data[0].balance
@@ -128,31 +136,35 @@ export default function DashboardPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="h-[300px] w-full">
+                <div className="h-[250px] sm:h-[300px] w-full">
                   <PortfolioChart timeframe={timeframe} data={balanceData?.data} />
                 </div>
               </CardContent>
             </Card>
 
             {/* Portfolio Allocation */}
-            <div className="col-span-3">
+            <div className="lg:col-span-3">
               <PortfolioAllocation tokens={tokens} totalValue={portfolio?.totalValue || 0} />
             </div>
           </div>
 
           {/* Second Row */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+          <div className="grid gap-4 grid-cols-1 lg:grid-cols-7">
             {/* Assets Table */}
-            <Card className="col-span-4">
+            <Card className="lg:col-span-4">
               <CardHeader>
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                  <CardTitle>Top Holdings</CardTitle>
-                  <div className="flex w-full md:w-auto gap-2">
-                    <div className="relative w-full md:w-auto">
+                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                  <CardTitle className="text-lg sm:text-xl">Top Holdings</CardTitle>
+                  <div className="flex w-full lg:w-auto gap-2">
+                    <div className="relative flex-1 lg:flex-none">
                       <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                      <Input type="search" placeholder="Search assets..." className="pl-8 w-full md:w-[240px]" />
+                      <Input
+                        type="search"
+                        placeholder="Search assets..."
+                        className="pl-8 w-full lg:w-[240px] text-sm"
+                      />
                     </div>
-                    <Button variant="outline" className="flex items-center gap-1 bg-transparent">
+                    <Button variant="outline" className="flex items-center gap-1 bg-transparent text-sm px-3">
                       Filter
                       <ChevronRight className="h-4 w-4" />
                     </Button>
@@ -165,14 +177,14 @@ export default function DashboardPage() {
             </Card>
 
             {/* Right Column */}
-            <div className="col-span-3 space-y-4">
+            <div className="lg:col-span-3 space-y-4">
               {/* Market Overview */}
               <MarketOverview />
 
               {/* Recent Transactions */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Recent Activity</CardTitle>
+                  <CardTitle className="text-lg sm:text-xl">Recent Activity</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <RecentTransactions />

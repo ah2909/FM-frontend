@@ -38,29 +38,37 @@ export function SiteHeader() {
   const breadcrumbs = getBreadcrumbs()
 
   return (
-    <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-      <div className="flex items-center gap-2 px-4">
+    <header className="flex h-14 sm:h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 px-2 sm:px-0">
+      <div className="flex items-center gap-2 px-2 sm:px-4 w-full">
         <SidebarTrigger className="ml-1" />
         <Separator orientation="vertical" className="mr-2 h-4" />
-        <Breadcrumb>
+        <Breadcrumb className="flex-1 min-w-0">
           <BreadcrumbList>
             {breadcrumbs.map((breadcrumb, index) => (
               <div key={breadcrumb.label} className="flex items-center">
-                <BreadcrumbItem className="hidden md:block">
+                <BreadcrumbItem className="hidden sm:block">
                   {breadcrumb.href ? (
-                    <BreadcrumbLink href={breadcrumb.href}>{breadcrumb.label}</BreadcrumbLink>
+                    <BreadcrumbLink href={breadcrumb.href} className="text-sm">
+                      {breadcrumb.label}
+                    </BreadcrumbLink>
                   ) : (
-                    <BreadcrumbPage>{breadcrumb.label}</BreadcrumbPage>
+                    <BreadcrumbPage className="text-sm">{breadcrumb.label}</BreadcrumbPage>
                   )}
                 </BreadcrumbItem>
-                {index < breadcrumbs.length - 1 && <BreadcrumbSeparator className="hidden md:block" />}
+                {/* Mobile: only show current page */}
+                {index === breadcrumbs.length - 1 && (
+                  <BreadcrumbItem className="sm:hidden">
+                    <BreadcrumbPage className="text-sm truncate">{breadcrumb.label}</BreadcrumbPage>
+                  </BreadcrumbItem>
+                )}
+                {index < breadcrumbs.length - 1 && <BreadcrumbSeparator className="hidden sm:block" />}
               </div>
             ))}
           </BreadcrumbList>
         </Breadcrumb>
-      </div>
-      <div className="ml-auto px-3">
-        <ModeToggle />
+        <div className="ml-auto px-1 sm:px-3">
+          <ModeToggle />
+        </div>
       </div>
     </header>
   )

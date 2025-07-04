@@ -13,7 +13,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { ExchangeAssetSelector } from "./exchange-asset-selector"
-import { TokenExchange } from "./exchange-asset-selector"
+import type { TokenExchange } from "./exchange-asset-selector"
 import { useAddTokenToPortfolioMutation } from "@/lib/store/services/portfolio-api"
 
 interface ImportDataButtonProps {
@@ -24,25 +24,23 @@ interface ImportDataButtonProps {
 export function ImportDataButton({ portfolio_id, assets_array }: ImportDataButtonProps) {
   const [isOpen, setIsOpen] = useState(false)
 
-  const [ addTokenToPortfolio ] = useAddTokenToPortfolioMutation()
+  const [addTokenToPortfolio] = useAddTokenToPortfolioMutation()
 
   const handleAssetsSelected = async (assets: TokenExchange[]) => {
     if (assets.length === 0) return
     try {
-      const response = await addTokenToPortfolio({ 
-        portfolio_id: portfolio_id, 
+      const response = await addTokenToPortfolio({
+        portfolio_id: portfolio_id,
         token: assets.map((asset) => ({
-          symbol: asset.symbol, 
+          symbol: asset.symbol,
           amount: asset.amount,
           exchange: asset.exchanges,
-        })) 
+        })),
       })
       if (response.data?.success) {
         toast.success(`${assets.length} assets added to portfolio`)
       } else {
-        toast.error( 
-          "Failed to add assets to portfolio."		
-        );
+        toast.error("Failed to add assets to portfolio.")
       }
       setIsOpen(false)
     } catch (error) {
@@ -53,21 +51,27 @@ export function ImportDataButton({ portfolio_id, assets_array }: ImportDataButto
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="default">
+        <Button variant="default" className="w-full sm:w-auto text-sm">
           <Download className="mr-2 h-4 w-4" />
-          Import Data
+          <span className="hidden sm:inline">Import Data</span>
+          <span className="sm:hidden">Import</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="w-[95vw] max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Import Assets from Exchanges</DialogTitle>
-          <DialogDescription>Select assets from your connected exchanges to include in this portfolio.</DialogDescription>
+          <DialogTitle className="text-lg sm:text-xl">Import Assets from Exchanges</DialogTitle>
+          <DialogDescription className="text-sm">
+            Select assets from your connected exchanges to include in this portfolio.
+          </DialogDescription>
         </DialogHeader>
         <div className="py-2">
-          <ExchangeAssetSelector onAssetsSelected={handleAssetsSelected} setIsOpen={setIsOpen} assets_array={assets_array} />
+          <ExchangeAssetSelector
+            onAssetsSelected={handleAssetsSelected}
+            setIsOpen={setIsOpen}
+            assets_array={assets_array}
+          />
         </div>
       </DialogContent>
-      
     </Dialog>
   )
 }

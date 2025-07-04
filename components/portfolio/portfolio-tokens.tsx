@@ -1,325 +1,277 @@
-"use client";
+"use client"
 
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import { MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { useState, useMemo, useCallback } from "react"
+import Link from "next/link"
+import { MoreHorizontal, Plus, Trash2 } from "lucide-react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
-import { Skeleton } from "../ui/skeleton";
-import { toast } from "sonner";
-import {
-	useRemoveTokenFromPortfolioMutation,
-} from "@/lib/store/services/portfolio-api";
-import { useDispatch } from "react-redux";
-import { setTotalUnrealizedPNL } from "@/lib/store/features/portfolios-slice";
-import { useWebSocketEvent } from "@/hooks/useWebSocketEvent";
-import { removeSymbol } from "@/lib/store/features/portfolios-slice";
-import { useSelector } from "react-redux";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { toast } from "sonner"
+import { useRemoveTokenFromPortfolioMutation } from "@/lib/store/services/portfolio-api"
+import { useDispatch } from "react-redux"
+import { useWebSocketEvent } from "@/hooks/useWebSocketEvent"
+import { removeSymbol } from "@/lib/store/features/portfolios-slice"
+import { useSelector } from "react-redux"
+import { TokenMobileList } from "./token-mobile-list"
 
 interface Token {
-	id: number;
-	symbol: string;
-	name: string;
-	price: number;
-	amount: number;
-	value: number;
-	img_url: string;
-	avg_price: number;
+  id: number
+  symbol: string
+  name: string
+  price: number
+  amount: number
+  value: number
+  img_url: string
+  avg_price: number
 }
+
 interface PortfolioTokensProps {
-	portfolio: any;
+  portfolio: any
 }
 
 export function PortfolioTokens({ portfolio }: PortfolioTokensProps) {
-	const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-	const [tokenToDelete, setTokenToDelete] = useState<string | null>(null);
-	// const [tokens, setTokens] = useState(portfolio.assets || []);
-	const tokens = useSelector((state: any) => state.portfolios.assets ?? []);
-	const [removeTokenFromPortfolio] = useRemoveTokenFromPortfolioMutation();
-	const dispatch = useDispatch();
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false)
+  const [tokenToDelete, setTokenToDelete] = useState<string | null>(null)
+  const tokens = useSelector((state: any) => state.portfolios.assets ?? [])
+  const [removeTokenFromPortfolio] = useRemoveTokenFromPortfolioMutation()
+  const dispatch = useDispatch()
+  const [priceData, setPriceData] = useState<Record<string, number>>({})
 
-	const stream =
-		"/stream?streams=" +
-		tokens
-			.map((token: Token) => token.symbol.toLowerCase() + "usdt@ticker")
-			.join("/");
-	const [priceData, setPriceData] = useState<any>({});
+  // Memoize the WebSocket stream to prevent recreation
+  const stream = useMemo(() => {
+    if (tokens.length === 0) return ""
+    return "/stream?streams=" + tokens.map((token: Token) => token.symbol.toLowerCase() + "usdt@ticker").join("/")
+  }, [tokens])
 
-	if (tokens.length > 0) {
-		useWebSocketEvent("ticker", stream, (data: any) => {
-			let token = tokens.find(
-				(token: Token) => token.symbol.toUpperCase() + "USDT" === data.s
-			);
-			if (token) {
-				setPriceData((prev: any) => ({
-					...prev,
-					[token.symbol]: data.c,
-				}));
-			}
-		});
-	} else {
-		// Handle error Error: Rendered more hooks than during the previous render
-		useWebSocketEvent("", stream, () => {});
-	}
+  // Memoize the event handler to prevent recreation
+  const eventHandler = useCallback(
+    (data: any) => {
+      const token = tokens.find((token: Token) => token.symbol.toUpperCase() + "USDT" === data.s)
+      if (token) {
+        setPriceData((prev) => ({
+          ...prev,
+          [token.symbol]: Number.parseFloat(data.c),
+        }))
+      }
+    },
+    [tokens],
+  )
 
-	// useEffect(() => {
-	// 	if (portfolio.assets) {
-	// 		setTokens([...portfolio.assets].sort((a: Token, b: Token) => b.value - a.value));
-	// 	}
-	// }, [portfolio.assets]);
-	
-	const handleDeleteClick = (token: string) => {
-		setTokenToDelete(token);
-		setOpenDeleteDialog(true);
-	};
+  useWebSocketEvent("ticker", stream, eventHandler)
 
-	const handleDeleteConfirm = async () => {
-		if (tokenToDelete) {
-			// Here you would call a server action to delete the token
-			await removeTokenFromPortfolio({
-				portfolio_id: portfolio.id,
-				token: tokenToDelete,
-			});
-			dispatch(removeSymbol(tokenToDelete));
-			toast.success("The token has been removed from your portfolio.");
-			setOpenDeleteDialog(false);
-			setTokenToDelete(null);
-		}
-	};
+  // Memoize the delete handler
+  const handleDeleteClick = useCallback((tokenSymbol: string) => {
+    setTokenToDelete(tokenSymbol)
+    setOpenDeleteDialog(true)
+  }, [])
 
-	return (
-		<Card>
-			<CardHeader className="flex flex-row items-center justify-between">
-				<div>
-					<CardTitle>Portfolio Tokens</CardTitle>
-					<CardDescription>
-						Manage your tokens in this portfolio
-					</CardDescription>
-				</div>
-				<Link href={`/portfolios/add-token`}>
-					<Button size="sm">
-						<Plus className="mr-2 h-4 w-4" />
-						Add Token
-					</Button>
-				</Link>
-			</CardHeader>
-			<CardContent>
-				<div className="space-y-4">
-					{tokens.length === 0 ? (
-						<div className="text-center py-4">
-							<p className="text-muted-foreground">
-								No tokens in this portfolio yet.
-							</p>
-						</div>
-					) : (
-						<Table>
-							<TableHeader>
-								<TableRow>
-									<TableHead>Token</TableHead>
-									<TableHead className="text-center">
-										Portfolio (%)
-									</TableHead>
-									<TableHead className="text-center">
-										Price
-									</TableHead>
-									<TableHead className="text-center">
-										Value
-									</TableHead>
-									<TableHead className="text-center">
-										Unrealize PnL
-									</TableHead>
-									<TableHead className="text-right">
-										Actions
-									</TableHead>
-								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{[...tokens].sort((a: Token, b: Token) => b.value - a.value).map((token: Token) => {
-									const unrealizedPnL = priceData[token.symbol]
-										? Number(priceData[token.symbol] * token.amount - token.avg_price * token.amount).toFixed(2)
-										: Number(token.price * token.amount - token.avg_price * token.amount).toFixed(2);
-									const allocation = Number(((token.price * token.amount) / portfolio.totalValue) *100).toFixed(0);
-									return (
-										<TableRow key={token.id}>
-											<TableCell>
-												<div className="flex items-center">
-													<Avatar className="h-9 w-9">
-														<AvatarImage
-															src={token.img_url}
-															alt={token.symbol}
-														/>
-														<AvatarFallback>
-															{token.symbol.toUpperCase()}
-														</AvatarFallback>
-													</Avatar>
-													<div className="ml-4">
-														<p className="font-medium">
-															{token.name}
-														</p>
-														<p className="text-sm text-muted-foreground">
-															{token.symbol.toUpperCase()}
-														</p>
-													</div>
-												</div>
-											</TableCell>
-											<TableCell className="text-center">
-												{/* Portfolio allocation percentage could be calculated here */}
-												<div className="flex items-center gap-2">
-													{!isNaN(Number(allocation)) ? (<span>{allocation}%</span>) : <Skeleton className="h-4 w-4" />}
-													<div
-														className="w-24 h-2 rounded-full overflow-hidden"
-														style={{
-															backgroundColor:
-																"hsl(var(--muted))",
-														}}
-													>
-														<div
-															className="h-full rounded-full"
-															style={{
-																width: `${!isNaN(Number(allocation)) ? allocation : 0}%`,
-																backgroundColor:
-																	"hsl(var(--primary))",
-															}}
-														></div>
-													</div>
-												</div>
-											</TableCell>
-											<TableCell className="text-center">
-												<div className="font-medium">
-													${priceData[token.symbol] ? (
-														Number(priceData[token.symbol])
-													) : (
-														Number(token.price)
-													)}
-												</div>
-											</TableCell>
-											<TableCell className="text-center">
-												<div>
-													<div className="font-medium">
-														${priceData[token.symbol] ? (
-															Number(priceData[token.symbol] * token.amount)?.toFixed(2)
-														) : (
-															Number(token.price * token.amount)?.toFixed(2)
-														)}
-													</div>
-													<p className="text-sm text-muted-foreground">
-														{token.amount}{" "}
-														{token.symbol.toUpperCase()}
-													</p>
-												</div>
-											</TableCell>
-											<TableCell className="text-center">
-												<div
-													className={`font-medium ${unrealizedPnL && Number(unrealizedPnL) >0
-															? "text-green-700"
-															: "text-red-700"
-													}`}
-												>
-													{unrealizedPnL ? (
-														`$${unrealizedPnL}`
-													) : (
-														<Skeleton className="h-4 w-16 mx-auto" />
-													)}
-												</div>
-											</TableCell>
-											<TableCell className="text-right">
-												<DropdownMenu>
-													<DropdownMenuTrigger
-														asChild
-													>
-														<Button
-															variant="ghost"
-															size="icon"
-														>
-															<MoreHorizontal className="h-4 w-4" />
-															<span className="sr-only">
-																Open menu
-															</span>
-														</Button>
-													</DropdownMenuTrigger>
-													<DropdownMenuContent align="end">
-														<DropdownMenuItem
-															asChild
-														>
-															<Link href={`/transactions?id=${token.id}`}>
-																<Plus className="mr-2 h-4 w-4" />
-																View Transaction
-															</Link>
-														</DropdownMenuItem>
-														<DropdownMenuItem
-															onClick={() =>
-																handleDeleteClick(
-																	token.symbol
-																)
-															}
-															className="text-destructive"
-														>
-															<Trash2 className="mr-2 h-4 w-4" />
-															Remove Token
-														</DropdownMenuItem>
-													</DropdownMenuContent>
-												</DropdownMenu>
-											</TableCell>
-										</TableRow>
-									);
-								})}
-							</TableBody>
-						</Table>
-					)}
-				</div>
-			</CardContent>
+  const handleDeleteConfirm = useCallback(async () => {
+    if (tokenToDelete) {
+      try {
+        await removeTokenFromPortfolio({
+          portfolio_id: portfolio.id,
+          token: tokenToDelete,
+        })
+        dispatch(removeSymbol(tokenToDelete))
+        toast.success("The token has been removed from your portfolio.")
+      } catch (error) {
+        toast.error("Failed to remove token from portfolio.")
+      } finally {
+        setOpenDeleteDialog(false)
+        setTokenToDelete(null)
+      }
+    }
+  }, [tokenToDelete, removeTokenFromPortfolio, portfolio.id, dispatch])
 
-			<AlertDialog
-				open={openDeleteDialog}
-				onOpenChange={setOpenDeleteDialog}
-			>
-				<AlertDialogContent>
-					<AlertDialogHeader>
-						<AlertDialogTitle>Are you sure?</AlertDialogTitle>
-						<AlertDialogDescription>
-							This will remove the token from your portfolio. This
-							action cannot be undone.
-						</AlertDialogDescription>
-					</AlertDialogHeader>
-					<AlertDialogFooter>
-						<AlertDialogCancel>Cancel</AlertDialogCancel>
-						<AlertDialogAction onClick={handleDeleteConfirm}>
-							Remove
-						</AlertDialogAction>
-					</AlertDialogFooter>
-				</AlertDialogContent>
-			</AlertDialog>
-		</Card>
-	);
+  // Memoize sorted tokens for desktop table
+  const sortedTokensForTable = useMemo(() => {
+    return [...tokens].sort((a: Token, b: Token) => {
+      const aValue = (priceData[a.symbol] || a.price) * a.amount
+      const bValue = (priceData[b.symbol] || b.price) * b.amount
+      return bValue - aValue
+    })
+  }, [tokens, priceData])
+
+  if (tokens.length === 0) {
+    return (
+      <Card>
+        <CardHeader className="pb-4">
+          <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+            <div>
+              <CardTitle className="text-lg sm:text-xl">Portfolio Tokens</CardTitle>
+              <CardDescription className="text-sm">Manage your tokens in this portfolio</CardDescription>
+            </div>
+            <Link href={`/portfolios/add-token`}>
+              <Button size="sm" className="w-full sm:w-auto">
+                <Plus className="mr-2 h-4 w-4" />
+                Add Token
+              </Button>
+            </Link>
+          </div>
+        </CardHeader>
+        <CardContent className="px-3 sm:px-6">
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">No tokens in this portfolio yet.</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  return (
+    <Card>
+      <CardHeader className="pb-4">
+        <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+          <div>
+            <CardTitle className="text-lg sm:text-xl">Portfolio Tokens</CardTitle>
+            <CardDescription className="text-sm">
+              {tokens.length} token{tokens.length !== 1 ? "s" : ""} in this portfolio
+            </CardDescription>
+          </div>
+          <Link href={`/portfolios/add-token`}>
+            <Button size="sm" className="w-full sm:w-auto">
+              <Plus className="mr-2 h-4 w-4" />
+              Add Token
+            </Button>
+          </Link>
+        </div>
+      </CardHeader>
+      <CardContent className="px-3 sm:px-6">
+        {/* Mobile View - Optimized Card Layout */}
+        <div className="block sm:hidden">
+          <TokenMobileList
+            tokens={tokens}
+            portfolioTotalValue={portfolio.totalValue}
+            priceData={priceData}
+            onDeleteClick={handleDeleteClick}
+          />
+        </div>
+
+        {/* Desktop View - Table Layout */}
+        <div className="hidden sm:block overflow-x-auto">
+          <Table className="min-w-full">
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-xs sm:text-sm">Token</TableHead>
+                <TableHead className="text-center text-xs sm:text-sm">Portfolio (%)</TableHead>
+                <TableHead className="text-center text-xs sm:text-sm">Price</TableHead>
+                <TableHead className="text-center text-xs sm:text-sm">Value</TableHead>
+                <TableHead className="text-center text-xs sm:text-sm">Unrealized P&L</TableHead>
+                <TableHead className="text-right text-xs sm:text-sm">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sortedTokensForTable.map((token: Token) => {
+                const currentPrice = priceData[token.symbol] || token.price
+                const currentValue = currentPrice * token.amount
+                const unrealizedPnL = Number((currentValue - token.avg_price * token.amount).toFixed(2))
+                const allocation = Number(((currentValue / portfolio.totalValue) * 100).toFixed(0))
+
+                return (
+                  <TableRow key={token.id} className="hover:bg-muted/30 transition-colors">
+                    <TableCell>
+                      <div className="flex items-center min-w-0">
+                        <Avatar className="h-8 w-8 sm:h-9 sm:w-9 flex-shrink-0">
+                          <AvatarImage src={token.img_url || "/placeholder.svg"} alt={token.symbol} />
+                          <AvatarFallback>{token.symbol.toUpperCase().slice(0, 2)}</AvatarFallback>
+                        </Avatar>
+                        <div className="ml-3 sm:ml-4 min-w-0">
+                          <p className="font-medium text-sm sm:text-base truncate">{token.name}</p>
+                          <p className="text-xs sm:text-sm text-muted-foreground">{token.symbol.toUpperCase()}</p>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <div className="flex items-center gap-2 justify-center">
+                        <span className="text-sm font-medium">{allocation}%</span>
+                        <div className="w-16 lg:w-24 h-2 rounded-full overflow-hidden bg-muted">
+                          <div
+                            className="h-full rounded-full bg-primary transition-all duration-300"
+                            style={{ width: `${Math.min(allocation, 100)}%` }}
+                          />
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <div className="font-medium">${Number(currentPrice).toFixed(2)}</div>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <div>
+                        <div className="font-medium text-sm sm:text-base">${currentValue.toFixed(2)}</div>
+                        <p className="text-xs text-muted-foreground">
+                          {token.amount.toFixed(4)} {token.symbol.toUpperCase()}
+                        </p>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <div className={`font-medium text-sm ${unrealizedPnL >= 0 ? "text-green-600" : "text-red-600"}`}>
+                        ${Math.abs(unrealizedPnL).toFixed(2)}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Open menu for {token.name}</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem asChild>
+                            <Link href={`/transactions?id=${token.id}`}>
+                              <Plus className="mr-2 h-4 w-4" />
+                              View Transactions
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleDeleteClick(token.symbol)}
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Remove Token
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
+            </TableBody>
+          </Table>
+        </div>
+      </CardContent>
+
+      <AlertDialog open={openDeleteDialog} onOpenChange={setOpenDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove Token?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will remove "{tokenToDelete}" from your portfolio. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Remove Token
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </Card>
+  )
 }

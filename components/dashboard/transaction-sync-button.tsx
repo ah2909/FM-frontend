@@ -91,7 +91,7 @@ export function TransactionSyncButton({className = "", portfolio_id}: Transactio
     
     if(data?.status === "success" && data?.data.length > 0) {
       data.data.forEach((transaction: any) => {
-        const asset = assets.find((asset: any) => asset.symbol.toUpperCase() + '/USDT' === transaction.asset_id)
+        const asset = assets.find((asset: any) => asset.symbol.toUpperCase() + '/USDT' === transaction.symbol)
         console.log(asset)
         if (asset) {
           dispatch(syncTransactionsByAssetID({

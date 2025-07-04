@@ -68,14 +68,14 @@ export function AssetTable({ tokens, totalValue }: AssetTableProps) {
 						<TableHead>PORTFOLIO (%)</TableHead>
 						<TableHead>HOLDINGS</TableHead>
 						<TableHead>PRICE (24H)</TableHead>
-						<TableHead>MARKET CAP</TableHead>
-						<TableHead>LAST 24H</TableHead>
+						{/* <TableHead>MARKET CAP</TableHead>
+						<TableHead>LAST 24H</TableHead> */}
 						<TableHead className="w-12">ACTION</TableHead>
 					</TableRow>
 				</TableHeader>
 				<TableBody>
 					{top5Tokens.map((token: Token, index: number) => {
-						const currentPrice = priceData[token.symbol];
+						const currentPrice = priceData[token.symbol] ?? token.price;
 						const value = currentPrice
 							? Number(currentPrice * token.amount)
 							: 0;
@@ -125,7 +125,7 @@ export function AssetTable({ tokens, totalValue }: AssetTableProps) {
 								</TableCell>
 								<TableCell>
 									<div>
-										{token.amount}{" "}
+										{token.amount.toFixed(4)}{" "}
 										{token.symbol.toUpperCase()}
 									</div>
 									<div className="text-xs text-muted-foreground">
@@ -142,14 +142,6 @@ export function AssetTable({ tokens, totalValue }: AssetTableProps) {
 									) : (
 										<Skeleton className="h-4 w-16" />
 									)}
-								</TableCell>
-								<TableCell>
-									{/* Market cap could be added here if available in the data */}
-									--
-								</TableCell>
-								<TableCell>
-									{/* 24h change could be added if available in websocket data */}
-									--
 								</TableCell>
 								<TableCell>
 									<Button variant="ghost" size="icon">

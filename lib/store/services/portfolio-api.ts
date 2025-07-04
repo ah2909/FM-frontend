@@ -85,6 +85,11 @@ export const portfolioApi = baseApi.injectEndpoints({
 				method: "POST",
 				body: data,
 			}),
+		}),
+		getBalanceData: builder.query<Response, void>({
+			query: () => ({
+				url: `/portfolio/balance`,
+			}),
 		})
 	}),
 });
@@ -98,4 +103,5 @@ export const {
 	useAddTokenToPortfolioManualMutation,
 	useRemoveTokenFromPortfolioMutation,
 	useSyncTransactionsMutation,
+	useGetBalanceDataQuery,
 } = portfolioApi;

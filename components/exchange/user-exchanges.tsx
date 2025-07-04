@@ -35,10 +35,12 @@ import {
   Exchange,
 } from "@/lib/store/services/exchange-api";
 import Image from "next/image"
+import { PassThrough } from "stream"
 
 const formSchema = z.object({
 	api_key: z.string().min(1, { message: "API Key is required" }),
 	secret_key: z.string().min(1, { message: "API Secret is required" }),
+  password: z.string().optional(),
 	cex_name: z.string().optional()
 });
 
@@ -195,18 +197,34 @@ export function UserExchanges() {
                                         <FormLabel>API Secret</FormLabel>
                                         <FormControl>
                                             <Input
+                                                {...field}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="password"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>API Secret</FormLabel>
+                                        <FormControl>
+                                            <Input
                                                 type="password"
                                                 {...field}
                                             />
                                         </FormControl>
                                         <FormDescription>
-                                            Your exchange API secret for
-                                            read-only access
+                                            Only required for some exchanges, make sure to check your exchange's API documentation.
                                         </FormDescription>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
+
 
                             <p className="text-sm text-muted-foreground">
                                 Your API keys are encrypted and stored

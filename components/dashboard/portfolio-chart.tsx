@@ -18,67 +18,149 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 
 interface PortfolioChartProps {
   timeframe: string
+  data: {
+    balance: number,
+    date: string
+  }[]
 }
 
-export function PortfolioChart({ timeframe }: PortfolioChartProps) {
+export function PortfolioChart({ timeframe, data }: PortfolioChartProps) {
   const [chartData, setChartData] = useState<any>(null)
 
+  const today = new Date();
+  const formatDate = (date: Date) => date.toISOString().split('T')[0];
+
+  const getLastNDays = (n: number) => {
+    const labels: string[] = [];
+    const dateStrings: string[] = [];
+    for (let i = n - 1; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      labels.push(d.toLocaleDateString("en-US", { weekday: "short" }));
+      dateStrings.push(formatDate(d));
+    }
+    return { labels, dateStrings };
+  };
+
+  const getLastNDaysForMonth = (n: number) => {
+    const labels: string[] = [];
+    const dateStrings: string[] = [];
+    for (let i = n - 1; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      labels.push(d.toLocaleDateString("en-US", { day: "numeric", month: "short" }));
+      dateStrings.push(formatDate(d));
+    }
+    return { labels, dateStrings };
+  };
+
+  // Helper: aggregate daily balances
+  const aggregateDaily = (dateStrings: string[]) => {
+    const map = new Map<string, number>();
+    data.forEach(item => {
+      const d = formatDate(new Date(item.date));
+      map.set(d, item.balance);
+    });
+    return dateStrings.map(ds => map.get(ds) || 0);
+  };
+
+  // Helper: get last N months' labels and keys
+  const getLastNMonths = (n: number) => {
+    const labels: string[] = [];
+    const keys: string[] = [];
+    const d = new Date(today);
+    d.setDate(1); // Start at first of this month
+    for (let i = n - 1; i >= 0; i--) {
+      const month = new Date(d.getFullYear(), d.getMonth() - i, 1);
+      labels.push(month.toLocaleDateString("en-US", { month: "short", year: "2-digit" }));
+      keys.push(`${month.getFullYear()}-${month.getMonth()}`);
+    }
+    return { labels, keys };
+  };
+
+  // Helper: aggregate monthly averages
+  const aggregateMonthly = (keys: string[]) => {
+    const stats: Record<string, { sum: number; count: number }> = {};
+    data.forEach(item => {
+      const d = new Date(item.date);
+      const key = `${d.getFullYear()}-${d.getMonth()}`;
+      if (!stats[key]) stats[key] = { sum: 0, count: 0 };
+      stats[key].sum += item.balance;
+      stats[key].count++;
+    });
+    return keys.map(key => {
+      const s = stats[key];
+      return s && s.count > 0 ? s.sum / s.count : 0;
+    });
+  };
+
+  // Helper: aggregate yearly averages
+  const getYearLabels = () => {
+    const years = Array.from(new Set(data.map(item => new Date(item.date).getFullYear()))).sort();
+    return years.map(y => y.toString());
+  };
+  const aggregateYearly = (years: string[]) => {
+    const stats: Record<string, { sum: number; count: number }> = {};
+    data.forEach(item => {
+      const year = new Date(item.date).getFullYear().toString();
+      if (!stats[year]) stats[year] = { sum: 0, count: 0 };
+      stats[year].sum += item.balance;
+      stats[year].count++;
+    });
+    return years.map(y => stats[y] ? stats[y].sum / stats[y].count : 0);
+  };
+
   useEffect(() => {
-    // Generate random data based on timeframe
-    const generateData = () => {
-      let labels: string[] = []
-      let dataPoints: number[] = []
+    let labels: string[] = [];
+    let dataPoints: number[] = [];
 
-      // Generate different data points based on timeframe
-      switch (timeframe) {
-        case "1h":
-          labels = Array.from({ length: 60 }, (_, i) => `${i}m`)
-          break
-        case "1d":
-          labels = Array.from({ length: 24 }, (_, i) => `${i}h`)
-          break
-        case "1w":
-          labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-          break
-        case "1m":
-          labels = Array.from({ length: 30 }, (_, i) => `${i + 1}`)
-          break
-        case "1y":
-          labels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-          break
-        case "all":
-          labels = ["2019", "2020", "2021", "2022", "2023"]
-          break
-        default:
-          labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    switch (timeframe) {
+      case "1w": {
+        const { labels: l, dateStrings } = getLastNDays(7);
+        labels = l;
+        dataPoints = aggregateDaily(dateStrings);
+        break;
       }
-
-      // Generate random data points with a trend
-      let value = 30000 + Math.random() * 10000
-      dataPoints = labels.map(() => {
-        value = value + (Math.random() - 0.5) * 5000
-        return value
-      })
-
-      return {
-        labels,
-        datasets: [
-          {
-            fill: true,
-            label: "Portfolio Value",
-            data: dataPoints,
-            borderColor: "rgb(124, 93, 250)",
-            backgroundColor: "rgba(124, 93, 250, 0.1)",
-            tension: 0.4,
-            pointRadius: 0,
-            borderWidth: 2,
-          },
-        ],
+      case "1m": {
+        const { labels: l, dateStrings } = getLastNDaysForMonth(30);
+        labels = l
+        dataPoints = aggregateDaily(dateStrings);
+        break;
+      }
+      case "1y": {
+        const { labels: l, keys } = getLastNMonths(12);
+        labels = l;
+        dataPoints = aggregateMonthly(keys);
+        break;
+      }
+      // case "all": {
+      //   labels = getYearLabels();
+      //   dataPoints = aggregateYearly(labels);
+      //   break;
+      // }
+      default: {
+        const { labels: l, dateStrings } = getLastNDays(7);
+        labels = l;
+        dataPoints = aggregateDaily(dateStrings);
       }
     }
 
-    setChartData(generateData())
-  }, [timeframe])
+    setChartData({
+      labels,
+      datasets: [
+        {
+          fill: true,
+          label: "Portfolio Value",
+          data: dataPoints,
+          borderColor: "rgb(124, 93, 250)",
+          backgroundColor: "rgba(124, 93, 250, 0.1)",
+          tension: 0.4,
+          pointRadius: 0,
+          borderWidth: 2,
+        },
+      ],
+    });
+  }, [timeframe, data])
 
   const options = {
     responsive: true,

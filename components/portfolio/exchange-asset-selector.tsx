@@ -30,6 +30,7 @@ export interface TokenExchange {
 export function ExchangeAssetSelector({ onAssetsSelected, setIsOpen, assets_array }: ExchangeAssetSelectorProps) {
   const [selectedAssets, setSelectedAssets] = useState<string[]>([])
   const assets_set = new Set(assets_array)
+  const [isLoading, setIsLoading] = useState(false)
   const { data: account_asset, isLoading: isLoadingAsset } = useGetInfoExchangeQuery()
 
   const handleAssetToggle = (asset: string) => {
@@ -56,8 +57,8 @@ export function ExchangeAssetSelector({ onAssetsSelected, setIsOpen, assets_arra
 
     // Get the full asset objects for selected assets
     const selectedAssetObjects = account_asset?.data.filter((asset: TokenExchange) => selectedAssets.includes(asset.symbol))
+    setIsLoading(true)
     onAssetsSelected(selectedAssetObjects)
-    setIsOpen(false)
   }
 
   return (
@@ -125,15 +126,22 @@ export function ExchangeAssetSelector({ onAssetsSelected, setIsOpen, assets_arra
           </div>
 
           <div className="flex justify-end space-x-2 pt-4">
-            <Button variant="outline" onClick={() => setIsOpen(false)}>
+            <Button variant="outline" onClick={() => {setIsOpen(false); setIsLoading(false);}}>
               Cancel
             </Button>
-            <Button 
+            {isLoading ? (
+              <Button size="sm" disabled>
+                <Loader2 className="animate-spin" />
+                Please wait
+              </Button>
+            ) : (
+              <Button 
                 onClick={handleConfirm} 
                 disabled={selectedAssets.length === 0}
-            >
-              Add {selectedAssets.length} Assets
-            </Button>
+              >
+                Add {selectedAssets.length} Assets
+              </Button>
+            )}
           </div>
         </div>
         )}

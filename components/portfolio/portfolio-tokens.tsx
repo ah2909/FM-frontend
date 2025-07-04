@@ -45,6 +45,7 @@ import { useDispatch } from "react-redux";
 import { setTotalUnrealizedPNL } from "@/lib/store/features/portfolios-slice";
 import { useWebSocketEvent } from "@/hooks/useWebSocketEvent";
 import { removeSymbol } from "@/lib/store/features/portfolios-slice";
+import { useSelector } from "react-redux";
 
 interface Token {
 	id: number;
@@ -63,7 +64,8 @@ interface PortfolioTokensProps {
 export function PortfolioTokens({ portfolio }: PortfolioTokensProps) {
 	const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 	const [tokenToDelete, setTokenToDelete] = useState<string | null>(null);
-	const [tokens, setTokens] = useState(portfolio.assets || []);
+	// const [tokens, setTokens] = useState(portfolio.assets || []);
+	const tokens = useSelector((state: any) => state.portfolios.assets ?? []);
 	const [removeTokenFromPortfolio] = useRemoveTokenFromPortfolioMutation();
 	const dispatch = useDispatch();
 
@@ -91,11 +93,11 @@ export function PortfolioTokens({ portfolio }: PortfolioTokensProps) {
 		useWebSocketEvent("", stream, () => {});
 	}
 
-	useEffect(() => {
-		if (portfolio.assets) {
-			setTokens([...portfolio.assets].sort((a: Token, b: Token) => b.value - a.value));
-		}
-	}, [portfolio.assets]);
+	// useEffect(() => {
+	// 	if (portfolio.assets) {
+	// 		setTokens([...portfolio.assets].sort((a: Token, b: Token) => b.value - a.value));
+	// 	}
+	// }, [portfolio.assets]);
 	
 	const handleDeleteClick = (token: string) => {
 		setTokenToDelete(token);
@@ -163,21 +165,11 @@ export function PortfolioTokens({ portfolio }: PortfolioTokensProps) {
 								</TableRow>
 							</TableHeader>
 							<TableBody>
-								{tokens.map((token: Token) => {
+								{[...tokens].sort((a: Token, b: Token) => b.value - a.value).map((token: Token) => {
 									const unrealizedPnL = priceData[token.symbol]
-										? Number(
-												priceData[token.symbol] *
-													token.amount -
-													token.avg_price *
-														token.amount
-										  ).toFixed(2)
-										: null;
-									const allocation = Number(
-										((priceData[token.symbol] *
-											token.amount) /
-											portfolio.totalValue) *
-											100
-									).toFixed(0);
+										? Number(priceData[token.symbol] * token.amount - token.avg_price * token.amount).toFixed(2)
+										: Number(token.price * token.amount - token.avg_price * token.amount).toFixed(2);
+									const allocation = Number(((token.price * token.amount) / portfolio.totalValue) *100).toFixed(0);
 									return (
 										<TableRow key={token.id}>
 											<TableCell>
@@ -225,24 +217,20 @@ export function PortfolioTokens({ portfolio }: PortfolioTokensProps) {
 											</TableCell>
 											<TableCell className="text-center">
 												<div className="font-medium">
-													{priceData[token.symbol] ? (
-														"$" +
-														Number(priceData[token.symbol])?.toFixed(2)
+													${priceData[token.symbol] ? (
+														Number(priceData[token.symbol])
 													) : (
-														<Skeleton className="h-4 w-16 mx-auto" />
+														Number(token.price)
 													)}
 												</div>
 											</TableCell>
 											<TableCell className="text-center">
 												<div>
 													<div className="font-medium">
-														{priceData[
-															token.symbol
-														] ? (
-															"$" +
-															Number(priceData[token.symbol] * token.amount)?.toFixed(2)) 
-														: (
-															<Skeleton className="h-4 w-16 mx-auto" />
+														${priceData[token.symbol] ? (
+															Number(priceData[token.symbol] * token.amount)?.toFixed(2)
+														) : (
+															Number(token.price * token.amount)?.toFixed(2)
 														)}
 													</div>
 													<p className="text-sm text-muted-foreground">
@@ -253,10 +241,7 @@ export function PortfolioTokens({ portfolio }: PortfolioTokensProps) {
 											</TableCell>
 											<TableCell className="text-center">
 												<div
-													className={`font-medium ${
-														unrealizedPnL &&
-														Number(unrealizedPnL) >
-															0
+													className={`font-medium ${unrealizedPnL && Number(unrealizedPnL) >0
 															? "text-green-700"
 															: "text-red-700"
 													}`}

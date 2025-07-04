@@ -44,6 +44,15 @@ export const portfoliosSlice = createSlice({
     syncTransactionsByAssetID: (state, action: PayloadAction<{ assetId: string, transactions: any[] }>) => {
       const { assetId, transactions } = action.payload;
       state.transactions[assetId] = [...state.transactions[assetId], transactions];
+      let updatedAmount = transactions.reduce((acc: number, transaction: any) => {
+        return acc + (transaction.type === 'BUY' ? transaction.quantity : -transaction.quantity);
+      }, 0);
+      const assetIndex = state.assets.findIndex((asset: any) => asset.id === assetId);
+      if (assetIndex !== -1) {
+        state.assets[assetIndex].amount += updatedAmount;
+        state.assets[assetIndex].value = state.assets[assetIndex].amount * state.assets[assetIndex].price;
+        state.portfolio.totalValue += updatedAmount * state.assets[assetIndex].price;
+      }
     }
   },
   extraReducers: (builder) => {
@@ -51,10 +60,12 @@ export const portfoliosSlice = createSlice({
     portfolioApi.endpoints.getPortfoliosByUserID.matchFulfilled,
     (state, { payload }) => {
       state.portfolio = payload.data;
-      state.assets = payload.data.assets;
-      payload.data.assets.map((asset: any) => {
-        state.transactions[asset.id] = payload.data.transactions.filter((transaction: any) => transaction.asset_id === asset.id);
-      })
+      state.assets = payload.data?.assets ?? [];
+      if(state.assets.length > 0) {
+        payload.data?.assets.map((asset: any) => {
+          state.transactions[asset.id] = payload.data.transactions.filter((transaction: any) => transaction.asset_id === asset.id);
+        })
+      }  
     }
   );
 }

@@ -33,7 +33,11 @@ const baseQueryWithRefresh = async (args: any, api: any, extraOptions: any) => {
                     credentials: 'include',
                 },
             )
-            if (!refreshResult.ok) throw new Error("Refresh JWT failed");
+            if (!refreshResult.ok) {
+                localStorage.removeItem("token");
+                window.location.href = "/login"; // Redirect to login if refresh fails
+                throw new Error("Refresh JWT failed");
+            }
             const res: any = await refreshResult.json();
             localStorage.setItem("token", res.access_token)
 

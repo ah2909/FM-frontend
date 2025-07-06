@@ -6,14 +6,14 @@ interface PortfoliosState {
   portfolio: any
   assets: any[]
   transactions: any
-  totalUnrealizedPNL: number
+  performance: number[]
 }
 
 const initialState: PortfoliosState = {
   portfolio: {},
   assets: [],
   transactions: {},
-  totalUnrealizedPNL: 0,
+  performance: [],
 }
 
 export const portfoliosSlice = createSlice({
@@ -25,9 +25,6 @@ export const portfoliosSlice = createSlice({
     },
     setAssets: (state, action: PayloadAction<any[]>) => {
       state.assets = action.payload
-    },
-    setTotalUnrealizedPNL: (state, action: PayloadAction<number>) => {
-      state.totalUnrealizedPNL = action.payload
     },
     removeSymbol: (state, action: PayloadAction<string>) => {
       const symbol = action.payload
@@ -53,24 +50,30 @@ export const portfoliosSlice = createSlice({
         state.assets[assetIndex].value = state.assets[assetIndex].amount * state.assets[assetIndex].price;
         state.portfolio.totalValue += updatedAmount * state.assets[assetIndex].price;
       }
-    }
+    },
   },
   extraReducers: (builder) => {
-  builder.addMatcher(
-    portfolioApi.endpoints.getPortfoliosByUserID.matchFulfilled,
-    (state, { payload }) => {
-      state.portfolio = payload.data;
-      state.assets = payload.data?.assets ?? [];
-      if(state.assets.length > 0) {
-        payload.data?.assets.map((asset: any) => {
-          state.transactions[asset.id] = payload.data.transactions.filter((transaction: any) => transaction.asset_id === asset.id);
-        })
-      }  
-    }
-  );
-}
+    builder.addMatcher(
+      portfolioApi.endpoints.getPortfoliosByUserID.matchFulfilled,
+      (state, { payload }) => {
+        state.portfolio = payload.data;
+        state.assets = payload.data?.assets ?? [];
+        if(state.assets.length > 0) {
+          payload.data?.assets.map((asset: any) => {
+            state.transactions[asset.id] = payload.data.transactions.filter((transaction: any) => transaction.asset_id === asset.id);
+          })
+        }  
+      }
+    );
+    builder.addMatcher(
+      portfolioApi.endpoints.getBalanceData.matchFulfilled,
+      (state, { payload }) => {
+        state.performance = payload.data.map((item: {balance: number, date: string}) => item.balance);
+      }
+    );
+  }
 })
 
-export const { setPortfolio, setAssets, setTotalUnrealizedPNL, removeSymbol, editPortfolio, syncTransactionsByAssetID } = portfoliosSlice.actions
+export const { setPortfolio, setAssets, removeSymbol, editPortfolio, syncTransactionsByAssetID } = portfoliosSlice.actions
 export default portfoliosSlice.reducer
 

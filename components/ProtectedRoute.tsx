@@ -15,12 +15,10 @@ function ProtectedRoute({ children }: { children: ReactNode }) {
     if (!isLoading && !isAuthenticated) {
       router.push('/login');
     }
-  }, [isLoading, isAuthenticated, router]);
+  }, [isLoading, isAuthenticated]);
 
   // Show loading state while checking authentication
   if (isLoading) return ( <Loading /> );
-  // Don’t render content if not authenticated (redirect will happen)
-  if (!isAuthenticated) return null;
 
   return children;
 }

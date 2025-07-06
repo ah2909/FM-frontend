@@ -17,7 +17,6 @@ export default function ExchangesPage() {
 				<BaseHeader
 					heading="Exchanges"
 					text="Connect and manage your cryptocurrency exchange accounts"
-					showBackButton={false}
 				/>
 				<UserExchanges />
 			</BaseShell>

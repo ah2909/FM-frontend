@@ -2,7 +2,8 @@
 
 import { useState, useMemo, useCallback } from "react"
 import Link from "next/link"
-import { MoreHorizontal, Plus, Trash2 } from "lucide-react"
+import { MoreHorizontal, Plus, Trash2, Search, ChevronRight } from "lucide-react"
+import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -113,12 +114,12 @@ export function PortfolioTokens({ portfolio }: PortfolioTokensProps) {
               <CardTitle className="text-lg sm:text-xl">Portfolio Tokens</CardTitle>
               <CardDescription className="text-sm">Manage your tokens in this portfolio</CardDescription>
             </div>
-            <Link href={`/portfolios/add-token`}>
+            {/* <Link href={`/portfolios/add-token`}>
               <Button size="sm" className="w-full sm:w-auto">
                 <Plus className="mr-2 h-4 w-4" />
                 Add Token
               </Button>
-            </Link>
+            </Link> */}
           </div>
         </CardHeader>
         <CardContent className="px-3 sm:px-6">
@@ -131,7 +132,7 @@ export function PortfolioTokens({ portfolio }: PortfolioTokensProps) {
   }
 
   return (
-    <Card>
+    <Card className="my-4">
       <CardHeader className="pb-4">
         <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
           <div>
@@ -140,12 +141,26 @@ export function PortfolioTokens({ portfolio }: PortfolioTokensProps) {
               {tokens.length} token{tokens.length !== 1 ? "s" : ""} in this portfolio
             </CardDescription>
           </div>
-          <Link href={`/portfolios/add-token`}>
+          {/* <Link href={`/portfolios/add-token`}>
             <Button size="sm" className="w-full sm:w-auto">
               <Plus className="mr-2 h-4 w-4" />
               Add Token
             </Button>
-          </Link>
+          </Link> */}
+          <div className="flex w-full lg:w-auto gap-2">
+            <div className="relative flex-1 lg:flex-none">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Search assets..."
+                className="pl-8 w-full lg:w-[240px] text-sm"
+              />
+            </div>
+            <Button variant="outline" className="flex items-center gap-1 bg-transparent text-sm px-3">
+              Filter
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="px-3 sm:px-6">
@@ -205,7 +220,7 @@ export function PortfolioTokens({ portfolio }: PortfolioTokensProps) {
                       </div>
                     </TableCell>
                     <TableCell className="text-center">
-                      <div className="font-medium">${Number(currentPrice).toFixed(2)}</div>
+                      <div className="font-medium">${Number(currentPrice)}</div>
                     </TableCell>
                     <TableCell className="text-center">
                       <div>

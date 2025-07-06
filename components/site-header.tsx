@@ -6,12 +6,12 @@ import { ModeToggle } from "@/components/mode-toggle"
 import {
   Breadcrumb,
   BreadcrumbItem,
-  BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { usePathname } from "next/navigation"
+import Link from "next/link"
 
 export function SiteHeader() {
   const pathname = usePathname()
@@ -20,7 +20,7 @@ export function SiteHeader() {
     const segments = pathname.split("/").filter(Boolean)
     if (segments.length === 0) return [{ label: "Dashboard", href: "/" }]
 
-    const breadcrumbs = [{ label: "Dashboard", href: "/" }]
+    const breadcrumbs: { label: string; href?: string }[] = []
     let currentPath = ""
 
     segments.forEach((segment, index) => {
@@ -48,9 +48,9 @@ export function SiteHeader() {
               <div key={breadcrumb.label} className="flex items-center">
                 <BreadcrumbItem className="hidden sm:block">
                   {breadcrumb.href ? (
-                    <BreadcrumbLink href={breadcrumb.href} className="text-sm">
+                    <Link href={breadcrumb.href} className="text-sm">
                       {breadcrumb.label}
-                    </BreadcrumbLink>
+                    </Link>
                   ) : (
                     <BreadcrumbPage className="text-sm">{breadcrumb.label}</BreadcrumbPage>
                   )}
@@ -60,8 +60,8 @@ export function SiteHeader() {
                   <BreadcrumbItem className="sm:hidden">
                     <BreadcrumbPage className="text-sm truncate">{breadcrumb.label}</BreadcrumbPage>
                   </BreadcrumbItem>
-                )}
-                {index < breadcrumbs.length - 1 && <BreadcrumbSeparator className="hidden sm:block" />}
+                )} 
+                {index < breadcrumbs.length - 1 && <BreadcrumbSeparator className="hidden sm:block" />} 
               </div>
             ))}
           </BreadcrumbList>

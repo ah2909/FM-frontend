@@ -11,7 +11,10 @@ import { PortfolioOverview } from "@/components/portfolio/portfolio-overview"
 import { useDispatch, useSelector } from "react-redux"
 import { ImportDataButton } from "@/components/portfolio/import-data-button"
 import ProtectedRoute from "@/components/ProtectedRoute"
-import { useGetPortfoliosByUserIDQuery } from "@/lib/store/services/portfolio-api"
+import { 
+  useGetPortfoliosByUserIDQuery,
+  useGetBalanceDataQuery
+} from "@/lib/store/services/portfolio-api"
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Loading from "@/components/Loading"
@@ -19,6 +22,7 @@ import Loading from "@/components/Loading"
 export default function PortfolioPage() {
   const dispatch = useDispatch()
   const { data, isLoading } = useGetPortfoliosByUserIDQuery()
+  const { data: balanceData, isLoading: isLoadingBalance } = useGetBalanceDataQuery();
   const portfolio = useSelector((state: any) => state.portfolios.portfolio)
   const tokens = useSelector((state: any) => state.portfolios.assets)
   const router = useRouter()
@@ -34,7 +38,7 @@ export default function PortfolioPage() {
         <Loading />
       ) : (
         <BaseShell>
-          <BaseHeader heading={portfolio.name} text={portfolio.description} showBackButton={false}>
+          <BaseHeader heading={portfolio.name} text={portfolio.description}>
             <div className="flex flex-col w-full gap-2 sm:flex-row sm:w-auto sm:gap-3">
               <ImportDataButton
                 portfolio_id={portfolio.id}

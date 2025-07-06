@@ -14,12 +14,7 @@ function GuestRoute({ children }: { children: ReactNode }) {
     if (!isLoading && isAuthenticated) {
       router.push('/');
     }
-  }, [isLoading, isAuthenticated, router]);
-
-  // Show loading state while checking authentication
-  if (isLoading) return ( <Loading /> );
-  // Don’t render content if authenticated (redirect will happen)
-  if (isAuthenticated) return null;
+  }, [isLoading, isAuthenticated]);
 
   return children;
 }

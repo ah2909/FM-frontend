@@ -4,7 +4,8 @@ import { Home, PieChart, Wallet2, Globe } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useGetUserInfoQuery } from "@/lib/store/services/user-api"
-
+import { useSidebar } from "@/components/ui/sidebar"
+import { useEffect } from "react"
 import {
   Sidebar,
   SidebarContent,
@@ -61,6 +62,21 @@ const items = [
 export function AppSidebar() {
   const pathname = usePathname()
   const { data, isLoading } = useGetUserInfoQuery()
+  const { setOpenMobile, isMobile } = useSidebar()
+
+  // Close sidebar when pathname changes on mobile
+  useEffect(() => {
+    if (isMobile) {
+      setOpenMobile(false)
+    }
+  }, [pathname, isMobile, setOpenMobile])
+
+  const handleMenuItemClick = () => {
+    // Close sidebar on mobile when menu item is clicked
+    if (isMobile) {
+      setOpenMobile(false)
+    }
+  }
 
   return (
     <Sidebar variant="inset" className="border-r">
@@ -72,7 +88,11 @@ export function AppSidebar() {
               asChild
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <Link href="/" className="flex items-center gap-3 px-3 py-2">
+              <Link 
+                href="/" 
+                className="flex items-center gap-3 px-3 py-2"
+                onClick={handleMenuItemClick}
+              >
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                   <Bitcoin className="size-4" />
                 </div>
@@ -99,7 +119,11 @@ export function AppSidebar() {
                     isActive={pathname === item.url}
                     className="w-full justify-start px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
                   >
-                    <Link href={item.url} className="flex items-center gap-3">
+                    <Link 
+                      href={item.url} 
+                      className="flex items-center gap-3"
+                      onClick={handleMenuItemClick}
+                    >
                       <item.icon className="size-4" />
                       <span>{item.title}</span>
                     </Link>
@@ -122,7 +146,11 @@ export function AppSidebar() {
                     isActive={pathname === item.url}
                     className="w-full justify-start px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
                   >
-                    <Link href={item.url} className="flex items-center gap-3">
+                    <Link 
+                      href={item.url} 
+                      className="flex items-center gap-3"
+                      onClick={handleMenuItemClick}
+                    >
                       <item.icon className="size-4" />
                       <span>{item.title}</span>
                     </Link>

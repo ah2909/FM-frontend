@@ -13,6 +13,7 @@ import {
   Filler,
   Legend,
 } from "chart.js"
+import { TrendingUp} from "lucide-react"
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Filler, Legend)
 
@@ -22,9 +23,10 @@ interface PortfolioChartProps {
     balance: number
     date: string
   }[]
+  isLoading?: boolean
 }
 
-export function PortfolioChart({ timeframe, data }: PortfolioChartProps) {
+export function PortfolioChart({ timeframe, data, isLoading = false }: PortfolioChartProps) {
   const [chartData, setChartData] = useState<any>(null)
 
   const today = new Date()
@@ -57,7 +59,7 @@ export function PortfolioChart({ timeframe, data }: PortfolioChartProps) {
   // Helper: aggregate daily balances
   const aggregateDaily = (dateStrings: string[]) => {
     const map = new Map<string, number>()
-    data.forEach((item) => {
+    data?.forEach((item) => {
       const d = formatDate(new Date(item.date))
       map.set(d, item.balance)
     })
@@ -81,7 +83,7 @@ export function PortfolioChart({ timeframe, data }: PortfolioChartProps) {
   // Helper: aggregate monthly averages
   const aggregateMonthly = (keys: string[]) => {
     const stats: Record<string, { sum: number; count: number }> = {}
-    data.forEach((item) => {
+    data?.forEach((item) => {
       const d = new Date(item.date)
       const key = `${d.getFullYear()}-${d.getMonth()}`
       if (!stats[key]) stats[key] = { sum: 0, count: 0 }
@@ -95,22 +97,43 @@ export function PortfolioChart({ timeframe, data }: PortfolioChartProps) {
   }
 
   // Helper: aggregate yearly averages
-  const getYearLabels = () => {
-    const years = Array.from(new Set(data.map((item) => new Date(item.date).getFullYear()))).sort()
-    return years.map((y) => y.toString())
-  }
-  const aggregateYearly = (years: string[]) => {
-    const stats: Record<string, { sum: number; count: number }> = {}
-    data.forEach((item) => {
-      const year = new Date(item.date).getFullYear().toString()
-      if (!stats[year]) stats[year] = { sum: 0, count: 0 }
-      stats[year].sum += item.balance
-      stats[year].count++
-    })
-    return years.map((y) => (stats[y] ? stats[y].sum / stats[y].count : 0))
-  }
+  // const getYearLabels = () => {
+  //   const years = Array.from(new Set(data.map((item) => new Date(item.date).getFullYear()))).sort()
+  //   return years.map((y) => y.toString())
+  // }
+  // const aggregateYearly = (years: string[]) => {
+  //   const stats: Record<string, { sum: number; count: number }> = {}
+  //   data.forEach((item) => {
+  //     const year = new Date(item.date).getFullYear().toString()
+  //     if (!stats[year]) stats[year] = { sum: 0, count: 0 }
+  //     stats[year].sum += item.balance
+  //     stats[year].count++
+  //   })
+  //   return years.map((y) => (stats[y] ? stats[y].sum / stats[y].count : 0))
+  // }
 
   useEffect(() => {
+    if (!data || data.length === 0) {
+      // Create empty chart data for no data state
+      const { labels } = getLastNDays(7)
+      setChartData({
+        labels,
+        datasets: [
+          {
+            fill: true,
+            label: "Portfolio Value",
+            data: new Array(labels.length).fill(0),
+            borderColor: "rgb(124, 93, 250)",
+            backgroundColor: "rgba(124, 93, 250, 0.1)",
+            tension: 0.4,
+            pointRadius: 0,
+            borderWidth: 2,
+          },
+        ],
+      })
+      return
+    }
+
     let labels: string[] = []
     let dataPoints: number[] = []
 
@@ -217,6 +240,31 @@ export function PortfolioChart({ timeframe, data }: PortfolioChartProps) {
         tension: 0.4,
       },
     },
+  }
+
+  if (isLoading) {
+    return (
+      <div className="h-full w-full flex items-center justify-center">
+        <div className="animate-pulse space-y-4 w-full">
+          <div className="h-4 bg-muted rounded w-1/4"></div>
+          <div className="h-64 bg-muted rounded"></div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!data || data.length === 0) {
+    return (
+      <div className="h-full w-full flex flex-col items-center justify-center text-center p-6">
+        <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+          <TrendingUp className="h-8 w-8 text-muted-foreground" />
+        </div>
+        <h3 className="text-lg font-medium text-muted-foreground mb-2">No Performance Data</h3>
+        <p className="text-sm text-muted-foreground mb-4 max-w-sm">
+          Start tracking your portfolio performance by adding assets and transactions.
+        </p>
+      </div>
+    )
   }
 
   if (!chartData) return <div className="h-full w-full flex items-center justify-center">Loading chart...</div>

@@ -1,11 +1,12 @@
 "use client"
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { MoreHorizontal } from "lucide-react"
+import { MoreHorizontal, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
 import { Skeleton } from "../ui/skeleton"
 import { useWebSocketEvent } from "@/hooks/useWebSocketEvent"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 export interface Token {
   id: number
@@ -21,9 +22,10 @@ export interface Token {
 interface AssetTableProps {
   tokens: Token[]
   totalValue: number
+  isLoading?: boolean
 }
 
-export function AssetTable({ tokens, totalValue }: AssetTableProps) {
+export function AssetTable({ tokens, totalValue, isLoading = false }: AssetTableProps) {
   const [priceData, setPriceData] = useState<any>({})
   const top5Tokens = [...tokens].sort((a: Token, b: Token) => b.value - a.value).slice(0, 5)
   const stream =
@@ -38,6 +40,75 @@ export function AssetTable({ tokens, totalValue }: AssetTableProps) {
       }))
   })
 
+  if (isLoading) {
+    return (
+      <div className="overflow-x-auto -mx-4 sm:mx-0">
+        <div className="inline-block min-w-full align-middle">
+          <Table className="min-w-full">
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-12 text-xs sm:text-sm">NO</TableHead>
+                <TableHead className="text-xs sm:text-sm">NAME</TableHead>
+                <TableHead className="text-xs sm:text-sm text-center">PORTFOLIO (%)</TableHead>
+                <TableHead className="text-xs sm:text-sm text-center">HOLDINGS</TableHead>
+                <TableHead className="text-xs sm:text-sm text-center">PRICE (24H)</TableHead>
+                <TableHead className="w-12 text-xs sm:text-sm">ACTION</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {Array.from({ length: 5 }).map((_, index) => (
+                <TableRow key={index}>
+                  <TableCell>
+                    <Skeleton className="h-4 w-4" />
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="w-8 h-8 rounded-full" />
+                      <div>
+                        <Skeleton className="h-4 w-20 mb-1" />
+                        <Skeleton className="h-3 w-12" />
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <div className="flex items-center gap-2 justify-center">
+                      <Skeleton className="h-4 w-8" />
+                      <Skeleton className="w-16 h-2 rounded-full" />
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-24 mb-1" />
+                    <Skeleton className="h-3 w-16" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-16" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-8 w-8" />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+    )
+  }
+
+  if (!tokens || tokens.length === 0) {
+    return (
+      <Card className="border-hidden">
+        <CardHeader className="text-center pb-4">
+          <div className="mx-auto w-12 h-12 bg-muted rounded-full flex items-center justify-center mb-4">
+            <Plus className="h-6 w-6 text-muted-foreground" />
+          </div>
+          <CardTitle className="text-lg text-muted-foreground">No Assets Yet</CardTitle>
+          <CardDescription>Start building your portfolio by adding your first cryptocurrency asset.</CardDescription>
+        </CardHeader>
+      </Card>
+    )
+  }
+
   return (
     <div className="overflow-x-auto -mx-4 sm:mx-0">
       <div className="inline-block min-w-full align-middle">
@@ -46,7 +117,7 @@ export function AssetTable({ tokens, totalValue }: AssetTableProps) {
             <TableRow>
               <TableHead className="w-12 text-xs sm:text-sm">NO</TableHead>
               <TableHead className="text-xs sm:text-sm">NAME</TableHead>
-              <TableHead className="text-xs sm:text-sm text-center">PORTFOLIO (%)</TableHead>
+              <TableHead className="text-xs hidden sm:table-cell">PORTFOLIO (%)</TableHead>
               <TableHead className="text-xs sm:text-sm text-center">HOLDINGS</TableHead>
               <TableHead className="text-xs sm:text-sm text-center">PRICE (24H)</TableHead>
               <TableHead className="w-12 text-xs sm:text-sm">ACTION</TableHead>
@@ -76,7 +147,7 @@ export function AssetTable({ tokens, totalValue }: AssetTableProps) {
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden sm:table-cell">
                     <div className="flex items-center gap-1 sm:gap-2 justify-center">
                       {!isNaN(Number(allocation)) ? (
                         <span className="text-xs sm:text-sm">{allocation}%</span>

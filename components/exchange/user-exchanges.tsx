@@ -152,9 +152,6 @@ export function UserExchanges() {
               <DialogTitle>Connect Exchange</DialogTitle>
               <DialogDescription>
                 Connect to cryptocurrency exchanges to import your balances and transactions.
-                <span className="block mt-1 text-amber-500 dark:text-amber-400">
-                  This is a demo using mock data. No actual connections will be made.
-                </span>
               </DialogDescription>
             </DialogHeader>
 
@@ -197,7 +194,7 @@ export function UserExchanges() {
                       name="password"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>API Secret</FormLabel>
+                          <FormLabel>Password</FormLabel>
                           <FormControl>
                             <Input type="password" {...field} />
                           </FormControl>

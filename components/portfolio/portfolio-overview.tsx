@@ -1,7 +1,9 @@
 "use client"
 import { PortfolioPerformance } from "@/components/portfolio/portfolio-performance"
+import { useSelector } from "react-redux"
 
 export function PortfolioOverview({ portfolio }: { portfolio: any }) {
+  const balance = useSelector((state: any) => state.portfolios.performance)
   const totalCost = portfolio.assets.reduce((acc: number, token: any) => {
     if (token.avg_price !== 0) {
       return acc + token.amount * token.avg_price
@@ -13,9 +15,9 @@ export function PortfolioOverview({ portfolio }: { portfolio: any }) {
     currentValue: portfolio.totalValue,
     unrealizedPnl: portfolio.totalValue - totalCost,
     unrealizedPnlPercentage: ((portfolio.totalValue - totalCost) / totalCost) * 100,
-    allTimeHigh: 1000,
-    allTimeLow: 100,
-    change24h: 10,
+    allTimeHigh: Math.max(...balance) ?? 0,
+    allTimeLow: Math.min(...balance) ?? 0,
+    change24h: balance[0] !== 0 ? (portfolio.totalValue / balance[0]) * 100 - 100 : 0,
     change7d: 50,
   }
 

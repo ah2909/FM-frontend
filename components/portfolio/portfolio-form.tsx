@@ -75,9 +75,6 @@ export function PortfolioForm() {
 											{...field}
 										/>
 									</FormControl>
-									<FormDescription>
-										This is the name of your portfolio.
-									</FormDescription>
 									<FormMessage />
 								</FormItem>
 							)}
@@ -94,10 +91,6 @@ export function PortfolioForm() {
 											{...field}
 										/>
 									</FormControl>
-									<FormDescription>
-										A brief description of your portfolio's
-										purpose.
-									</FormDescription>
 									<FormMessage />
 								</FormItem>
 							)}

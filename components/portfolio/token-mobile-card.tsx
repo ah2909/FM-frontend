@@ -98,7 +98,7 @@ export const TokenMobileCard = memo(function TokenMobileCard({
         <div className="space-y-1">
           <p className="text-xs text-muted-foreground">Current Price</p>
           <p className="text-sm font-semibold">
-            {price ? `$${Number(price).toFixed(2)}` : <Skeleton className="h-4 w-16" />}
+            {price ? `$${Number(price)}` : <Skeleton className="h-4 w-16" />}
           </p>
         </div>
         <div className="space-y-1">

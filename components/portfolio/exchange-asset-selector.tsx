@@ -7,6 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { useGetInfoExchangeQuery } from "@/lib/store/services/exchange-api"
 import { Loader2 } from "lucide-react"
+import Link from "next/link"
 
 interface ExchangeAssetSelectorProps {
   onAssetsSelected: (assets: any[]) => void
@@ -27,7 +28,7 @@ export function ExchangeAssetSelector({ onAssetsSelected, setIsOpen, assets_arra
   const [selectedAssets, setSelectedAssets] = useState<string[]>([])
   const assets_set = new Set(assets_array)
   const [isLoading, setIsLoading] = useState(false)
-  const { data: account_asset, isLoading: isLoadingAsset } = useGetInfoExchangeQuery()
+  const { data: accountAsset, isLoading: isLoadingAsset, error: errorAssets } = useGetInfoExchangeQuery()
 
   const handleAssetToggle = (asset: string) => {
     setSelectedAssets((prev) => {
@@ -40,7 +41,7 @@ export function ExchangeAssetSelector({ onAssetsSelected, setIsOpen, assets_arra
   }
 
   const handleSelectAll = () => {
-    const availableAssets = account_asset?.data?.filter((asset: any) => !assets_set.has(asset.symbol)) || []
+    const availableAssets = accountAsset?.data?.filter((asset: any) => !assets_set.has(asset.symbol)) || []
     if (selectedAssets.length === availableAssets.length) {
       setSelectedAssets([])
     } else {
@@ -52,7 +53,7 @@ export function ExchangeAssetSelector({ onAssetsSelected, setIsOpen, assets_arra
     if (selectedAssets.length === 0) return
 
     // Get the full asset objects for selected assets
-    const selectedAssetObjects = account_asset?.data.filter((asset: TokenExchange) =>
+    const selectedAssetObjects = accountAsset?.data.filter((asset: TokenExchange) =>
       selectedAssets.includes(asset.symbol),
     )
     setIsLoading(true)
@@ -63,13 +64,21 @@ export function ExchangeAssetSelector({ onAssetsSelected, setIsOpen, assets_arra
     <div>
       {isLoadingAsset ? (
         <Loader2 className="mx-auto my-2 h-8 w-8 animate-spin" />
-      ) : !account_asset?.data || account_asset?.data.length === 0 ? (
+      ) : errorAssets?.status === 400 ? (
+        <div className="py-4 text-center">
+          You need to connect exchanges first.
+          <Button variant={'link'} className="mt-2" size="sm">
+            <Link href="/exchanges">Click here</Link>
+          </Button>
+        </div>
+
+      ) : !accountAsset?.data || accountAsset?.data.length === 0 ? (
         <div className="py-4 text-center text-muted-foreground">No assets found in this exchange.</div>
       ) : (
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center px-2 gap-2">
             <div className="text-sm text-muted-foreground">
-              {selectedAssets.length} of {account_asset.data?.length - assets_array?.length} available assets selected
+              {selectedAssets.length} of {accountAsset.data?.length - assets_array?.length} available assets selected
               {assets_array?.length > 0 && (
                 <span className="block text-xs mt-1">
                   {assets_array?.length} asset
@@ -83,14 +92,14 @@ export function ExchangeAssetSelector({ onAssetsSelected, setIsOpen, assets_arra
               onClick={handleSelectAll}
               className="w-full sm:w-auto text-xs bg-transparent"
             >
-              {selectedAssets.length === account_asset.data?.length - assets_array?.length
+              {selectedAssets.length === accountAsset.data?.length - assets_array?.length
                 ? "Deselect All"
                 : "Select All Available"}
             </Button>
           </div>
 
           <div className="space-y-2 max-h-[250px] sm:max-h-[300px] overflow-y-auto pr-2">
-            {account_asset?.data.map((asset: TokenExchange, index: number) => (
+            {accountAsset?.data.map((asset: TokenExchange, index: number) => (
               <div
                 key={index}
                 className={`flex items-center justify-between p-2 sm:p-3 border rounded-md transition-colors 

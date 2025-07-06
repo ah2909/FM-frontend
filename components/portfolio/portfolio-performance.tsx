@@ -1,7 +1,8 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowDown, ArrowUp, TrendingDown, TrendingUp } from "lucide-react"
+import { ArrowDown, ArrowUp, TrendingDown, TrendingUp, DollarSign, Activity, Wallet } from "lucide-react"
+
 
 interface PortfolioPerformanceProps {
   metrics: {
@@ -28,6 +29,7 @@ export function PortfolioPerformance({ metrics }: PortfolioPerformanceProps) {
         <Card className="border-l-4 border-l-blue-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">Total Cost</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent className="pb-3">
             <div className="text-xl sm:text-2xl font-bold">${metrics.totalCost.toLocaleString()}</div>
@@ -38,6 +40,7 @@ export function PortfolioPerformance({ metrics }: PortfolioPerformanceProps) {
         <Card className="border-l-4 border-l-green-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">Current Value</CardTitle>
+            <Wallet className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent className="pb-3">
             <div className="text-xl sm:text-2xl font-bold">${metrics.currentValue.toLocaleString()}</div>
@@ -71,6 +74,7 @@ export function PortfolioPerformance({ metrics }: PortfolioPerformanceProps) {
         <Card className="border-l-4 border-l-purple-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">Performance</CardTitle>
+            <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent className="pb-3">
             <div className="space-y-2">

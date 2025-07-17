@@ -21,9 +21,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Login function: Store the token and update state
-  const login = (token: string) => {
-    if (token && token !== 'undefined') {
-      localStorage.setItem('token', token);
+  const login = (user: any) => {
+    if (user.access_token && user.access_token !== 'undefined') {
+      localStorage.setItem('token', user.access_token);
+      localStorage.setItem('user_id', user.user_id);
       setIsAuthenticated(true);
       toast.success('Login Successful!');
     }
@@ -34,7 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Logout function: Remove the token and update state
   const logout = () => {
-    localStorage.removeItem('token');
+    localStorage.clear();
     setIsAuthenticated(false);
   };
 

@@ -37,7 +37,6 @@ export const portfolioApi = baseApi.injectEndpoints({
 				method: "PUT",
 				body: portfolio,
 			}),
-			// invalidatesTags: ["Portfolio"]
 		}),
 		deletePortfolio: builder.mutation<void, number>({
 			query: (id: number) => ({
@@ -77,7 +76,6 @@ export const portfolioApi = baseApi.injectEndpoints({
 				method: "POST",
 				body: token,
 			}),
-			// invalidatesTags: ["Portfolio"],
 		}),
 		syncTransactions: builder.mutation<Response, { portfolio_id: number }>({
 			query: (data) => ({
@@ -90,7 +88,12 @@ export const portfolioApi = baseApi.injectEndpoints({
 			query: () => ({
 				url: `/portfolio/balance`,
 			}),
-		})
+		}),
+		getRecentActivity: builder.query<Response, void>({
+			query: () => ({
+				url: `/portfolio/recent-activity`,
+			}),
+		}),
 	}),
 });
 
@@ -104,4 +107,5 @@ export const {
 	useRemoveTokenFromPortfolioMutation,
 	useSyncTransactionsMutation,
 	useGetBalanceDataQuery,
+	useGetRecentActivityQuery,
 } = portfolioApi;

@@ -3,10 +3,11 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { PortfolioChart } from "@/components/dashboard/portfolio-chart";
 import { AssetTable } from "@/components/dashboard/asset-table";
 import { PortfolioAllocation } from "@/components/dashboard/portfolio-allocation";
-import { RecentActivity } from "@/components/dashboard/recent-activity";
+import RecentActivity from "@/components/dashboard/recent-activity";
 import { BaseHeader } from "@/components/base-header";
 import { BaseShell } from "@/components/base-shell";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -21,6 +22,7 @@ import { TransactionSyncButton } from "@/components/dashboard/transaction-sync-b
 export default function DashboardPage() {
 	const router = useRouter();
 	const [timeframe, setTimeframe] = useState("1w");
+  const [typeFilter, setTypeFilter] = useState<string>("all")
 	const dispatch = useDispatch();
 	const { data, isLoading: isLoadingPortfolio } = useGetPortfoliosByUserIDQuery();
 	const { data: balanceData, isLoading: isLoadingBalance } = useGetBalanceDataQuery();
@@ -202,12 +204,26 @@ export default function DashboardPage() {
             {/* Recent Transactions */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg sm:text-xl">
-                  Recent Activity
-                </CardTitle>
+                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                  <CardTitle className="text-lg sm:text-xl">
+                    Recent Activity
+                  </CardTitle>
+                  <Select value={typeFilter} onValueChange={setTypeFilter}>
+                    <SelectTrigger className="w-full sm:w-36 lg:w-40 text-xs sm:text-sm">
+                      <SelectValue placeholder="Activity type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All activities</SelectItem>
+                      <SelectItem value="Add asset">Add asset</SelectItem>
+                      <SelectItem value="Remove asset">Remove asset</SelectItem>
+                      <SelectItem value="Sync asset transactions">Sync transactions</SelectItem>
+                      <SelectItem value="Update asset">Update asset</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </CardHeader>
               <CardContent>
-                <RecentActivity />
+                <RecentActivity typeFilter={typeFilter}/>
               </CardContent>
             </Card>
           </div>

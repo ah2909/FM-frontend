@@ -48,7 +48,7 @@ const LoginPage: React.FC = () => {
       })
       if (!res.ok) throw new Error("Google verification failed")
       const data: any = await res.json()
-      login(data.access_token)
+      login(data)
     } catch (error) {
       console.error("Google login error:", error)
       toast.error("Login failed. Please try again.")
@@ -81,7 +81,7 @@ const LoginPage: React.FC = () => {
       })
       if (!response.ok) throw new Error("Login failed")
       const result: any = await response.json()
-      login(result.access_token)
+      login(result)
     } catch (error) {
       console.error("Login error:", error)
       toast.error("Login failed. Please try again.")

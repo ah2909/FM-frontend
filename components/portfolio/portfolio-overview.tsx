@@ -18,7 +18,7 @@ export function PortfolioOverview({ portfolio }: { portfolio: any }) {
     allTimeHigh: Math.max(...balance) ?? 0,
     allTimeLow: Math.min(...balance) ?? 0,
     change24h: balance[0] !== 0 ? (portfolio.totalValue / balance[0]) * 100 - 100 : 0,
-    change7d: 50,
+    change7d: balance[6] !== 0 ? (portfolio.totalValue / balance[6]) * 100 - 100 : 0,
   }
 
   return (

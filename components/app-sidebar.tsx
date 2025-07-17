@@ -34,11 +34,11 @@ const items = [
     url: "/portfolios",
     icon: PieChart,
   },
-  {
-    title: "Transactions",
-    url: "/transactions",
-    icon: Wallet2,
-  },
+  // {
+  //   title: "Transactions",
+  //   url: "/transactions",
+  //   icon: Wallet2,
+  // },
   {
     title: "Exchanges",
     url: "/exchanges",

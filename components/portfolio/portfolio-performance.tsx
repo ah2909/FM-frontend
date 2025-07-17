@@ -26,17 +26,6 @@ export function PortfolioPerformance({ metrics }: PortfolioPerformanceProps) {
     <div className="space-y-4">
       {/* Main Performance Cards - Mobile: 1 column, Tablet: 2 columns, Desktop: 4 columns */}
       <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
-        <Card className="border-l-4 border-l-blue-500">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">Total Cost</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent className="pb-3">
-            <div className="text-xl sm:text-2xl font-bold">${metrics.totalCost.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground mt-1">Initial investment amount</p>
-          </CardContent>
-        </Card>
-
         <Card className="border-l-4 border-l-green-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">Current Value</CardTitle>
@@ -68,6 +57,17 @@ export function PortfolioPerformance({ metrics }: PortfolioPerformanceProps) {
               </span>
               <p className="ml-2 text-xs text-muted-foreground">From initial investment</p>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-l-4 border-l-blue-500">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">Total Cost</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent className="pb-3">
+            <div className="text-xl sm:text-2xl font-bold">${metrics.totalCost.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground mt-1">Initial investment amount</p>
           </CardContent>
         </Card>
 

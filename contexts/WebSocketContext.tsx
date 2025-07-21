@@ -24,7 +24,10 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
     const newSocket = io(process.env.NEXT_PUBLIC_WS_URL, {
       auth: {
         token: localStorage.getItem('user_id') || '',
-      }
+      },
+      transports: ['websocket'],
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
     }); // Replace with your WebSocket server URL
     setSocket(newSocket);
 

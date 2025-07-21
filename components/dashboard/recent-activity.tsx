@@ -96,7 +96,7 @@ export default function RecentActivity({ typeFilter }: RecentActivityProps) {
     const yesterday = new Date(today)
     yesterday.setDate(yesterday.getDate() - 1)
 
-    activities.forEach((activity) => {
+    activities?.forEach((activity) => {
       const activityDate = new Date(activity.created_at)
       let dateKey: string
 

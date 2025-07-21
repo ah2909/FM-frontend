@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { toast } from "sonner"
 import { Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -15,15 +15,22 @@ import {
 import { ExchangeAssetSelector } from "./exchange-asset-selector"
 import type { TokenExchange } from "./exchange-asset-selector"
 import { useAddTokenToPortfolioMutation } from "@/lib/store/services/portfolio-api"
+import { cn } from "@/lib/utils"
 
 interface ImportDataButtonProps {
   portfolio_id: number
   assets_array: any[]
+  variant?: "default" | "outline" | "ghost" | "destructive" | "secondary" | "link"
+  className?: string
 }
 
-export function ImportDataButton({ portfolio_id, assets_array }: ImportDataButtonProps) {
+export function ImportDataButton({ 
+  portfolio_id, 
+  assets_array,
+  variant = "default",
+  className,
+}: ImportDataButtonProps) {
   const [isOpen, setIsOpen] = useState(false)
-
   const [addTokenToPortfolio] = useAddTokenToPortfolioMutation()
 
   const handleAssetsSelected = async (assets: TokenExchange[]) => {
@@ -51,10 +58,10 @@ export function ImportDataButton({ portfolio_id, assets_array }: ImportDataButto
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="default" className="w-full sm:w-auto text-sm">
+        <Button variant={variant} className={cn(variant === "default" ? "w-full sm:w-auto text-sm" : "", className)}>
           <Download className="mr-2 h-4 w-4" />
-          <span className="hidden sm:inline">Import Data</span>
-          <span className="sm:hidden">Import</span>
+          <span className={variant === "default" ? "hidden sm:inline" : ""}>Import Data</span>
+          {variant === "default" && <span className="sm:hidden">Import</span>}
         </Button>
       </DialogTrigger>
       <DialogContent className="w-[95vw] max-w-[600px] max-h-[90vh] overflow-y-auto">

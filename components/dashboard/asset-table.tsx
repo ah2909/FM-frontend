@@ -52,7 +52,7 @@ export function AssetTable({ tokens, totalValue, isLoading = false }: AssetTable
                 <TableHead className="text-xs sm:text-sm text-center">PORTFOLIO (%)</TableHead>
                 <TableHead className="text-xs sm:text-sm text-center">HOLDINGS</TableHead>
                 <TableHead className="text-xs sm:text-sm text-center">PRICE (24H)</TableHead>
-                <TableHead className="w-12 text-xs sm:text-sm">ACTION</TableHead>
+                {/* <TableHead className="w-12 text-xs sm:text-sm">ACTION</TableHead> */}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -83,9 +83,9 @@ export function AssetTable({ tokens, totalValue, isLoading = false }: AssetTable
                   <TableCell>
                     <Skeleton className="h-4 w-16" />
                   </TableCell>
-                  <TableCell>
+                  {/* <TableCell>
                     <Skeleton className="h-8 w-8" />
-                  </TableCell>
+                  </TableCell> */}
                 </TableRow>
               ))}
             </TableBody>
@@ -120,7 +120,7 @@ export function AssetTable({ tokens, totalValue, isLoading = false }: AssetTable
               <TableHead className="text-xs hidden sm:table-cell">PORTFOLIO (%)</TableHead>
               <TableHead className="text-xs sm:text-sm text-center">HOLDINGS</TableHead>
               <TableHead className="text-xs sm:text-sm text-center">PRICE (24H)</TableHead>
-              <TableHead className="w-12 text-xs sm:text-sm">ACTION</TableHead>
+              {/* <TableHead className="w-12 text-xs sm:text-sm">ACTION</TableHead> */}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -179,11 +179,11 @@ export function AssetTable({ tokens, totalValue, isLoading = false }: AssetTable
                   <TableCell>
                     {currentPrice ? `$${Number(currentPrice).toFixed(2)}` : <Skeleton className="h-4 w-16" />}
                   </TableCell>
-                  <TableCell>
+                  {/* <TableCell>
                     <Button variant="ghost" size="icon">
                       <MoreHorizontal className="h-4 w-4" />
                     </Button>
-                  </TableCell>
+                  </TableCell> */}
                 </TableRow>
               )
             })}

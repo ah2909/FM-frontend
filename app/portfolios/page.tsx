@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { PlusCircle } from "lucide-react"
+import { PlusCircle, Edit } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { BaseHeader } from "@/components/base-header"
@@ -32,14 +32,37 @@ export default function PortfolioPage() {
     if (data?.data?.length === 0) router.push("/welcome")
   }, [isLoading, data, dispatch])
 
+  // Mobile menu items
+  const mobileMenuItems = [
+    {
+      label: "Import Data",
+      component: (
+        <ImportDataButton
+          portfolio_id={portfolio.id}
+          assets_array={tokens?.map((token: any) => token.symbol.toUpperCase())}
+          variant='ghost'
+          className="w-full justify-start h-auto p-2 font-normal"
+        />
+      ),
+    },
+    {
+      label: "Edit Portfolio",
+      icon: <Edit className="h-4 w-4" />,
+      onClick: () => router.push("/portfolios/edit"),
+    },
+  ]
+
   return (
     <ProtectedRoute>
       {isLoading ? (
         <Loading />
       ) : (
         <BaseShell>
-          <BaseHeader heading={portfolio.name} text={portfolio.description}>
-            <div className="flex flex-col w-full gap-2 sm:flex-row sm:w-auto sm:gap-3">
+          <BaseHeader
+              heading={portfolio.name}
+              text={portfolio.description}
+              mobileMenuItems={mobileMenuItems}
+            >
               <ImportDataButton
                 portfolio_id={portfolio.id}
                 assets_array={tokens?.map((token: any) => token.symbol.toUpperCase())}
@@ -48,7 +71,6 @@ export default function PortfolioPage() {
                 <PlusCircle className="mr-2 h-4 w-4" />
                 <Link href={`/portfolios/edit`} className="flex items-center">Edit Portfolio</Link>
               </Button>
-            </div>
           </BaseHeader>
           <div>
             {tokens.length > 0 && <PortfolioOverview portfolio={portfolio} />}

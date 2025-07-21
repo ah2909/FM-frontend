@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { useGetSupportedCEXQuery, useConnectExchangeMutation, type Exchange } from "@/lib/store/services/exchange-api"
 import Image from "next/image"
+import { ConnectionProgress } from "./connection-progress"
 
 const formSchema = z.object({
   api_key: z.string().min(1, { message: "API Key is required" }),

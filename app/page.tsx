@@ -39,12 +39,25 @@ export default function DashboardPage() {
 		if (data?.data?.length === 0) router.push("/welcome");
 	}, [data, isLoadingPortfolio, dispatch]);
 
+  // Mobile menu items
+    const mobileMenuItems = hasTokens ? [
+      {
+        label: "Import Data",
+        component: (
+          <TransactionSyncButton
+            portfolio_id={portfolio?.id}
+          />
+        )
+      },
+    ] : [];
+
 	return (
 		<ProtectedRoute>
       <BaseShell>
         <BaseHeader
           heading="Dashboard"
           text="Welcome back! Here's your portfolio overview"
+          mobileMenuItems={mobileMenuItems}
         >
           {hasTokens && (
             <div className="flex items-center justify-between mb-4">

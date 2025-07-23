@@ -56,7 +56,8 @@ export function ModeToggle() {
         </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem className="flex items-center cursor-pointer text-red-500 focus:text-red-500" onClick={async () => {
-              localStorage.removeItem('token');
+              localStorage.clear();
+              sessionStorage.clear();
               await fetch(`${process.env.NEXT_PUBLIC_AUTH_SERVICE_URL}/logout`, {credentials: 'include'});
               window.location.href = '/login';
             }}

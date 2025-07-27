@@ -26,27 +26,27 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <AuthProvider>
-          <WebSocketProvider>
-            <Provider store={store}>
-              <ThemeProvider attribute="class" enableSystem disableTransitionOnChange>
-                {!isGuestRoute() ? (
-                  <SidebarProvider>
-                    <AppSidebar />
-                    <SidebarInset>
-                      <SiteHeader />
-                      <main className="flex-1 min-h-0">{children}</main>
-                    </SidebarInset>
-                  </SidebarProvider>
-                ) : (
-                  <div className="min-h-screen flex flex-col">
-                    <main className="flex-1">{children}</main>
-                  </div>
-                )}
-                <Script src="https://accounts.google.com/gsi/client" strategy="beforeInteractive" />
-                <Toaster richColors />
-              </ThemeProvider>
-            </Provider>
-          </WebSocketProvider>
+          <ThemeProvider attribute="class" enableSystem disableTransitionOnChange>
+            {!isGuestRoute() ? (
+              <WebSocketProvider>
+              <Provider store={store}>
+              <SidebarProvider>
+                <AppSidebar />
+                <SidebarInset>
+                  <SiteHeader />
+                  <main className="flex-1 min-h-0">{children}</main>
+                </SidebarInset>
+              </SidebarProvider>
+              </Provider>
+              </WebSocketProvider>
+            ) : (
+              <div className="min-h-screen flex flex-col">
+                <main className="flex-1">{children}</main>
+              </div>
+            )}
+            <Script src="https://accounts.google.com/gsi/client" strategy="beforeInteractive" />
+            <Toaster richColors />
+          </ThemeProvider>   
         </AuthProvider>
       </body>
     </html>

@@ -15,7 +15,7 @@ export const exchangeApi = baseApi.injectEndpoints({
 			providesTags: ["Exchange"],
 		}),
 		connectExchange: builder.mutation<
-			void,
+			Response,
 			{
 				api_key: string;
 				secret_key: string;

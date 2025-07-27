@@ -1,0 +1,24 @@
+{
+  "name": "Cryptofolio",
+  "short_name": "Cryptofolio",
+  "theme_color": "#0c4d9dff",
+  "background_color": "#ffffff",
+  "start_url": "/",
+  "id": "Cryptofolio",
+  "display": "standalone",
+  "description": "Crypto portfolio management",
+  "icons": [
+    {
+      "purpose": "maskable",
+      "sizes": "1024x1024",
+      "src": "bitcoin.png",
+      "type": "image/png"
+    },
+    {
+      "purpose": "any",
+      "sizes": "512x512",
+      "src": "logo512.png",
+      "type": "image/png"
+    }
+  ]
+}

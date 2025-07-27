@@ -46,7 +46,7 @@ export const TokenMobileCard = memo(function TokenMobileCard({
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3 min-w-0 flex-1">
           <Avatar className="h-10 w-10 flex-shrink-0">
-            <AvatarImage src={token.img_url || "/placeholder.svg"} alt={token.symbol} />
+            <AvatarImage src={token.img_url} alt={token.symbol} />
             <AvatarFallback className="text-xs font-semibold">{token.symbol.toUpperCase().slice(0, 2)}</AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">

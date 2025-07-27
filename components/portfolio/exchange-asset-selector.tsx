@@ -115,7 +115,7 @@ export function ExchangeAssetSelector({ onAssetsSelected, setIsOpen, assets_arra
                   />
                   <div className="flex items-center ml-2 sm:ml-3 min-w-0 flex-1">
                     <Avatar className="h-6 w-6 sm:h-8 sm:w-8 mr-2 flex-shrink-0">
-                      <AvatarImage src={asset.img_url || "/placeholder.svg"} alt={asset.symbol} />
+                      <AvatarImage src={asset.img_url} alt={asset.symbol} />
                       <AvatarFallback>{asset.symbol}</AvatarFallback>
                     </Avatar>
                     <div className="min-w-0 flex-1">

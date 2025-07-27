@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { toast } from "sonner"
-import { Check, Plus, RefreshCw, Trash2, X } from "lucide-react"
+import { Check, Plus, RefreshCw, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -19,19 +19,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
 import { useGetSupportedCEXQuery, useConnectExchangeMutation, type Exchange } from "@/lib/store/services/exchange-api"
 import Image from "next/image"
-import { ConnectionProgress } from "./connection-progress"
+import { useWebSocketEvent } from "@/hooks/useWebSocketEvent"
 
 const formSchema = z.object({
   api_key: z.string().min(1, { message: "API Key is required" }),
@@ -45,8 +35,6 @@ type FormValues = z.infer<typeof formSchema>
 export function UserExchanges() {
   const [isOpen, setIsOpen] = useState(false)
   const [selectedExchange, setSelectedExchange] = useState<number | null>(null)
-  const [openDisconnectDialog, setOpenDisconnectDialog] = useState(false)
-  const [exchangeToDisconnect, setExchangeToDisconnect] = useState<string | null>(null)
 
   // RTK Query hooks
   const { data: exchanges, isLoading } = useGetSupportedCEXQuery()
@@ -60,7 +48,19 @@ export function UserExchanges() {
       secret_key: "",
     },
   })
-
+  useWebSocketEvent("update-portfolio", "", (data: any) => {
+    if(data?.success) {
+      toast.success("Portfolio updated successfully!", {
+        action: {
+          label: 'Update',
+          onClick: () => window.location.reload(),
+        },
+      })
+    }
+    else {
+      toast.error("Failed to update portfolio.")
+    }
+  })
   const handleExchangeSelect = (exchangeId: number) => {
     const exchange = exchanges?.data?.find((e: Exchange) => e.id === exchangeId)
 
@@ -80,31 +80,22 @@ export function UserExchanges() {
 
     try {
       await connectExchange(data).unwrap()
-      toast.success(`${exchange?.name} connection initiated! Processing your portfolio data...`)
+      toast.success(`${exchange?.name} connected successfully! Processing your portfolio data...`)
       setSelectedExchange(null)
       setIsOpen(false)
       form.reset()
     } catch (error) {
-      toast.error("Failed to connect exchange")
+      if(error?.status === 400) {
+        toast.error("Invalid API Key or Secret")
+      }
+      else
+        toast.error("Failed to connect exchange")
     }
   }
 
   const handleCancel = () => {
     setSelectedExchange(null)
     form.reset()
-  }
-
-  const handleConnectionComplete = (result: any) => {
-    // Refresh the exchanges list to show updated connection status
-    console.log("Connection complete:", result);
-
-    // You can also trigger a portfolio refresh here if needed
-    // dispatch(refreshPortfolio())
-  }
-
-  const handleConnectionError = (error: string) => {
-    console.error("Connection error:", error)
-    // Handle connection errors if needed
   }
 
   const mappingExchangesLogo = (exchange_id: number) => {
@@ -242,7 +233,7 @@ export function UserExchanges() {
                             <CardHeader className="flex flex-row items-center justify-between py-4">
                               <div className="flex items-center space-x-2">
                                 <Image
-                                  src={mappingExchangesLogo(exchange.id) || "/placeholder.svg"}
+                                  src={mappingExchangesLogo(exchange.id)}
                                   alt={exchange.name}
                                   width={40}
                                   height={40}
@@ -259,7 +250,7 @@ export function UserExchanges() {
                             <CardContent className="pb-4">
                               <CardDescription>
                                 {exchange.is_connected
-                                  ? "✅ Connected and syncing"
+                                  ? "✅ Connected and synced"
                                   : "Connect to import your balances and transactions"}
                               </CardDescription>
                             </CardContent>
@@ -292,7 +283,7 @@ export function UserExchanges() {
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <div className="flex items-center space-x-2">
                     <Image
-                      src={mappingExchangesLogo(exchange.id) || "/placeholder.svg"}
+                      src={mappingExchangesLogo(exchange.id)}
                       alt={exchange.name}
                       width={40}
                       height={40}
@@ -302,57 +293,15 @@ export function UserExchanges() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <CardDescription>
-                    {exchange.lastSync ? (
-                      <>Last synced: {new Date(exchange.lastSync).toLocaleString()}</>
-                    ) : (
-                      "Connected and ready"
-                    )}
+                  <CardDescription> 
+                    ✅ Connected and ready
                   </CardDescription>
-                  {/* <div className="flex flex-col sm:flex-row justify-end p-4 pt-0 space-y-2 sm:space-y-0 sm:space-x-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDisconnectClick(exchange.id)}
-                      className="w-full sm:w-auto"
-                    >
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      Disconnect
-                    </Button>
-                    <Button
-                      variant="default"
-                      size="sm"
-                      onClick={() => handleSync(exchange.id)}
-                      className="w-full sm:w-auto"
-                    >
-                      <RefreshCw className="h-4 w-4 mr-1" />
-                      Sync
-                    </Button>
-                  </div> */}
                 </CardContent>
               </Card>
             ))}
           </div>
         )}
-        {/* <AlertDialog open={openDisconnectDialog} onOpenChange={setOpenDisconnectDialog}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Disconnect Exchange?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This will disconnect the exchange from your account. Any portfolios using this exchange will no longer
-                receive automatic updates.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDisconnectConfirm}>Disconnect</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog> */}
       </div>
-
-      {/* Connection Progress Component */}
-      <ConnectionProgress onComplete={handleConnectionComplete} onError={handleConnectionError} />
     </>
   )
 }

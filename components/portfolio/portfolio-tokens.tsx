@@ -199,7 +199,7 @@ export function PortfolioTokens({ portfolio }: PortfolioTokensProps) {
                     <TableCell>
                       <div className="flex items-center min-w-0">
                         <Avatar className="h-8 w-8 sm:h-9 sm:w-9 flex-shrink-0">
-                          <AvatarImage src={token.img_url || "/placeholder.svg"} alt={token.symbol} />
+                          <AvatarImage src={token.img_url} alt={token.symbol} />
                           <AvatarFallback>{token.symbol.toUpperCase().slice(0, 2)}</AvatarFallback>
                         </Avatar>
                         <div className="ml-3 sm:ml-4 min-w-0">

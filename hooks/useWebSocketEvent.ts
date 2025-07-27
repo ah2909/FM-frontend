@@ -27,7 +27,7 @@ export const useWebSocketEvent = <T>(
   useEffect(() => {
     if (stream !== '') return;
     const handler = (data: T) => callback(data);
-    socket?.on('sync-transactions', handler)
+    socket?.on(eventName, handler)
     return () => {
         socket?.off(eventName, handler);
     };

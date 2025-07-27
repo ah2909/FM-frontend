@@ -92,7 +92,7 @@ export function ConnectedExchanges() {
               <CardHeader className="flex flex-row items-center justify-between py-4">
                 <div className="flex items-center space-x-2">
                   {exchange.img_url && (
-                    <img src={exchange.img_url || "/placeholder.svg"} alt={exchange.name} className="h-6 w-6" />
+                    <img src={exchange.img_url} alt={exchange.name} className="h-6 w-6" />
                   )}
                   <CardTitle className="text-base">{exchange.name}</CardTitle>
                 </div>

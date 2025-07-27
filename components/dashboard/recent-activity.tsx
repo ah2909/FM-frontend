@@ -17,7 +17,6 @@ interface RecentActivity {
   symbol: string
   name: string
   img_url: string
-  exchange_name?: string
   transaction_count?: number
   created_at: string
 }
@@ -70,9 +69,9 @@ export default function RecentActivity({ typeFilter }: RecentActivityProps) {
       case "Remove asset":
         return "Removed from portfolio"
       case "Sync asset transactions":
-        return `Synced ${activity.transaction_count || 0} transactions from ${activity.exchange_name}`
+        return `Synced ${activity.transaction_count || 0} transactions`
       case "Update asset":
-        return `Updated from ${activity.exchange_name}`
+        return `Updated ${activity.transaction_count || 0} transactions from new connected exchange`
       default:
         return "Activity recorded"
     }
@@ -209,7 +208,7 @@ export default function RecentActivity({ typeFilter }: RecentActivityProps) {
                     {/* Asset Avatar */}
                     <div className="relative flex-shrink-0">
                       <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
-                        <AvatarImage src={activity.img_url || "/placeholder.svg"} alt={activity.symbol} />
+                        <AvatarImage src={activity.img_url} alt={activity.symbol} />
                         <AvatarFallback className="text-xs font-semibold">
                           {activity.symbol?.slice(0, 2).toUpperCase()}
                         </AvatarFallback>

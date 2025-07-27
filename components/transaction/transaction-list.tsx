@@ -41,7 +41,7 @@ export function TransactionList({ selectedToken }: TransactionListProps) {
       case 3:
         return "/bybit.png"
       default:
-        return "/placeholder-logo.png"
+        return ""
     }
   }
 
@@ -98,7 +98,7 @@ export function TransactionList({ selectedToken }: TransactionListProps) {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={selectedToken.img_url || "/placeholder.svg"} alt={selectedToken.symbol} />
+                        <AvatarImage src={selectedToken.img_url} alt={selectedToken.symbol} />
                         <AvatarFallback>{selectedToken.symbol.toUpperCase()}</AvatarFallback>
                       </Avatar>
                       <div>
@@ -131,7 +131,7 @@ export function TransactionList({ selectedToken }: TransactionListProps) {
                       <div className="flex items-center space-x-2 text-sm">
                         <Avatar className="h-6 w-6">
                           <AvatarImage
-                            src={mappingExchangesLogo(transaction.exchange_id) || "/placeholder.svg"}
+                            src={mappingExchangesLogo(transaction.exchange_id)}
                             alt={mappingExchanges(transaction.exchange_id)}
                           />
                           <AvatarFallback className="text-xs">
@@ -152,7 +152,7 @@ export function TransactionList({ selectedToken }: TransactionListProps) {
                   {/* Left side - Crypto icon and info */}
                   <div className="col-span-2 flex items-center space-x-4">
                     <Avatar className="h-9 w-9">
-                      <AvatarImage src={selectedToken.img_url || "/placeholder.svg"} alt={selectedToken.symbol} />
+                      <AvatarImage src={selectedToken.img_url} alt={selectedToken.symbol} />
                       <AvatarFallback>{selectedToken.symbol.toUpperCase()}</AvatarFallback>
                     </Avatar>
                     <div className="min-w-0">
@@ -189,7 +189,7 @@ export function TransactionList({ selectedToken }: TransactionListProps) {
                   <div className="col-span-2 flex items-center space-x-2">
                     <Avatar className="h-8 w-8 shrink-0">
                       <AvatarImage
-                        src={mappingExchangesLogo(transaction.exchange_id) || "/placeholder.svg"}
+                        src={mappingExchangesLogo(transaction.exchange_id)}
                         alt={mappingExchanges(transaction.exchange_id)}
                       />
                       <AvatarFallback className="text-xs">{mappingExchanges(transaction.exchange_id)}</AvatarFallback>

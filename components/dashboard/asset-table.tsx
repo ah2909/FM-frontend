@@ -136,7 +136,7 @@ export function AssetTable({ tokens, totalValue, isLoading = false }: AssetTable
                     <div className="flex items-center gap-2 min-w-0">
                       <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full overflow-hidden flex-shrink-0">
                         <img
-                          src={token.img_url || "/placeholder.svg"}
+                          src={token.img_url}
                           alt={token.symbol}
                           className="w-full h-full object-cover"
                         />

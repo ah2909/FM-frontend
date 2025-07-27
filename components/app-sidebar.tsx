@@ -168,7 +168,7 @@ export function AppSidebar() {
               {!isLoading && data?.user && (
                 <div className="flex items-center gap-3 px-3 py-2">
                   <Avatar className="h-8 w-8 rounded-lg">
-                    <AvatarImage src={data.user.avatar_url || "/placeholder.svg"} alt={data.user.name} />
+                    <AvatarImage src={data.user.avatar_url} alt={data.user.name} />
                     <AvatarFallback className="rounded-lg bg-primary text-primary-foreground">
                       {data.user.name
                         ?.split(" ")

@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import Link from "next/link"
 import { ArrowRight, BarChart3, Wallet, LineChart, TrendingUp } from "lucide-react"
+import Image from "next/image"
 
 export default async function WelcomePage() {
   return (
@@ -67,8 +68,10 @@ export default async function WelcomePage() {
                   <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 to-blue-500/20 dark:from-emerald-500/10 dark:to-blue-500/10" />
                   <div className="relative h-full p-6 md:p-10">
                     <div className="flex h-full items-center justify-center">
-                      <img
-                        src="/placeholder.svg?height=400&width=400"
+                      <Image
+                        src="/welcome.png"
+                        height={400}
+                        width={400}
                         alt="Crypto portfolio illustration"
                         className="max-w-full rounded-lg shadow-lg"
                       />

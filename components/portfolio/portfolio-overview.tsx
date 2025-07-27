@@ -17,8 +17,8 @@ export function PortfolioOverview({ portfolio }: { portfolio: any }) {
     unrealizedPnlPercentage: ((portfolio.totalValue - totalCost) / totalCost) * 100,
     allTimeHigh: Math.max(...balance) || 0,
     allTimeLow: Math.min(...balance) || 0,
-    change24h: isNaN(balance[0]) && balance[0] !== 0 ? (portfolio.totalValue / balance[0]) * 100 - 100 : 0,
-    change7d: isNaN(balance[6]) && balance[6] !== 0 ? (portfolio.totalValue / balance[6]) * 100 - 100 : 0,
+    change24h: !isNaN(balance[0]) && balance[0] !== 0 ? (portfolio.totalValue / balance[0]) * 100 - 100 : 0,
+    change7d: !isNaN(balance[6]) && balance[6] !== 0 ? (portfolio.totalValue / balance[6]) * 100 - 100 : 0,
   }
 
   return (

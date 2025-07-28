@@ -6,9 +6,8 @@ const DYNAMIC_CACHE_NAME = "cryptofolio-dynamic-v1"
 const STATIC_ASSETS = [
   "/",
   "/manifest.json",
-  "/logo.png",
-  "/icons/icon-192x192.png",
-  "/icons/icon-512x512.png",
+  "/icons/192.png",
+  "/icons/512.png",
   "/offline.html",
 ]
 
@@ -152,7 +151,7 @@ self.addEventListener("fetch", (event) => {
       .catch(() => {
         // Fallback for failed requests
         if (request.destination === "image") {
-          return caches.match("/icons/icon-192x192.png")
+          return caches.match("/icons/192.png")
         }
         return new Response("Offline", { status: 503 })
       }),
@@ -160,83 +159,78 @@ self.addEventListener("fetch", (event) => {
 })
 
 // Background sync for when connection is restored
-self.addEventListener("sync", (event) => {
-  console.log("Background sync triggered:", event.tag)
+// self.addEventListener("sync", (event) => {
+//   console.log("Background sync triggered:", event.tag)
 
-  if (event.tag === "portfolio-sync") {
-    event.waitUntil(
-      // Implement your sync logic here
-      syncPortfolioData(),
-    )
-  }
-})
+//   if (event.tag === "portfolio-sync") {
+//     event.waitUntil(
+//       // Implement your sync logic here
+//       syncPortfolioData(),
+//     )
+//   }
+// })
 
 // Push notifications
-self.addEventListener("push", (event) => {
-  console.log("Push notification received:", event)
+// self.addEventListener("push", (event) => {
+//   console.log("Push notification received:", event)
 
-  const options = {
-    body: event.data ? event.data.text() : "New update available!",
-    icon: "/icons/icon-192x192.png",
-    badge: "/icons/icon-72x72.png",
-    vibrate: [200, 100, 200],
-    data: {
-      dateOfArrival: Date.now(),
-      primaryKey: 1,
-    },
-    actions: [
-      {
-        action: "explore",
-        title: "View Portfolio",
-        icon: "/icons/shortcut-portfolio.png",
-      },
-      {
-        action: "close",
-        title: "Close",
-        icon: "/icons/icon-72x72.png",
-      },
-    ],
-  }
+//   const options = {
+//     body: event.data ? event.data.text() : "New update available!",
+//     icon: "/icons/192.png",
+//     badge: "/icons/72.png",
+//     vibrate: [200, 100, 200],
+//     data: {
+//       dateOfArrival: Date.now(),
+//       primaryKey: 1,
+//     },
+//     actions: [
+//       {
+//         action: "close",
+//         title: "Close",
+//         icon: "/icons/72.png",
+//       },
+//     ],
+//   }
 
-  event.waitUntil(self.registration.showNotification("CryptoFolio", options))
-})
+//   event.waitUntil(self.registration.showNotification("CryptoFolio", options))
+// })
 
 // Notification click handling
-self.addEventListener("notificationclick", (event) => {
-  console.log("Notification clicked:", event)
+// self.addEventListener("notificationclick", (event) => {
+//   console.log("Notification clicked:", event)
 
-  event.notification.close()
+//   event.notification.close()
 
-  if (event.action === "explore") {
-    event.waitUntil(clients.openWindow("/portfolios"))
-  } else if (event.action === "close") {
-    // Just close the notification
-  } else {
-    // Default action - open the app
-    event.waitUntil(clients.openWindow("/"))
-  }
-})
+//   if (event.action === "explore") {
+//     event.waitUntil(clients.openWindow("/portfolios"))
+//   } else if (event.action === "close") {
+//     // Just close the notification
+//   } else {
+//     // Default action - open the app
+//     event.waitUntil(clients.openWindow("/"))
+//   }
+// })
 
 // Helper function for portfolio sync
-async function syncPortfolioData() {
-  try {
-    // Implement your portfolio sync logic here
-    console.log("Syncing portfolio data in background...")
+// async function syncPortfolioData() {
+//   try {
+//     // Implement your portfolio sync logic here
+//     console.log("Syncing portfolio data in background...")
 
-    // Example: fetch latest portfolio data
-    const response = await fetch("/api/portfolio/sync", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
+//     // Example: fetch latest portfolio data
+//     const response = await fetch("/api/portfolio/sync", {
+//       method: "POST",
+//       headers: {
+//         "Content-Type": "application/json",
+//       },
+//     })
 
-    if (response.ok) {
-      console.log("Portfolio sync completed successfully")
-    } else {
-      console.error("Portfolio sync failed:", response.status)
-    }
-  } catch (error) {
-    console.error("Portfolio sync error:", error)
-  }
-}
+//     if (response.ok) {
+//       console.log("Portfolio sync completed successfully")
+//     } else {
+//       console.error("Portfolio sync failed:", response.status)
+//     }
+//   } catch (error) {
+//     console.error("Portfolio sync error:", error)
+//   }
+// }

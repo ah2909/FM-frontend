@@ -91,7 +91,7 @@ export function PWAInstallPrompt() {
   }
 
   // Don't show if already installed or no prompt available
-  if (isInstalled || (!deferredPrompt && !isIOS) || !showInstallPrompt) {
+  if (isInstalled || !deferredPrompt || !showInstallPrompt) {
     return null
   }
 

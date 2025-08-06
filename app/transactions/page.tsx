@@ -12,6 +12,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Loading from "@/components/Loading";
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { TransactionHistoryWarning } from "@/components/transaction/transaction-history-warning";
 
 function TransactionsContent() {
 	const params = useSearchParams();
@@ -60,6 +61,7 @@ function TransactionsContent() {
                     </Button>
                 </Link> */}
 			</BaseHeader>
+			<TransactionHistoryWarning className="mb-6" />
 			{isLoading ? (
 				<Loading />
 			) : !selectedToken ? (

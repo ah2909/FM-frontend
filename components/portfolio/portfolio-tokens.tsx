@@ -105,19 +105,19 @@ export function PortfolioTokens({ portfolio }: PortfolioTokensProps) {
     })
   }, [tokens, priceData])
 
-  const calcualteTotalValue = useMemo(() => {
-    const totalValue = tokens.reduce((acc: number, t: Token) => {
-      const price = priceData[t.symbol]
-      return acc + price * t.amount
-    }, 0)
-    return totalValue;
-  }, [tokens, priceData])
+  const calculateTotalValue = useMemo(() => {
+  if (!tokens || tokens.length === 0) return portfolio.totalValue;
+  return tokens.reduce((acc: number, t: Token) => {
+    const price = priceData[t.symbol] ?? t.price ?? 0;
+    return acc + price * t.amount;
+  }, 0);
+}, [tokens, priceData]);
 
-  useEffect(() => {
-    if (!isNaN(calcualteTotalValue)) {
-      dispatch(updateTotalValue(calcualteTotalValue))
-    }
-  }, [calcualteTotalValue]);
+useEffect(() => {
+  if (typeof calculateTotalValue === "number" && !isNaN(calculateTotalValue)) {
+    dispatch(updateTotalValue(calculateTotalValue));
+  }
+}, [calculateTotalValue, dispatch]);
 
   if (tokens.length === 0) {
     return (

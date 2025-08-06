@@ -51,6 +51,9 @@ export const portfoliosSlice = createSlice({
         state.portfolio.totalValue += updatedAmount * state.assets[assetIndex].price;
       }
     },
+    updateTotalValue: (state, action: PayloadAction<number>) => {
+      state.portfolio.totalValue = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder.addMatcher(
@@ -74,6 +77,6 @@ export const portfoliosSlice = createSlice({
   }
 })
 
-export const { setPortfolio, setAssets, removeSymbol, editPortfolio, syncTransactionsByAssetID } = portfoliosSlice.actions
+export const { setPortfolio, setAssets, removeSymbol, editPortfolio, syncTransactionsByAssetID, updateTotalValue } = portfoliosSlice.actions
 export default portfoliosSlice.reducer
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useCallback } from "react"
+import { useState, useMemo, useCallback, useEffect } from "react"
 import Link from "next/link"
 import { MoreHorizontal, Plus, Trash2, Search, ChevronRight } from "lucide-react"
 import { Input } from "@/components/ui/input"
@@ -23,7 +23,7 @@ import { toast } from "sonner"
 import { useRemoveTokenFromPortfolioMutation } from "@/lib/store/services/portfolio-api"
 import { useDispatch } from "react-redux"
 import { useWebSocketEvent } from "@/hooks/useWebSocketEvent"
-import { removeSymbol } from "@/lib/store/features/portfolios-slice"
+import { removeSymbol, updateTotalValue } from "@/lib/store/features/portfolios-slice"
 import { useSelector } from "react-redux"
 import { TokenMobileList } from "./token-mobile-list"
 
@@ -104,6 +104,20 @@ export function PortfolioTokens({ portfolio }: PortfolioTokensProps) {
       return bValue - aValue
     })
   }, [tokens, priceData])
+
+  const calcualteTotalValue = useMemo(() => {
+    const totalValue = tokens.reduce((acc: number, t: Token) => {
+      const price = priceData[t.symbol]
+      return acc + price * t.amount
+    }, 0)
+    return totalValue;
+  }, [tokens, priceData])
+
+  useEffect(() => {
+    if (!isNaN(calcualteTotalValue)) {
+      dispatch(updateTotalValue(calcualteTotalValue))
+    }
+  }, [calcualteTotalValue]);
 
   if (tokens.length === 0) {
     return (

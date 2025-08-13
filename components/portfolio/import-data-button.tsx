@@ -1,21 +1,22 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { toast } from "sonner"
-import { Download } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
+import { Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { ExchangeAssetSelector } from "./exchange-asset-selector"
-import type { TokenExchange } from "./exchange-asset-selector"
-import { useAddTokenToPortfolioMutation } from "@/lib/store/services/portfolio-api"
-import { cn } from "@/lib/utils"
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from "@/components/ui/dialog";
+import { ExchangeAssetSelector } from "./exchange-asset-selector";
+import type { TokenExchange } from "./exchange-asset-selector";
+import { useAddTokenToPortfolioMutation } from "@/lib/store/services/portfolio-api";
+import { cn } from "@/lib/utils";
+import { useWebSocketEvent } from "@/hooks/useWebSocketEvent";
 
 interface ImportDataButtonProps {
   portfolio_id: number
@@ -24,14 +25,24 @@ interface ImportDataButtonProps {
   className?: string
 }
 
-export function ImportDataButton({ 
-  portfolio_id, 
-  assets_array,
-  variant = "default",
-  className,
+export function ImportDataButton({
+	portfolio_id,
+	assets_array,
+	variant = "default",
+	className,
 }: ImportDataButtonProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [addTokenToPortfolio] = useAddTokenToPortfolioMutation()
+
+  useWebSocketEvent("add-token-to-port", "", (data: any) => {
+    if(data?.success) {
+      toast.success(data?.message ?? 'Add tokens to portfolio successfully.')
+      setTimeout(() => window.location.reload(), 2000)
+    }
+    else {
+      toast.error("Failed to add tokens to portfolio.")
+    }
+  })
 
   const handleAssetsSelected = async (assets: TokenExchange[]) => {
     if (assets.length === 0) return
@@ -44,9 +55,7 @@ export function ImportDataButton({
           exchange: asset.exchanges,
         })),
       })
-      if (response.data?.success) {
-        toast.success(`${assets.length} assets added to portfolio`)
-      } else {
+      if (!response.data?.success) {
         toast.error("Failed to add assets to portfolio.")
       }
       setIsOpen(false)

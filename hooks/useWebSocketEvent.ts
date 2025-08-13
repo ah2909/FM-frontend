@@ -21,7 +21,7 @@ export const useWebSocketEvent = <T>(
         socket.off(eventName, handler);
         unsubscribe(stream);
     };
-  }, [stream]);
+  }, [socket, eventName, stream]);
 
   //For in-app event
   useEffect(() => {
@@ -31,5 +31,5 @@ export const useWebSocketEvent = <T>(
     return () => {
         socket?.off(eventName, handler);
     };
-  }, [stream]); 
+  }, [socket, eventName, stream]); 
 };

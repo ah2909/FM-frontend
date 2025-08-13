@@ -12,10 +12,11 @@ const STATIC_ASSETS = [
 ]
 
 // API endpoints to cache
-const API_CACHE_PATTERNS = [
-  /https:\/\/backend.cryptofolio.io.vn\/api\/*/
-  // Add your API endpoints here
-]
+// const API_CACHE_PATTERNS = [
+//   /https:\/\/backend.cryptofolio.io.vn\/api\/*/,
+//   /http:\/\/localhost:3000\/api\/*/,
+//   // Add your API endpoints here
+// ]
 
 // Install event - cache static assets
 self.addEventListener("install", (event) => {
@@ -58,105 +59,105 @@ self.addEventListener("activate", (event) => {
 })
 
 // Fetch event - serve from cache, fallback to network
-self.addEventListener("fetch", (event) => {
-  const { request } = event
-  const url = new URL(request.url)
+// self.addEventListener("fetch", (event) => {
+//   const { request } = event
+//   const url = new URL(request.url)
 
-  // Handle navigation requests
-  if (request.mode === "navigate") {
-    event.respondWith(
-      fetch(request)
-        .then((response) => {
-          // Cache successful navigation responses
-          if (response.status === 200) {
-            const responseClone = response.clone()
-            caches.open(DYNAMIC_CACHE_NAME).then((cache) => cache.put(request, responseClone))
-          }
-          return response
-        })
-        .catch(() => {
-          // Serve cached version or offline page
-          return caches.match(request).then((cachedResponse) => {
-            return cachedResponse || caches.match("/offline.html")
-          })
-        }),
-    )
-    return
-  }
+//   // Handle navigation requests
+//   if (request.mode === "navigate") {
+//     event.respondWith(
+//       fetch(request)
+//         .then((response) => {
+//           // Cache successful navigation responses
+//           if (response.status === 200) {
+//             const responseClone = response.clone()
+//             caches.open(DYNAMIC_CACHE_NAME).then((cache) => cache.put(request, responseClone))
+//           }
+//           return response
+//         })
+//         .catch(() => {
+//           // Serve cached version or offline page
+//           return caches.match(request).then((cachedResponse) => {
+//             return cachedResponse || caches.match("/offline.html")
+//           })
+//         }),
+//     )
+//     return
+//   }
 
-  // Handle API requests
-  if (API_CACHE_PATTERNS.some((pattern) => pattern.test(request.url))) {
-    event.respondWith(
-      caches.open(DYNAMIC_CACHE_NAME).then((cache) => {
-        return fetch(request)
-          .then((response) => {
-            // Cache successful API responses for 5 minutes
-            if (response.status === 200) {
-              const responseClone = response.clone()
-              // Add timestamp to track cache age
-              const headers = new Headers(responseClone.headers)
-              headers.set("sw-cache-timestamp", Date.now().toString())
-              const cachedResponse = new Response(responseClone.body, {
-                status: responseClone.status,
-                statusText: responseClone.statusText,
-                headers: headers,
-              })
-              cache.put(request, cachedResponse)
-            }
-            return response
-          })
-          .catch(() => {
-            // Serve from cache if network fails
-            return cache.match(request).then((cachedResponse) => {
-              if (cachedResponse) {
-                const cacheTimestamp = cachedResponse.headers.get("sw-cache-timestamp")
-                const now = Date.now()
-                const fiveMinutes = 5 * 60 * 1000
+//   // Handle API requests
+//   if (API_CACHE_PATTERNS.some((pattern) => pattern.test(request.url))) {
+//     event.respondWith(
+//       caches.open(DYNAMIC_CACHE_NAME).then((cache) => {
+//         return fetch(request)
+//           .then((response) => {
+//             // Cache successful API responses for 5 minutes
+//             if (response.status === 200) {
+//               const responseClone = response.clone()
+//               // Add timestamp to track cache age
+//               const headers = new Headers(responseClone.headers)
+//               headers.set("sw-cache-timestamp", Date.now().toString())
+//               const cachedResponse = new Response(responseClone.body, {
+//                 status: responseClone.status,
+//                 statusText: responseClone.statusText,
+//                 headers: headers,
+//               })
+//               cache.put(request, cachedResponse)
+//             }
+//             return response
+//           })
+//           .catch(() => {
+//             // Serve from cache if network fails
+//             return cache.match(request).then((cachedResponse) => {
+//               if (cachedResponse) {
+//                 const cacheTimestamp = cachedResponse.headers.get("sw-cache-timestamp")
+//                 const now = Date.now()
+//                 const fiveMinutes = 5 * 60 * 1000
 
-                // Serve cached response if less than 5 minutes old
-                if (cacheTimestamp && now - Number.parseInt(cacheTimestamp) < fiveMinutes) {
-                  return cachedResponse
-                }
-              }
-              // Return a basic offline response for API calls
-              return new Response(JSON.stringify({ error: "Offline", cached: false }), {
-                status: 503,
-                headers: { "Content-Type": "application/json" },
-              })
-            })
-          })
-      }),
-    )
-    return
-  }
+//                 // Serve cached response if less than 5 minutes old
+//                 if (cacheTimestamp && now - Number.parseInt(cacheTimestamp) < fiveMinutes) {
+//                   return cachedResponse
+//                 }
+//               }
+//               // Return a basic offline response for API calls
+//               return new Response(JSON.stringify({ error: "Offline", cached: false }), {
+//                 status: 503,
+//                 headers: { "Content-Type": "application/json" },
+//               })
+//             })
+//           })
+//       }),
+//     )
+//     return
+//   }
 
   // Handle static assets
-  event.respondWith(
-    caches
-      .match(request)
-      .then((cachedResponse) => {
-        if (cachedResponse) {
-          return cachedResponse
-        }
+//   event.respondWith(
+//     caches
+//       .match(request)
+//       .then((cachedResponse) => {
+//         if (cachedResponse) {
+//           return cachedResponse
+//         }
 
-        return fetch(request).then((response) => {
-          // Cache successful responses
-          if (response.status === 200) {
-            const responseClone = response.clone()
-            caches.open(DYNAMIC_CACHE_NAME).then((cache) => cache.put(request, responseClone))
-          }
-          return response
-        })
-      })
-      .catch(() => {
-        // Fallback for failed requests
-        if (request.destination === "image") {
-          return caches.match("/icons/192.png")
-        }
-        return new Response("Offline", { status: 503 })
-      }),
-  )
-})
+//         return fetch(request).then((response) => {
+//           // Cache successful responses
+//           if (response.status === 200) {
+//             const responseClone = response.clone()
+//             caches.open(DYNAMIC_CACHE_NAME).then((cache) => cache.put(request, responseClone))
+//           }
+//           return response
+//         })
+//       })
+//       .catch(() => {
+//         // Fallback for failed requests
+//         if (request.destination === "image") {
+//           return caches.match("/icons/192.png")
+//         }
+//         return new Response("Offline", { status: 503 })
+//       }),
+//   )
+// })
 
 // Background sync for when connection is restored
 // self.addEventListener("sync", (event) => {

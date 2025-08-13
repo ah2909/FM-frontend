@@ -8,16 +8,6 @@ export const registerServiceWorker = async () => {
 
       registration.addEventListener("updatefound", () => {
         const newWorker = registration.installing
-        if (newWorker) {
-          newWorker.addEventListener("statechange", () => {
-            if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
-              // New content is available, show update notification
-              if (window.confirm("New version available! Reload to update?")) {
-                window.location.reload()
-              }
-            }
-          })
-        }
       })
 
       console.log("Service Worker registered successfully")

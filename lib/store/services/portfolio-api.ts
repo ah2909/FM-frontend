@@ -54,7 +54,6 @@ export const portfolioApi = baseApi.injectEndpoints({
 				method: "POST",
 				body: token,
 			}),
-			invalidatesTags: ["Portfolio"],
 		}),
 		addTokenToPortfolioManual: builder.mutation<
 			void,
@@ -94,6 +93,13 @@ export const portfolioApi = baseApi.injectEndpoints({
 				url: `/portfolio/recent-activity`,
 			}),
 		}),
+		importTransactions: builder.mutation<Response, FormData>({
+			query: (data) => ({
+				url: `/portfolio/import-transactions`,
+				method: "POST",
+				body: data,
+			}),
+		}),
 	}),
 });
 
@@ -108,4 +114,5 @@ export const {
 	useSyncTransactionsMutation,
 	useGetBalanceDataQuery,
 	useGetRecentActivityQuery,
+	useImportTransactionsMutation,
 } = portfolioApi;

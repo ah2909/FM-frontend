@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { ArrowLeft, Download, FileText, Upload, CheckCircle, AlertCircle } from 'lucide-react'
+import { ArrowLeft, Download, FileText, Upload, CheckCircle, AlertCircle, ChevronLeft } from 'lucide-react'
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -13,93 +13,64 @@ import { BaseShell } from "@/components/base-shell"
 import { BaseHeader } from "@/components/base-header"
 import ProtectedRoute from "@/components/ProtectedRoute"
 import { toast } from "sonner"
+import { useImportTransactionsMutation } from "@/lib/store/services/portfolio-api"
+import { useWebSocketEvent } from "@/hooks/useWebSocketEvent"
 
 interface ExchangeGuide {
   name: string
   steps: string[]
-  csvFormat: string[]
-  templateFile: string
   notes?: string[]
 }
 
 const exchangeGuides: Record<string, ExchangeGuide> = {
-  binance: {
-    name: "Binance",
-    steps: [
-      "Log in to your Binance account",
-      "Go to 'Wallet' → 'Transaction History'",
-      "Select 'Spot Trading' and set your date range",
-      "Click 'Export Complete Trade History'",
-      "Download the CSV file when ready"
-    ],
-    csvFormat: [
-      "Date(UTC)",
-      "Pair", 
-      "Side",
-      "Order Amount",
-      "Order Price",
-      "Fee",
-      "Fee Coin"
-    ],
-    templateFile: "/templates/binance-template.csv",
-    notes: [
-      "Make sure to export 'Complete Trade History' not just recent trades",
-      "Date format should be YYYY-MM-DD HH:mm:ss"
-    ]
-  },
+  // binance: {
+  //   name: "Binance",
+  //   steps: [
+  //     "Log in to your Binance account",
+  //     "Go to 'Wallet' → 'Transaction History'",
+  //     "Select 'Spot Trading' and set your date range",
+  //     "Click 'Export Complete Trade History'",
+  //     "Download the CSV file when ready"
+  //   ],
+  //   notes: [
+  //     "Select SPOT trading (if any) and the longest period of time available"
+  //   ]
+  // },
   bybit: {
     name: "Bybit",
     steps: [
       "Log in to your Bybit account",
-      "Go to 'Assets' → 'Transaction History'",
-      "Select 'Trade History' tab",
-      "Set your desired date range",
+      "Go to 'Orders' → 'Unified Trading Order'",
+      "In tab 'Spot Orders', select tab 'Trade History'",
+      "Click Export in the top right corner",
+      "Select longest date range available",
       "Click 'Export' and download CSV"
     ],
-    csvFormat: [
-      "Time",
-      "Symbol",
-      "Side",
-      "Qty",
-      "Price",
-      "Fee",
-      "Fee Coin"
-    ],
-    templateFile: "/templates/bybit-template.csv",
     notes: [
-      "Export from 'Trade History' section for spot trading",
-      "Time format: YYYY-MM-DD HH:mm:ss"
+      "You can export data from any 6-month period within the last 2 years",
+      "Select SPOT trading (if any) and the longest period of time available"
     ]
   },
   okx: {
     name: "OKX",
     steps: [
       "Log in to your OKX account",
-      "Go to 'Assets' → 'Bills'",
-      "Select 'Trading' category",
-      "Set your date range (max 3 months per export)",
-      "Click 'Export' to download CSV"
+      "Go to 'Assets' → 'Order Center'",
+      "Select 'Trading History' tab",
+      "Click download icon in the top right corner",
+      "Select 'Spot' for Instrument, longest date range available",
+      "Click 'Export' and download CSV"
     ],
-    csvFormat: [
-      "Time",
-      "Instrument",
-      "Side",
-      "Size",
-      "Price",
-      "Fee",
-      "Fee Currency"
-    ],
-    templateFile: "/templates/okx-template.csv",
     notes: [
-      "OKX limits exports to 3 months at a time",
-      "Instrument format: BTC-USDT (will be converted to BTCUSDT)"
+      "You must remove first line of CSV file before importing",
+      "Select SPOT trading (if any) and the longest period of time available",
     ]
   }
 }
 
 export default function ImportPage() {
   const router = useRouter()
-  const [selectedExchange, setSelectedExchange] = useState<string>("binance")
+  const [selectedExchange, setSelectedExchange] = useState<string>("bybit")
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
   const [processingProgress, setProcessingProgress] = useState(0)
@@ -108,6 +79,16 @@ export default function ImportPage() {
     errors: number
     total: number
   } | null>(null)
+  const [importTransactions, isLoading] = useImportTransactionsMutation()
+
+  useWebSocketEvent("import-csv-transactions", "", (data: any) => {
+    if (data?.success) {
+      toast.success(data?.message ?? 'CSV transactions imported successfully.')
+      setTimeout(() => window.location.href = "/portfolios", 2000)
+    } else {
+      toast.error("Failed to import CSV transactions.")
+    }
+  })
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -152,21 +133,16 @@ export default function ImportPage() {
     }, 200)
 
     try {
-      // Simulate API call to process CSV
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      // Mock results
-      const mockResults = {
-        success: Math.floor(Math.random() * 100) + 50,
-        errors: Math.floor(Math.random() * 5),
-        total: 0
-      }
-      mockResults.total = mockResults.success + mockResults.errors
-
+      const formData = new FormData();
+      formData.append('file', uploadedFile);
+      formData.append('exchange', selectedExchange);
+      await importTransactions(formData)
       setProcessingProgress(100)
-      setImportResults(mockResults)
-      
-      toast.success(`Successfully imported ${mockResults.success} transactions`)
+      setImportResults({
+        success: 100, // Simulated success count
+        errors: 0, // Simulated error count
+        total: 100 // Simulated total rows processed
+      })
     } catch (error) {
       toast.error("Failed to process CSV file")
     } finally {
@@ -174,6 +150,14 @@ export default function ImportPage() {
       clearInterval(progressInterval)
     }
   }
+
+  const mobileMenuItems = [
+    {
+      label: "Back",
+      icon: <ChevronLeft className="h-4 w-4" />,
+      onClick: () => router.back(),
+    },
+  ]
 
   const currentGuide = exchangeGuides[selectedExchange]
 
@@ -183,9 +167,18 @@ export default function ImportPage() {
         <BaseHeader
           heading="Import Transaction History"
           text="Import your complete trading history from exchange CSV files"
-          showBackButton={true}
-        />
-
+          mobileMenuItems={mobileMenuItems}
+        >
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.back()}
+            className="flex items-center gap-2"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            <span>Back</span>
+          </Button>
+        </BaseHeader>
         <div className="space-y-6">
           {/* Exchange Selection */}
           <Card>
@@ -200,8 +193,8 @@ export default function ImportPage() {
             </CardHeader>
             <CardContent>
               <Tabs value={selectedExchange} onValueChange={setSelectedExchange}>
-                <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="binance">Binance</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-2">
+                  {/* <TabsTrigger value="binance">Binance</TabsTrigger> */}
                   <TabsTrigger value="bybit">Bybit</TabsTrigger>
                   <TabsTrigger value="okx">OKX</TabsTrigger>
                 </TabsList>
@@ -219,18 +212,6 @@ export default function ImportPage() {
                         </ol>
                       </div>
 
-                      {/* CSV Format */}
-                      <div>
-                        <h4 className="font-semibold mb-3">Required CSV columns:</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {guide.csvFormat.map((column, index) => (
-                            <Badge key={index} variant="secondary" className="text-xs">
-                              {column}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-
                       {/* Notes */}
                       {guide.notes && (
                         <Alert>
@@ -244,14 +225,6 @@ export default function ImportPage() {
                           </AlertDescription>
                         </Alert>
                       )}
-
-                      {/* Download Template */}
-                      {/* <Button variant="outline" size="sm" asChild>
-                        <a href={guide.templateFile} download>
-                          <Download className="mr-2 h-4 w-4" />
-                          Download Template
-                        </a>
-                      </Button> */}
                     </div>
                   </TabsContent>
                 ))}
@@ -338,6 +311,7 @@ export default function ImportPage() {
 
                 {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row gap-3">
+                  {!importResults && (
                   <Button
                     onClick={processImport}
                     disabled={!uploadedFile || isProcessing}
@@ -345,14 +319,6 @@ export default function ImportPage() {
                   >
                     {isProcessing ? "Processing..." : "Import Transactions"}
                   </Button>
-                  {importResults && (
-                    <Button
-                      variant="outline"
-                      onClick={() => router.push('/transactions')}
-                      className="flex-1"
-                    >
-                      View Transactions
-                    </Button>
                   )}
                 </div>
               </div>

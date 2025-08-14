@@ -36,11 +36,9 @@ export function UserExchanges() {
   const [isOpen, setIsOpen] = useState(false)
   const [selectedExchange, setSelectedExchange] = useState<number | null>(null)
 
-  // RTK Query hooks
   const { data: exchanges, isLoading } = useGetSupportedCEXQuery()
   const [connectExchange, { isLoading: isConnecting }] = useConnectExchangeMutation()
 
-  // Initialize React Hook Form with Zod validation
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {

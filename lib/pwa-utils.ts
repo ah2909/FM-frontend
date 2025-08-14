@@ -5,11 +5,6 @@ export const registerServiceWorker = async () => {
       const registration = await navigator.serviceWorker.register("/service-worker.js", {
         scope: "/",
       })
-
-      registration.addEventListener("updatefound", () => {
-        const newWorker = registration.installing
-      })
-
       console.log("Service Worker registered successfully")
       return registration
     } catch (error) {

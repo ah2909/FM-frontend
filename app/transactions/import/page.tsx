@@ -1,20 +1,21 @@
 "use client"
 
 import { useState } from "react"
-import { ArrowLeft, Download, FileText, Upload, CheckCircle, AlertCircle, ChevronLeft } from 'lucide-react'
+import { ArrowLeft, Plug, FileText, Upload, CheckCircle, AlertCircle, ChevronLeft } from 'lucide-react'
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Progress } from "@/components/ui/progress"
-import { Badge } from "@/components/ui/badge"
 import { BaseShell } from "@/components/base-shell"
 import { BaseHeader } from "@/components/base-header"
 import ProtectedRoute from "@/components/ProtectedRoute"
 import { toast } from "sonner"
 import { useImportTransactionsMutation } from "@/lib/store/services/portfolio-api"
+import { useGetSupportedCEXQuery, type Exchange } from "@/lib/store/services/exchange-api"
 import { useWebSocketEvent } from "@/hooks/useWebSocketEvent"
+import Image from "next/image"
 
 interface ExchangeGuide {
   name: string
@@ -23,19 +24,19 @@ interface ExchangeGuide {
 }
 
 const exchangeGuides: Record<string, ExchangeGuide> = {
-  // binance: {
-  //   name: "Binance",
-  //   steps: [
-  //     "Log in to your Binance account",
-  //     "Go to 'Wallet' → 'Transaction History'",
-  //     "Select 'Spot Trading' and set your date range",
-  //     "Click 'Export Complete Trade History'",
-  //     "Download the CSV file when ready"
-  //   ],
-  //   notes: [
-  //     "Select SPOT trading (if any) and the longest period of time available"
-  //   ]
-  // },
+  binance: {
+    name: "Binance",
+    steps: [
+      "Log in to your Binance account",
+      "Go to 'Wallet' → 'Transaction History'",
+      "Select 'Spot Trading' and set your date range",
+      "Click 'Export Complete Trade History'",
+      "Download the CSV file when ready"
+    ],
+    notes: [
+      "We do not support with importing Binance CSV file now."
+    ]
+  },
   bybit: {
     name: "Bybit",
     steps: [
@@ -47,6 +48,7 @@ const exchangeGuides: Record<string, ExchangeGuide> = {
       "Click 'Export' and download CSV"
     ],
     notes: [
+      "You can only get CSV file from browser version of Bybit",
       "You can export data from any 6-month period within the last 2 years",
       "Select SPOT trading (if any) and the longest period of time available"
     ]
@@ -62,6 +64,7 @@ const exchangeGuides: Record<string, ExchangeGuide> = {
       "Click 'Export' and download CSV"
     ],
     notes: [
+      "You can only get CSV file from browser version of OKX",
       "You must remove first line of CSV file before importing",
       "Select SPOT trading (if any) and the longest period of time available",
     ]
@@ -74,12 +77,12 @@ export default function ImportPage() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
   const [processingProgress, setProcessingProgress] = useState(0)
-  const [importResults, setImportResults] = useState<{
-    success: number
-    errors: number
-    total: number
-  } | null>(null)
-  const [importTransactions, isLoading] = useImportTransactionsMutation()
+
+  const { data: exchanges, isLoading: isLoadingExchange } = useGetSupportedCEXQuery()
+  const [importTransactions, isLoadingImport] = useImportTransactionsMutation()
+
+  const connectedExchanges = exchanges?.data?.filter((exchange: Exchange) => exchange.is_connected) || []
+  const hasConnectedExchanges = connectedExchanges.length > 0
 
   useWebSocketEvent("import-csv-transactions", "", (data: any) => {
     if (data?.success) {
@@ -94,7 +97,6 @@ export default function ImportPage() {
     const file = event.target.files?.[0]
     if (file && file.type === 'text/csv') {
       setUploadedFile(file)
-      setImportResults(null)
     } else {
       toast.error("Please select a valid CSV file")
     }
@@ -109,7 +111,6 @@ export default function ImportPage() {
     const file = event.dataTransfer.files[0]
     if (file && file.type === 'text/csv') {
       setUploadedFile(file)
-      setImportResults(null)
     } else {
       toast.error("Please drop a valid CSV file")
     }
@@ -138,16 +139,24 @@ export default function ImportPage() {
       formData.append('exchange', selectedExchange);
       await importTransactions(formData)
       setProcessingProgress(100)
-      setImportResults({
-        success: 100, // Simulated success count
-        errors: 0, // Simulated error count
-        total: 100 // Simulated total rows processed
-      })
     } catch (error) {
       toast.error("Failed to process CSV file")
     } finally {
       setIsProcessing(false)
       clearInterval(progressInterval)
+    }
+  }
+
+  const mappingExchangesLogo = (exchange_id: number) => {
+    switch (exchange_id) {
+      case 1:
+        return "/binance.png"
+      case 2:
+        return "/okx.png"
+      case 3:
+        return "/bybit.png"
+      default:
+        return "/placeholder-logo.png"
     }
   }
 
@@ -180,6 +189,71 @@ export default function ImportPage() {
           </Button>
         </BaseHeader>
         <div className="space-y-6">
+          {/* Connection Status Alert */}
+          {!hasConnectedExchanges && (
+          <Alert className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/20">
+            <Plug className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            <AlertDescription>
+              <div className="space-y-3">
+                <div>
+                  <p className="font-medium text-blue-800 dark:text-blue-200 mb-1">No exchanges connected</p>
+                  <p className="text-sm text-blue-700 dark:text-blue-300">
+                    For the best experience, connect your exchanges first. This allows us to automatically sync your
+                    current balances and avoid duplicate transactions when importing CSV data.
+                  </p>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Button
+                    size="sm"
+                    onClick={() => router.push("/exchanges")}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    <Plug className="mr-2 h-4 w-4" />
+                    Connect Exchanges
+                  </Button>
+                </div>
+              </div>
+            </AlertDescription>
+          </Alert>
+          )}
+
+          {/* Connected Exchanges Status */}
+          {hasConnectedExchanges && (
+            <Card className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/20">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1">
+                    <h4 className="font-medium text-green-800 dark:text-green-200 mb-2">
+                      Connected Exchanges ({connectedExchanges.length})
+                    </h4>
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {connectedExchanges.map((exchange: any) => (
+                        <div
+                          key={exchange.id}
+                          className="flex items-center gap-2 bg-white dark:bg-green-950/40 rounded-md px-2 py-1 border border-green-200 dark:border-green-800"
+                        >
+                          <Image
+                            src={mappingExchangesLogo(exchange.id) || "/placeholder.svg"}
+                            alt={exchange.name}
+                            width={16}
+                            height={16}
+                            className="rounded-sm"
+                          />
+                          <span className="text-sm font-medium text-green-800 dark:text-green-200">
+                            {exchange.name}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-sm text-green-700 dark:text-green-300">
+                      Great! We'll automatically check for duplicates when importing your CSV data.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
           {/* Exchange Selection */}
           <Card>
             <CardHeader>
@@ -193,15 +267,65 @@ export default function ImportPage() {
             </CardHeader>
             <CardContent>
               <Tabs value={selectedExchange} onValueChange={setSelectedExchange}>
-                <TabsList className="grid w-full grid-cols-2">
-                  {/* <TabsTrigger value="binance">Binance</TabsTrigger> */}
-                  <TabsTrigger value="bybit">Bybit</TabsTrigger>
-                  <TabsTrigger value="okx">OKX</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="binance" className="relative">
+                    <div className="flex items-center gap-2">
+                      <span>Binance</span>
+                      {!connectedExchanges.some((ex: any) => ex.name.toLowerCase() === "binance") && (
+                        <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
+                      )}
+                    </div>
+                  </TabsTrigger>
+                  <TabsTrigger value="bybit" className="relative">
+                    <div className="flex items-center gap-2">
+                      <span>Bybit</span>
+                      {!connectedExchanges.some((ex: any) => ex.name.toLowerCase() === "bybit") && (
+                        <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
+                      )}
+                    </div>
+                  </TabsTrigger>
+                  <TabsTrigger value="okx" className="relative">
+                    <div className="flex items-center gap-2">
+                      <span>OKX</span>
+                      {!connectedExchanges.some((ex: any) => ex.name.toLowerCase() === "okx") && (
+                        <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
+                      )}
+                    </div>
+                  </TabsTrigger>
                 </TabsList>
 
                 {Object.entries(exchangeGuides).map(([key, guide]) => (
                   <TabsContent key={key} value={key} className="mt-6">
                     <div className="space-y-4">
+                      {/* Connection Status for this exchange */}
+                      {!connectedExchanges.some((ex: any) => ex.name.toLowerCase() === key) ? (
+                        <Alert className="mb-4 border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/20">
+                          <Plug className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                          <AlertDescription>
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                              <div>
+                                <p className="font-medium text-amber-800 dark:text-amber-200 mb-1">
+                                  {guide.name} not connected
+                                </p>
+                                <p className="text-sm text-amber-700 dark:text-amber-300">
+                                  Connect your {guide.name} account to automatically sync balances and prevent duplicate
+                                  transactions.
+                                </p>
+                              </div>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => router.push("/exchanges")}
+                                className="border-amber-300 text-amber-700 hover:bg-amber-100 dark:border-amber-700 dark:text-amber-300 dark:hover:bg-amber-950/40 bg-transparent flex-shrink-0"
+                              >
+                                <Plug className="mr-2 h-4 w-4" />
+                                Connect {guide.name}
+                              </Button>
+                            </div>
+                          </AlertDescription>
+                        </Alert>
+                      ) : (
+                      <>
                       {/* Export Instructions */}
                       <div>
                         <h4 className="font-semibold mb-3">How to export from {guide.name}:</h4>
@@ -225,6 +349,8 @@ export default function ImportPage() {
                           </AlertDescription>
                         </Alert>
                       )}
+                      </>
+                    )}
                     </div>
                   </TabsContent>
                 ))}
@@ -233,97 +359,76 @@ export default function ImportPage() {
           </Card>
 
           {/* File Upload */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Upload className="h-5 w-5" />
-                Upload CSV File
-              </CardTitle>
-              <CardDescription>
-                Upload your {currentGuide.name} transaction history CSV file
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {/* Upload Area */}
-                <div
-                  className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center hover:border-muted-foreground/50 transition-colors cursor-pointer"
-                  onDragOver={handleDragOver}
-                  onDrop={handleDrop}
-                  onClick={() => document.getElementById('csv-upload')?.click()}
-                >
-                  <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                  {uploadedFile ? (
-                    <div>
-                      <p className="font-medium">{uploadedFile.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
-                      </p>
-                    </div>
-                  ) : (
-                    <div>
-                      <p className="font-medium mb-2">Drop your CSV file here or click to browse</p>
-                      <p className="text-sm text-muted-foreground">
-                        Supports CSV files up to 10MB
-                      </p>
-                    </div>
-                  )}
-                  <input
-                    id="csv-upload"
-                    type="file"
-                    accept=".csv"
-                    onChange={handleFileUpload}
-                    className="hidden"
-                  />
-                </div>
-
-                {/* Processing */}
-                {isProcessing && (
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span>Processing CSV file...</span>
-                      <span>{processingProgress}%</span>
-                    </div>
-                    <Progress value={processingProgress} />
-                  </div>
-                )}
-
-                {/* Results */}
-                {importResults && (
-                  <Alert className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/20">
-                    <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
-                    <AlertDescription>
-                      <div className="space-y-2">
-                        <p className="font-medium text-green-800 dark:text-green-200">
-                          Import completed successfully!
-                        </p>
-                        <div className="text-sm text-green-700 dark:text-green-300">
-                          <p>✅ {importResults.success} transactions imported</p>
-                          {importResults.errors > 0 && (
-                            <p>⚠️ {importResults.errors} rows had errors and were skipped</p>
-                          )}
-                          <p>📊 Total processed: {importResults.total} rows</p>
-                        </div>
-                      </div>
-                    </AlertDescription>
-                  </Alert>
-                )}
-
-                {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-3">
-                  {!importResults && (
-                  <Button
-                    onClick={processImport}
-                    disabled={!uploadedFile || isProcessing}
-                    className="flex-1"
+          {connectedExchanges.some((ex: any) => ex.name.toLowerCase() === selectedExchange && ex.name.toLowerCase() !== 'binance') && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Upload className="h-5 w-5" />
+                  Upload CSV File
+                </CardTitle>
+                <CardDescription>
+                  Upload your {currentGuide.name} transaction history CSV file
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {/* Upload Area */}
+                  <div
+                    className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center hover:border-muted-foreground/50 transition-colors cursor-pointer"
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
+                    onClick={() => document.getElementById('csv-upload')?.click()}
                   >
-                    {isProcessing ? "Processing..." : "Import Transactions"}
-                  </Button>
+                    <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                    {uploadedFile ? (
+                      <div>
+                        <p className="font-medium">{uploadedFile.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
+                        </p>
+                      </div>
+                    ) : (
+                      <div>
+                        <p className="font-medium mb-2">Drop your CSV file here or click to browse</p>
+                        <p className="text-sm text-muted-foreground">
+                          Supports CSV files up to 10MB
+                        </p>
+                      </div>
+                    )}
+                    <input
+                      id="csv-upload"
+                      type="file"
+                      accept=".csv"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                    />
+                  </div>
+
+                  {/* Processing */}
+                  {isProcessing && (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span>Processing CSV file...</span>
+                        <span>{processingProgress}%</span>
+                      </div>
+                      <Progress value={processingProgress} />
+                    </div>
                   )}
+
+                  {/* Action Buttons */}
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Button
+                      onClick={processImport}
+                      disabled={!uploadedFile || isProcessing}
+                      className="flex-1"
+                    >
+                      {isProcessing ? "Processing..." : "Import Transactions"}
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </BaseShell>
     </ProtectedRoute>

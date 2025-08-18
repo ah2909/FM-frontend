@@ -212,7 +212,7 @@ useEffect(() => {
                 const currentValue = currentPrice * token.amount
                 const unrealizedPnL = Number((currentValue - token.avg_price * token.amount).toFixed(2))
                 const allocation = Number(((currentValue / portfolio.totalValue) * 100).toFixed(0))
-                const percentChange = priceData[token.symbol]?.percentChange.toFixed(2) || token.percentChange
+                const percentChange = priceData[token.symbol]?.percentChange || token.percentChange
                 const isIncrease = Number(percentChange) >= 0
 
                 return (
@@ -247,7 +247,7 @@ useEffect(() => {
                       {/* percentchange */}
                       <div className={`font-medium text-sm ${Number(percentChange) >= 0 ? "text-green-600" : "text-red-600"}`}>
                         {isIncrease ? "+" : "-"}
-                        {Math.abs(Number(percentChange))}%
+                        {Math.abs(Number(percentChange)).toFixed(2)}%
                       </div>
                     </TableCell>
                     <TableCell className="text-center">

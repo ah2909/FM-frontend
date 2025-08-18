@@ -120,7 +120,7 @@ export function AssetTable({ tokens, totalValue, isLoading = false }: AssetTable
               const currentPrice = priceData[token.symbol]?.price ?? token.price
               const value = currentPrice ? Number(currentPrice * token.amount) : 0
               const allocation = Number((value / totalValue) * 100).toFixed(0)
-              const percentChange = priceData[token.symbol]?.percentChange.toFixed(2) || token.percentChange
+              const percentChange = priceData[token.symbol]?.percentChange || token.percentChange
               const isIncrease = Number(percentChange) >= 0
 
               return (
@@ -141,7 +141,7 @@ export function AssetTable({ tokens, totalValue, isLoading = false }: AssetTable
                           {token.symbol.toUpperCase()}
                           <span className={`ml-2 font-medium text-sm ${Number(percentChange) >= 0 ? "text-green-600" : "text-red-600"}`}>
                             {isIncrease ? "+" : "-"}
-                            {Math.abs(Number(percentChange))}%
+                            {Math.abs(Number(percentChange)).toFixed(2)}%
                           </span>
                         </div>
                       </div>

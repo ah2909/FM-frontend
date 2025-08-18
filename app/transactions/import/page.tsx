@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { ArrowLeft, Plug, FileText, Upload, CheckCircle, AlertCircle, ChevronLeft } from 'lucide-react'
+import { Plug, FileText, Upload, CheckCircle, AlertCircle, ChevronLeft, Loader2Icon } from 'lucide-react'
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -75,11 +75,9 @@ export default function ImportPage() {
   const router = useRouter()
   const [selectedExchange, setSelectedExchange] = useState<string>("bybit")
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
-  const [isProcessing, setIsProcessing] = useState(false)
-  const [processingProgress, setProcessingProgress] = useState(0)
 
   const { data: exchanges, isLoading: isLoadingExchange } = useGetSupportedCEXQuery()
-  const [importTransactions, isLoadingImport] = useImportTransactionsMutation()
+  const [ importTransactions, { isLoading: isLoadingImport } ] = useImportTransactionsMutation()
 
   const connectedExchanges = exchanges?.data?.filter((exchange: Exchange) => exchange.is_connected) || []
   const hasConnectedExchanges = connectedExchanges.length > 0
@@ -118,32 +116,13 @@ export default function ImportPage() {
 
   const processImport = async () => {
     if (!uploadedFile) return
-
-    setIsProcessing(true)
-    setProcessingProgress(0)
-
-    // Simulate processing with progress updates
-    const progressInterval = setInterval(() => {
-      setProcessingProgress(prev => {
-        if (prev >= 90) {
-          clearInterval(progressInterval)
-          return 90
-        }
-        return prev + 10
-      })
-    }, 200)
-
     try {
       const formData = new FormData();
       formData.append('file', uploadedFile);
       formData.append('exchange', selectedExchange);
-      await importTransactions(formData)
-      setProcessingProgress(100)
+      importTransactions(formData)
     } catch (error) {
       toast.error("Failed to process CSV file")
-    } finally {
-      setIsProcessing(false)
-      clearInterval(progressInterval)
     }
   }
 
@@ -404,25 +383,14 @@ export default function ImportPage() {
                     />
                   </div>
 
-                  {/* Processing */}
-                  {isProcessing && (
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <span>Processing CSV file...</span>
-                        <span>{processingProgress}%</span>
-                      </div>
-                      <Progress value={processingProgress} />
-                    </div>
-                  )}
-
                   {/* Action Buttons */}
                   <div className="flex flex-col sm:flex-row gap-3">
                     <Button
                       onClick={processImport}
-                      disabled={!uploadedFile || isProcessing}
+                      disabled={!uploadedFile || isLoadingImport}
                       className="flex-1"
                     >
-                      {isProcessing ? "Processing..." : "Import Transactions"}
+                      { isLoadingImport ? 'Importing' : 'Import Transactions' }
                     </Button>
                   </div>
                 </div>

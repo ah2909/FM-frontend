@@ -27,7 +27,7 @@ import { removeSymbol, updateTotalValue } from "@/lib/store/features/portfolios-
 import { useSelector } from "react-redux"
 import { TokenMobileList } from "./token-mobile-list"
 
-interface Token {
+export interface Token {
   id: number
   symbol: string
   name: string
@@ -36,6 +36,7 @@ interface Token {
   value: number
   img_url: string
   avg_price: number
+  percentChange: number
 }
 
 interface PortfolioTokensProps {
@@ -48,7 +49,7 @@ export function PortfolioTokens({ portfolio }: PortfolioTokensProps) {
   const tokens = useSelector((state: any) => state.portfolios.assets ?? [])
   const [removeTokenFromPortfolio] = useRemoveTokenFromPortfolioMutation()
   const dispatch = useDispatch()
-  const [priceData, setPriceData] = useState<Record<string, number>>({})
+  const [priceData, setPriceData] = useState<Record<string, {price: number, percentChange: number}>>({})
 
   // Memoize the WebSocket stream to prevent recreation
   const stream = useMemo(() => {
@@ -63,7 +64,10 @@ export function PortfolioTokens({ portfolio }: PortfolioTokensProps) {
       if (token) {
         setPriceData((prev) => ({
           ...prev,
-          [token.symbol]: Number.parseFloat(data.c),
+          [token.symbol]: {
+            price: Number.parseFloat(data.c), 
+            percentChange: Number.parseFloat(data.P),
+          },
         }))
       }
     },
@@ -99,8 +103,8 @@ export function PortfolioTokens({ portfolio }: PortfolioTokensProps) {
   // Memoize sorted tokens for desktop table
   const sortedTokensForTable = useMemo(() => {
     return [...tokens].sort((a: Token, b: Token) => {
-      const aValue = (priceData[a.symbol] || a.price) * a.amount
-      const bValue = (priceData[b.symbol] || b.price) * b.amount
+      const aValue = (priceData[a.symbol]?.price || a.price) * a.amount
+      const bValue = (priceData[b.symbol]?.price || b.price) * b.amount
       return bValue - aValue
     })
   }, [tokens, priceData])
@@ -108,7 +112,7 @@ export function PortfolioTokens({ portfolio }: PortfolioTokensProps) {
   const calculateTotalValue = useMemo(() => {
   if (!tokens || tokens.length === 0) return portfolio.totalValue;
   return tokens.reduce((acc: number, t: Token) => {
-    const price = priceData[t.symbol] ?? t.price ?? 0;
+    const price = priceData[t.symbol]?.price ?? t.price ?? 0;
     return acc + price * t.amount;
   }, 0);
 }, [tokens, priceData]);
@@ -196,6 +200,7 @@ useEffect(() => {
                 <TableHead className="text-xs sm:text-sm">Token</TableHead>
                 <TableHead className="text-center text-xs sm:text-sm">Portfolio (%)</TableHead>
                 <TableHead className="text-center text-xs sm:text-sm">Price</TableHead>
+                <TableHead className="text-center text-xs sm:text-sm">Change (%)</TableHead>
                 <TableHead className="text-center text-xs sm:text-sm">Value</TableHead>
                 <TableHead className="text-center text-xs sm:text-sm">Unrealized P&L</TableHead>
                 <TableHead className="text-right text-xs sm:text-sm">Actions</TableHead>
@@ -203,10 +208,12 @@ useEffect(() => {
             </TableHeader>
             <TableBody>
               {sortedTokensForTable.map((token: Token) => {
-                const currentPrice = priceData[token.symbol] || token.price
+                const currentPrice = priceData[token.symbol]?.price || token.price
                 const currentValue = currentPrice * token.amount
                 const unrealizedPnL = Number((currentValue - token.avg_price * token.amount).toFixed(2))
                 const allocation = Number(((currentValue / portfolio.totalValue) * 100).toFixed(0))
+                const percentChange = priceData[token.symbol]?.percentChange.toFixed(2) || token.percentChange
+                const isIncrease = Number(percentChange) >= 0
 
                 return (
                   <TableRow key={token.id} className="hover:bg-muted/30 transition-colors">
@@ -234,7 +241,14 @@ useEffect(() => {
                       </div>
                     </TableCell>
                     <TableCell className="text-center">
-                      <div className="font-medium">${Number(currentPrice)}</div>
+                      <p className="font-medium">${Number(currentPrice)}</p>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {/* percentchange */}
+                      <div className={`font-medium text-sm ${Number(percentChange) >= 0 ? "text-green-600" : "text-red-600"}`}>
+                        {isIncrease ? "+" : "-"}
+                        {Math.abs(Number(percentChange))}%
+                      </div>
                     </TableCell>
                     <TableCell className="text-center">
                       <div>

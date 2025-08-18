@@ -2,22 +2,12 @@
 
 import { memo, useMemo } from "react"
 import { TokenMobileCard } from "./token-mobile-card"
-
-interface Token {
-  id: number
-  symbol: string
-  name: string
-  price: number
-  amount: number
-  value: number
-  img_url: string
-  avg_price: number
-}
+import { Token } from "./portfolio-tokens"
 
 interface TokenMobileListProps {
   tokens: Token[]
   portfolioTotalValue: number
-  priceData: Record<string, number>
+  priceData: Record<string, {price: number, percentChange: number}>
   onDeleteClick: (symbol: string) => void
 }
 
@@ -30,8 +20,8 @@ export const TokenMobileList = memo(function TokenMobileList({
   // Memoize the sorted tokens to prevent re-sorting on every render
   const sortedTokens = useMemo(() => {
     return [...tokens].sort((a: Token, b: Token) => {
-      const aValue = (priceData[a.symbol] || a.price) * a.amount
-      const bValue = (priceData[b.symbol] || b.price) * b.amount
+      const aValue = (priceData[a.symbol]?.price || a.price) * a.amount
+      const bValue = (priceData[b.symbol]?.price || b.price) * b.amount
       return bValue - aValue
     })
   }, [tokens, priceData])
@@ -43,7 +33,7 @@ export const TokenMobileList = memo(function TokenMobileList({
           key={token.id}
           token={token}
           portfolioTotalValue={portfolioTotalValue}
-          currentPrice={priceData[token.symbol]}
+          current={priceData[token.symbol]}
           onDeleteClick={onDeleteClick}
         />
       ))}

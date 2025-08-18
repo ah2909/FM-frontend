@@ -1,23 +1,12 @@
 "use client"
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { MoreHorizontal, Plus } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Plus } from "lucide-react"
 import { useState } from "react"
 import { Skeleton } from "../ui/skeleton"
 import { useWebSocketEvent } from "@/hooks/useWebSocketEvent"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-
-export interface Token {
-  id: number
-  symbol: string
-  name: string
-  price: number
-  amount: number
-  value: number
-  img_url: string
-  avg_price: number
-}
+import { Token } from "../portfolio/portfolio-tokens"
 
 interface AssetTableProps {
   tokens: Token[]
@@ -26,7 +15,7 @@ interface AssetTableProps {
 }
 
 export function AssetTable({ tokens, totalValue, isLoading = false }: AssetTableProps) {
-  const [priceData, setPriceData] = useState<any>({})
+  const [priceData, setPriceData] = useState<Record<string, {price: number, percentChange: number}>>({})
   const top5Tokens = [...tokens].sort((a: Token, b: Token) => b.value - a.value).slice(0, 5)
   const stream =
     "/stream?streams=" + top5Tokens.map((token: Token) => token.symbol.toLowerCase() + "usdt@ticker").join("/")
@@ -34,9 +23,12 @@ export function AssetTable({ tokens, totalValue, isLoading = false }: AssetTable
   useWebSocketEvent("ticker", stream, (data: any) => {
     const token = top5Tokens.find((token: Token) => token.symbol.toUpperCase() + "USDT" === data.s)
     if (token)
-      setPriceData((prev: any) => ({
+      setPriceData((prev) => ({
         ...prev,
-        [token.symbol]: data.c,
+        [token.symbol]: {
+          price: Number.parseFloat(data.c), 
+          percentChange: Number.parseFloat(data.P),
+        },
       }))
   })
 
@@ -125,9 +117,11 @@ export function AssetTable({ tokens, totalValue, isLoading = false }: AssetTable
           </TableHeader>
           <TableBody>
             {top5Tokens.map((token: Token, index: number) => {
-              const currentPrice = priceData[token.symbol] ?? token.price
+              const currentPrice = priceData[token.symbol]?.price ?? token.price
               const value = currentPrice ? Number(currentPrice * token.amount) : 0
               const allocation = Number((value / totalValue) * 100).toFixed(0)
+              const percentChange = priceData[token.symbol]?.percentChange.toFixed(2) || token.percentChange
+              const isIncrease = Number(percentChange) >= 0
 
               return (
                 <TableRow key={token.id}>
@@ -143,7 +137,13 @@ export function AssetTable({ tokens, totalValue, isLoading = false }: AssetTable
                       </div>
                       <div className="min-w-0">
                         <div className="font-medium text-sm sm:text-base truncate">{token.name}</div>
-                        <div className="text-xs text-muted-foreground">{token.symbol.toUpperCase()}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {token.symbol.toUpperCase()}
+                          <span className={`ml-2 font-medium text-sm ${Number(percentChange) >= 0 ? "text-green-600" : "text-red-600"}`}>
+                            {isIncrease ? "+" : "-"}
+                            {Math.abs(Number(percentChange))}%
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </TableCell>

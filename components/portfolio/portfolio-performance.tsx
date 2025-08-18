@@ -12,6 +12,8 @@ interface PortfolioPerformanceProps {
     unrealizedPnlPercentage: number
     allTimeHigh: number
     allTimeLow: number
+    percentChange24h: number
+    percentChange7d: number
     change24h: number
     change7d: number
   }
@@ -82,14 +84,14 @@ export function PortfolioPerformance({ metrics }: PortfolioPerformanceProps) {
                 <span className="text-xs text-muted-foreground">24h Change</span>
                 <div className={`flex items-center ${is24hPositive ? "text-green-500" : "text-red-500"}`}>
                   {is24hPositive ? <ArrowUp className="mr-1 h-3 w-3" /> : <ArrowDown className="mr-1 h-3 w-3" />}
-                  <span className="text-xs sm:text-sm font-medium">{Math.abs(metrics.change24h).toFixed(2)}%</span>
+                  <span className="text-xs sm:text-sm font-medium">${Math.abs(metrics.change24h).toFixed(2)} ({Math.abs(metrics.percentChange24h).toFixed(2)}%)</span>
                 </div>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs text-muted-foreground">7d Change</span>
                 <div className={`flex items-center ${is7dPositive ? "text-green-500" : "text-red-500"}`}>
                   {is7dPositive ? <ArrowUp className="mr-1 h-3 w-3" /> : <ArrowDown className="mr-1 h-3 w-3" />}
-                  <span className="text-xs sm:text-sm font-medium">{Math.abs(metrics.change7d).toFixed(2)}%</span>
+                  <span className="text-xs sm:text-sm font-medium">${Math.abs(metrics.change7d).toFixed(2)} ({Math.abs(metrics.percentChange7d).toFixed(2)}%)</span>
                 </div>
               </div>
             </div>

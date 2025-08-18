@@ -8,37 +8,29 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Skeleton } from "@/components/ui/skeleton"
-
-interface Token {
-  id: number
-  symbol: string
-  name: string
-  price: number
-  amount: number
-  value: number
-  img_url: string
-  avg_price: number
-}
+import { Token } from "./portfolio-tokens"
 
 interface TokenMobileCardProps {
   token: Token
   portfolioTotalValue: number
-  currentPrice?: number
+  current?: {price: number, percentChange: number}
   onDeleteClick: (symbol: string) => void
 }
 
 export const TokenMobileCard = memo(function TokenMobileCard({
   token,
   portfolioTotalValue,
-  currentPrice,
+  current,
   onDeleteClick,
 }: TokenMobileCardProps) {
   // Memoized calculations to prevent recalculation on every render
-  const price = currentPrice || token.price
+  const price = current?.price || token.price
   const currentValue = price * token.amount
   const unrealizedPnL = Number((currentValue - token.avg_price * token.amount).toFixed(2))
   const allocation = Number(((currentValue / portfolioTotalValue) * 100).toFixed(0))
   const isPnLPositive = unrealizedPnL >= 0
+  const percentChange = current?.percentChange.toFixed(2) || token.percentChange
+  const isIncrease = Number(percentChange) >= 0
 
   return (
     <Card className="p-4 space-y-3 hover:shadow-md transition-shadow duration-200">
@@ -51,7 +43,14 @@ export const TokenMobileCard = memo(function TokenMobileCard({
           </Avatar>
           <div className="min-w-0 flex-1">
             <h3 className="font-semibold text-sm truncate">{token.name}</h3>
-            <p className="text-xs text-muted-foreground">{token.symbol.toUpperCase()}</p>
+            <p className="text-xs text-muted-foreground">
+              {token.symbol.toUpperCase()}
+              <span className={`ml-2 font-medium text-sm ${Number(percentChange) >= 0 ? "text-green-600" : "text-red-600"}`}>
+                {isIncrease ? "+" : "-"}
+                {Math.abs(Number(percentChange))}%
+              </span>
+            </p>
+            
           </div>
         </div>
         <DropdownMenu>

@@ -6,7 +6,8 @@ const mutex = new Mutex()
 
 // Base query with auth header
 const baseQuery = fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_API_URL,
+    // baseUrl: process.env.NEXT_PUBLIC_API_URL,
+    baseUrl: "/api",
     prepareHeaders: (headers: any) => {
         headers.set(
             "Authorization",

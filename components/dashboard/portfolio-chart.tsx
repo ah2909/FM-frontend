@@ -29,8 +29,12 @@ interface PortfolioChartProps {
 export function PortfolioChart({ timeframe, data, isLoading = false }: PortfolioChartProps) {
   const [chartData, setChartData] = useState<any>(null)
 
+  const dateFormatter = new Intl.DateTimeFormat('en-US', {
+    month: '2-digit',
+    day: '2-digit',
+    year: 'numeric',
+  });
   const today = new Date()
-  const formatDate = (date: Date) => date.toISOString().split("T")[0]
 
   const getLastNDays = (n: number) => {
     const labels: string[] = []
@@ -39,7 +43,7 @@ export function PortfolioChart({ timeframe, data, isLoading = false }: Portfolio
       const d = new Date(today)
       d.setDate(today.getDate() - i)
       labels.push(d.toLocaleDateString("en-US", { weekday: "short" }))
-      dateStrings.push(formatDate(d))
+      dateStrings.push(dateFormatter.format(d))
     }
     return { labels, dateStrings }
   }
@@ -51,7 +55,7 @@ export function PortfolioChart({ timeframe, data, isLoading = false }: Portfolio
       const d = new Date(today)
       d.setDate(today.getDate() - i)
       labels.push(d.toLocaleDateString("en-US", { day: "numeric", month: "short" }))
-      dateStrings.push(formatDate(d))
+      dateStrings.push(dateFormatter.format(d))
     }
     return { labels, dateStrings }
   }
@@ -60,7 +64,7 @@ export function PortfolioChart({ timeframe, data, isLoading = false }: Portfolio
   const aggregateDaily = (dateStrings: string[]) => {
     const map = new Map<string, number>()
     data?.forEach((item) => {
-      const d = formatDate(new Date(item.date))
+      const d = dateFormatter.format(new Date(item.date))
       map.set(d, item.balance)
     })
     return dateStrings.map((ds) => map.get(ds) || 0)

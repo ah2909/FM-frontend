@@ -21,6 +21,20 @@ const nextConfig = {
     parallelServerBuildTraces: true,
     parallelServerCompiles: true,
   },
+  //config proxying API requests to a backend server
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*', // Matches any request starting with /api/
+        destination: `${process.env.NEXT_PUBLIC_API_URL}/:path*`, // Proxies to your backend API
+      },
+      // You can add more rewrite rules as needed
+      // {
+      //   source: '/images/:path*',
+      //   destination: `http://another-service.com/images/:path*`,
+      // },
+    ];
+  },
 }
 
 mergeConfig(nextConfig, userConfig)

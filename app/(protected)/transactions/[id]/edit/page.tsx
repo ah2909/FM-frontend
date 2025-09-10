@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { BaseHeader } from "@/components/base-header";
 import { BaseShell } from "@/components/base-shell";
 import { EditTransactionForm } from "@/components/transaction/edit-transaction-form";
-import ProtectedRoute from "@/components/ProtectedRoute";
 
 export const metadata: Metadata = {
 	title: "Edit Transaction",
@@ -40,20 +39,18 @@ export default function EditTransactionPage({
 	}
 
 	return (
-		<ProtectedRoute>
-			<BaseShell>
-				<BaseHeader
-					heading="Edit Transaction"
-					text="Update your transaction details"
-				>
-					<Link href="/transactions">
-						<Button variant="outline">Cancel</Button>
-					</Link>
-				</BaseHeader>
-				<div className="grid gap-8">
-					<EditTransactionForm transaction={transaction} />
-				</div>
-			</BaseShell>
-		</ProtectedRoute>
+		<BaseShell>
+			<BaseHeader
+				heading="Edit Transaction"
+				text="Update your transaction details"
+			>
+				<Link href="/transactions">
+					<Button variant="outline">Cancel</Button>
+				</Link>
+			</BaseHeader>
+			<div className="grid gap-8">
+				<EditTransactionForm transaction={transaction} />
+			</div>
+		</BaseShell>
 	);
 }

@@ -28,6 +28,18 @@ interface PortfolioChartProps {
 
 export function PortfolioChart({ timeframe, data, isLoading = false }: PortfolioChartProps) {
   const [chartData, setChartData] = useState<any>(null)
+  const [maxTicks, setMaxTicks] = useState(8);
+
+  useEffect(() => {
+    const updateTicks = () => {
+      setMaxTicks(window.innerWidth < 640 ? 4 : 8);
+    };
+
+    updateTicks(); // initial run
+    window.addEventListener("resize", updateTicks);
+
+    return () => window.removeEventListener("resize", updateTicks);
+  }, []);
 
   const dateFormatter = new Intl.DateTimeFormat('en-US', {
     month: '2-digit',
@@ -212,9 +224,9 @@ export function PortfolioChart({ timeframe, data, isLoading = false }: Portfolio
         ticks: {
           maxRotation: 0,
           autoSkip: true,
-          maxTicksLimit: window.innerWidth < 640 ? 4 : 8,
+          maxTicksLimit: maxTicks,
           font: {
-            size: window.innerWidth < 640 ? 10 : 12,
+            size: maxTicks === 4 ? 10 : 12,
           },
         },
       },
@@ -224,7 +236,7 @@ export function PortfolioChart({ timeframe, data, isLoading = false }: Portfolio
         },
         ticks: {
           font: {
-            size: window.innerWidth < 640 ? 10 : 12,
+            size: maxTicks === 4 ? 10 : 12,
           },
           callback: (value: any) => {
             if (value >= 1000) {

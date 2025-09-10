@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label"
 import Link from "next/link"
 import { useAuth } from "@/contexts/AuthContext"
 import { toast } from "sonner"
-import GuestRoute from "@/components/GuestRoute"
+import { useRouter } from "next/navigation"
 
 declare global {
   interface Window {
@@ -29,6 +29,7 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>
 
 const LoginPage: React.FC = () => {
+  const router = useRouter()
   const { login } = useAuth()
   const {
     register,
@@ -49,6 +50,7 @@ const LoginPage: React.FC = () => {
       if (!res.ok) throw new Error("Google verification failed")
       const data: any = await res.json()
       login(data)
+      router.push("/")
     } catch (error) {
       console.error("Google login error:", error)
       toast.error("Login failed. Please try again.")
@@ -82,6 +84,7 @@ const LoginPage: React.FC = () => {
       if (!response.ok) throw new Error("Login failed")
       const result: any = await response.json()
       login(result)
+      router.push("/")
     } catch (error) {
       console.error("Login error:", error)
       toast.error("Login failed. Please try again.")
@@ -89,7 +92,6 @@ const LoginPage: React.FC = () => {
   }
 
   return (
-    <GuestRoute>
       <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
         <div className={cn("flex flex-col gap-6 w-full max-w-md")}>
           <Card>
@@ -175,7 +177,6 @@ const LoginPage: React.FC = () => {
           </div>
         </div>
       </div>
-    </GuestRoute>
   )
 }
 

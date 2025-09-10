@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { BaseHeader } from "@/components/base-header";
 import { BaseShell } from "@/components/base-shell";
 import { PortfolioForm } from "@/components/portfolio/portfolio-form";
-import ProtectedRoute from "@/components/ProtectedRoute";
 
 export const metadata: Metadata = {
 	title: "Create Portfolio",
@@ -14,20 +13,18 @@ export const metadata: Metadata = {
 
 export default function NewPortfolioPage() {
 	return (
-		<ProtectedRoute>
-			<BaseShell>
-				<BaseHeader
-					heading="Create Portfolio"
-					text="Create a new crypto portfolio"
-				>
-					<Link href="/portfolios">
-						<Button variant="outline">Cancel</Button>
-					</Link>
-				</BaseHeader>
-				<div className="grid gap-8">
-					<PortfolioForm />
-				</div>
-			</BaseShell>
-		</ProtectedRoute>
+		<BaseShell>
+			<BaseHeader
+				heading="Create Portfolio"
+				text="Create a new crypto portfolio"
+			>
+				<Link href="/portfolios">
+					<Button variant="outline">Cancel</Button>
+				</Link>
+			</BaseHeader>
+			<div className="grid gap-8">
+				<PortfolioForm />
+			</div>
+		</BaseShell>
 	);
 }

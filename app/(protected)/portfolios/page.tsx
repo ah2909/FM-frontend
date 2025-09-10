@@ -10,7 +10,6 @@ import { PortfolioTokens } from "@/components/portfolio/portfolio-tokens"
 import { PortfolioOverview } from "@/components/portfolio/portfolio-overview"
 import { useDispatch, useSelector } from "react-redux"
 import { ImportDataButton } from "@/components/portfolio/import-data-button"
-import ProtectedRoute from "@/components/ProtectedRoute"
 import { 
   useGetPortfoliosByUserIDQuery,
   useGetBalanceDataQuery,
@@ -54,7 +53,7 @@ export default function PortfolioPage() {
   ]
 
   return (
-    <ProtectedRoute>
+    <>
       {isLoading ? (
         <Loading />
       ) : (
@@ -79,6 +78,6 @@ export default function PortfolioPage() {
           </div>
         </BaseShell>
       )}
-    </ProtectedRoute>
+    </>
   )
 }

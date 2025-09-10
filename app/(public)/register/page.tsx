@@ -64,6 +64,7 @@ const RegisterPage: React.FC = () => {
 				const data: any = await res.json();
 				toast.success("Login Successful!");
 				login(data.access_token);
+				setTimeout(() => {router.replace('/')}, 0);
 			} catch (error) {
 				console.error("Google login error:", error);
 				toast.error("Login failed. Please try again.");

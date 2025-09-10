@@ -18,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 declare global {
 	interface Window {
@@ -34,6 +35,7 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 const LoginPage: React.FC = () => {
+	const router = useRouter();
 	const { login } = useAuth();
 	const {
 		register,
@@ -58,6 +60,7 @@ const LoginPage: React.FC = () => {
 				if (!res.ok) throw new Error("Google verification failed");
 				const data: any = await res.json();
 				login(data);
+				setTimeout(() => {router.replace('/')}, 0);
 			} catch (error) {
 				console.error("Google login error:", error);
 				toast.error("Login failed. Please try again.");
@@ -96,6 +99,7 @@ const LoginPage: React.FC = () => {
 			if (!response.ok) throw new Error("Login failed");
 			const result: any = await response.json();
 			login(result);
+			setTimeout(() => {router.replace('/')}, 0);
 		} catch (error) {
 			console.error("Login error:", error);
 			toast.error("Login failed. Please try again.");

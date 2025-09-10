@@ -14,7 +14,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem('token', user.access_token);
       localStorage.setItem('user_id', user.user_id);
       toast.success('Login Successful!');
-      window.location.href = '/';
     }
     else {
       toast.error('Login failed. Please try again.');

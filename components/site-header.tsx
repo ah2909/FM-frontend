@@ -55,12 +55,6 @@ export function SiteHeader() {
                     <BreadcrumbPage className="text-sm">{breadcrumb.label}</BreadcrumbPage>
                   )}
                 </BreadcrumbItem>
-                {/* Mobile: only show current page */}
-                {index === breadcrumbs.length - 1 && (
-                  <BreadcrumbItem className="sm:hidden">
-                    <BreadcrumbPage className="text-sm truncate">{breadcrumb.label}</BreadcrumbPage>
-                  </BreadcrumbItem>
-                )} 
                 {index < breadcrumbs.length - 1 && <BreadcrumbSeparator className="hidden sm:block" />} 
               </div>
             ))}

@@ -34,30 +34,12 @@ const items = [
     url: "/portfolios",
     icon: PieChart,
   },
-  // {
-  //   title: "Transactions",
-  //   url: "/transactions",
-  //   icon: Wallet2,
-  // },
   {
     title: "Exchanges",
     url: "/exchanges",
     icon: Globe,
   },
 ]
-
-// const analyticsItems = [
-//   {
-//     title: "Performance",
-//     url: "/analytics/performance",
-//     icon: TrendingUp,
-//   },
-//   {
-//     title: "Reports",
-//     url: "/analytics/reports",
-//     icon: BarChart3,
-//   },
-// ]
 
 export function AppSidebar() {
   const pathname = usePathname()
@@ -117,7 +99,7 @@ export function AppSidebar() {
                   <SidebarMenuButton
                     asChild
                     isActive={pathname === item.url}
-                    className="w-full justify-start px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
+                    className="w-full justify-start px-3 py-4 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
                   >
                     <Link 
                       href={item.url} 
@@ -133,33 +115,6 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-        {/* <SidebarGroup>
-          <SidebarGroupLabel className="px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-            Analytics
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {analyticsItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={pathname === item.url}
-                    className="w-full justify-start px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
-                  >
-                    <Link 
-                      href={item.url} 
-                      className="flex items-center gap-3"
-                      onClick={handleMenuItemClick}
-                    >
-                      <item.icon className="size-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup> */}
       </SidebarContent>
       <SidebarFooter className="border-t border-sidebar-border p-2">
         <SidebarMenu>

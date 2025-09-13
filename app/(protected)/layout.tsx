@@ -1,6 +1,5 @@
 "use client"
 
-import type React from "react"
 import "../globals.css"
 
 import { ThemeProvider } from "@/components/theme-provider"
@@ -16,7 +15,9 @@ import { PWAInstallPrompt } from "@/components/pwa-install-prompt"
 import { OfflineIndicator } from "@/components/offline-indicator"
 import { useEffect } from "react"
 import { registerServiceWorker } from "@/lib/pwa-utils"
-
+import { MobileBottomNav } from "@/components/mobile-bottom-nav"
+import { useIsMobile } from "@/hooks/use-mobile"
+import { MobileSiteHeader } from "@/components/mobile-site-header"
 
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -28,13 +29,23 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
       <ThemeProvider attribute="class" enableSystem disableTransitionOnChange>
         <WebSocketProvider>
         <Provider store={store}>
-        <SidebarProvider>
-          <AppSidebar />
-          <SidebarInset>
-            <SiteHeader />
-            <main className="flex-1 min-h-0">{children}</main>
-          </SidebarInset>
-        </SidebarProvider>
+        {useIsMobile() ? (
+          <>
+            <MobileSiteHeader />
+            <main className="flex-1 pb-16 overflow-auto">{children}</main>
+            <MobileBottomNav />
+          </>
+        ) : (
+          <>
+            <SidebarProvider>
+            <AppSidebar />
+            <SidebarInset>
+              <SiteHeader />
+              <main className="flex-1 min-h-0">{children}</main>
+            </SidebarInset>
+            </SidebarProvider>
+          </>
+        )}
         </Provider>
         </WebSocketProvider>
         <PWAInstallPrompt />

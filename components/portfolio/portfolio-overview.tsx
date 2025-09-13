@@ -5,9 +5,7 @@ import { useSelector } from "react-redux"
 export function PortfolioOverview({ portfolio }: { portfolio: any }) {
   const balance = useSelector((state: any) => state.portfolios.performance)
   const totalCost = portfolio.assets.reduce((acc: number, token: any) => {
-    if (token.avg_price !== 0) {
-      return acc + token.amount * token.avg_price
-    } else return acc + token.amount * token.price
+    return acc + token.amount * token.avg_price
   }, 0)
 
   const performanceMetrics = {

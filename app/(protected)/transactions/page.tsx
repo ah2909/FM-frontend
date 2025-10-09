@@ -36,17 +36,7 @@ function TransactionsContent() {
 	useEffect(() => {
 		if (isLoading) return;
 		if (data?.data?.length === 0) router.push("/welcome");
-		console.log("Selected Token:", selectedToken);
-		setUnrealizedPnL(
-			selectedToken
-				? Number(
-						(
-							selectedToken.value -
-							selectedToken.avg_price * selectedToken.amount
-						).toFixed(2)
-				  )
-				: 0
-		);
+		setUnrealizedPnL(selectedToken ? Number((selectedToken.value - selectedToken.avg_price * selectedToken.amount).toFixed(2)) : 0);
 	}, [data, isLoading, dispatch]);
 
 	const mobileMenuItems = [

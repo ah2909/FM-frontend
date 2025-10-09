@@ -170,14 +170,14 @@ export function AssetTable({ tokens, totalValue, isLoading = false }: AssetTable
                   </TableCell>
                   <TableCell>
                     <div>
-                      {token.amount.toFixed(4)} {token.symbol.toUpperCase()}
+                      {token.amount} {token.symbol.toUpperCase()}
                     </div>
                     <div className="text-xs text-muted-foreground">
                       {currentPrice ? `$${value.toFixed(2)}` : <Skeleton className="h-4 w-16" />}
                     </div>
                   </TableCell>
                   <TableCell>
-                    {currentPrice ? `$${Number(currentPrice).toFixed(2)}` : <Skeleton className="h-4 w-16" />}
+                    {currentPrice ? `$${currentPrice}` : <Skeleton className="h-4 w-16" />}
                   </TableCell>
                   {/* <TableCell>
                     <Button variant="ghost" size="icon">

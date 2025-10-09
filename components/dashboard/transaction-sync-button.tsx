@@ -56,9 +56,9 @@ export function TransactionSyncButton({ className = "", portfolio_id }: Transact
 
   const getExchangeId = useCallback((exchange: string) => {
     const exchangeMap: Record<string, number> = {
-      Binance: 1,
-      OKX: 2,
-      Bybit: 3,
+      binance: 1,
+      okx: 2,
+      bybit: 3,
     }
     return exchangeMap[exchange] ?? null
   }, [])
@@ -92,22 +92,18 @@ export function TransactionSyncButton({ className = "", portfolio_id }: Transact
     if (data?.status === "success" && data?.data.length > 0) {
       data.data.forEach((transaction: any) => {
         const asset = assets.find((asset: any) => asset.symbol.toUpperCase() + "/USDT" === transaction.symbol)
-        console.log(asset)
         if (asset) {
-          dispatch(
-            syncTransactionsByAssetID({
+          dispatch(syncTransactionsByAssetID({
               assetId: asset.id,
-              transactions: [
-                {
-                  portfolio_id: portfolio_id,
-                  asset_id: asset.id,
-                  exchange_id: getExchangeId(transaction.exchange),
-                  quantity: transaction.amount,
-                  price: transaction.price,
-                  type: transaction.side.toUpperCase(),
-                  transact_date: new Date(transaction.timestamp).toISOString().slice(0, 19).replace("T", " "),
-                },
-              ],
+              transaction: {
+                portfolio_id: portfolio_id,
+                asset_id: asset.id,
+                exchange_id: getExchangeId(transaction.exchange),
+                quantity: transaction.amount,
+                price: transaction.price,
+                type: transaction.side.toUpperCase(),
+                transact_date: new Date(transaction.timestamp).toISOString().slice(0, 19).replace("T", " "),
+              },
             }),
           )
         }

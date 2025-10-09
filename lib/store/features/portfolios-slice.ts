@@ -38,12 +38,10 @@ export const portfoliosSlice = createSlice({
       state.portfolio.name = updatedPortfolio.name
       state.portfolio.description = updatedPortfolio.description
     },
-    syncTransactionsByAssetID: (state, action: PayloadAction<{ assetId: string, transactions: any[] }>) => {
-      const { assetId, transactions } = action.payload;
-      state.transactions[assetId] = [...state.transactions[assetId], transactions];
-      let updatedAmount = transactions.reduce((acc: number, transaction: any) => {
-        return acc + (transaction.type === 'BUY' ? transaction.quantity : -transaction.quantity);
-      }, 0);
+    syncTransactionsByAssetID: (state, action: PayloadAction<{ assetId: string, transaction: any }>) => {
+      const { assetId, transaction } = action.payload;
+      state.transactions[assetId] = [...state.transactions[assetId], transaction];
+      let updatedAmount = transaction.type === 'BUY' ? transaction.quantity : -transaction.quantity;
       const assetIndex = state.assets.findIndex((asset: any) => asset.id === assetId);
       if (assetIndex !== -1) {
         state.assets[assetIndex].amount += updatedAmount;

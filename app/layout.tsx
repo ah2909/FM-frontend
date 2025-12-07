@@ -1,13 +1,16 @@
-import type { Metadata } from "next";
 import { Inter } from "next/font/google"
+import { PullToRefresh } from "@/components/pull-to-refresh"
 
 const inter = Inter({ subsets: ["latin"] })
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-        <meta name="theme-color" content="#7C5DFA" />
+        <meta
+          content="initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, width=device-width"
+          name="viewport"
+        />
+        <meta name="theme-color" content="#1748ceff" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="CryptoFolio" />
@@ -21,7 +24,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preload" href="/icons/512.png" as="image" />
         <link rel="dns-prefetch" href="//accounts.google.com" />
       </head>
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <PullToRefresh>{children}</PullToRefresh>
+      </body>
     </html>
   )
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { Home, PieChart, Wallet2, Globe } from "lucide-react"
+import { Home, PieChart, Globe, ChartCandlestick } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useGetUserInfoQuery } from "@/lib/store/services/user-api"
@@ -38,6 +38,11 @@ const items = [
     title: "Exchanges",
     url: "/exchanges",
     icon: Globe,
+  },
+  {
+    title: "Trading",
+    url: "/trading",
+    icon: ChartCandlestick,
   },
 ]
 

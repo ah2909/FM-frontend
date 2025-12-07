@@ -63,12 +63,6 @@ function TransactionsContent() {
 					<ChevronLeft className="h-4 w-4" />
 					<span>Back</span>
 				</Button>
-				{/* <Link href="/transactions/new">
-                    <Button>
-                        <PlusCircle className="mr-2 h-4 w-4" />
-                        New Transaction
-                    </Button>
-                </Link> */}
 			</BaseHeader>
 			<TransactionHistoryWarning className="mb-6" />
 			{isLoading ? (

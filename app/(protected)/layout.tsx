@@ -18,6 +18,7 @@ import { registerServiceWorker } from "@/lib/pwa-utils"
 import { MobileBottomNav } from "@/components/mobile-bottom-nav"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { MobileSiteHeader } from "@/components/mobile-site-header"
+import { PullToRefresh } from "@/components/pull-to-refresh"
 
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -31,8 +32,10 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
         <Provider store={store}>
         {useIsMobile() ? (
           <>
-            <MobileSiteHeader />
-            <main className="flex-1 pb-16 overflow-auto">{children}</main>
+            <PullToRefresh>
+              <MobileSiteHeader />
+              <main className="flex-1 pb-16 overflow-auto">{children}</main>
+            </PullToRefresh>
             <MobileBottomNav />
           </>
         ) : (

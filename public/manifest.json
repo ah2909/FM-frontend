@@ -4,12 +4,16 @@
   "description": "Track, analyze, and optimize your cryptocurrency investments in one place",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#7C5DFA",
+  "background_color": "#060910",
+  "theme_color": "#1748ce",
   "orientation": "portrait-primary",
   "scope": "/",
   "lang": "en",
-  "categories": ["finance", "productivity", "business"],
+  "categories": [
+    "finance",
+    "productivity",
+    "business"
+  ],
   "icons": [
     {
       "src": "/icons/72.png",

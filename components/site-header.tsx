@@ -38,29 +38,31 @@ export function SiteHeader() {
   const breadcrumbs = getBreadcrumbs()
 
   return (
-    <header className="flex h-14 sm:h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 px-2 sm:px-0">
-      <div className="flex items-center gap-2 px-2 sm:px-4 w-full">
-        <SidebarTrigger className="ml-1" />
-        <Separator orientation="vertical" className="mr-2 h-4" />
+    <header className="sticky top-0 z-40 flex h-14 sm:h-16 shrink-0 items-center gap-2 glass border-b border-border/40 px-3 sm:px-6 transition-all duration-300">
+      <div className="flex items-center gap-2 w-full max-w-7xl mx-auto">
+        <SidebarTrigger className="hover:bg-primary/10 hover:text-primary transition-colors h-9 w-9" />
+        <Separator orientation="vertical" className="mx-2 h-5 opacity-40" />
         <Breadcrumb className="flex-1 min-w-0">
           <BreadcrumbList>
             {breadcrumbs.map((breadcrumb, index) => (
               <div key={breadcrumb.label} className="flex items-center">
                 <BreadcrumbItem className="hidden sm:block">
                   {breadcrumb.href ? (
-                    <Link href={breadcrumb.href} className="text-sm">
+                    <Link href={breadcrumb.href} className="text-xs font-bold uppercase tracking-widest text-muted-foreground/80 hover:text-primary transition-colors">
                       {breadcrumb.label}
                     </Link>
                   ) : (
-                    <BreadcrumbPage className="text-sm">{breadcrumb.label}</BreadcrumbPage>
+                    <BreadcrumbPage className="text-xs font-bold uppercase tracking-widest text-foreground">
+                      {breadcrumb.label}
+                    </BreadcrumbPage>
                   )}
                 </BreadcrumbItem>
-                {index < breadcrumbs.length - 1 && <BreadcrumbSeparator className="hidden sm:block" />} 
+                {index < breadcrumbs.length - 1 && <BreadcrumbSeparator className="hidden sm:block opacity-40 mx-2" />} 
               </div>
             ))}
           </BreadcrumbList>
         </Breadcrumb>
-        <div className="ml-auto px-1 sm:px-3">
+        <div className="ml-auto flex items-center gap-2">
           <ModeToggle />
         </div>
       </div>

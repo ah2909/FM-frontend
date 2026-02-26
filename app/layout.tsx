@@ -1,29 +1,51 @@
-import { Inter } from "next/font/google"
+import type { Metadata, Viewport } from "next"
+import { Plus_Jakarta_Sans } from "next/font/google"
+import "./globals.css"
 
-const inter = Inter({ subsets: ["latin"] })
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-jakarta",
+  display: "swap",
+})
+
+export const metadata: Metadata = {
+  title: {
+    default: "CryptoFolio – Portfolio Tracker",
+    template: "%s | CryptoFolio",
+  },
+  description:
+    "Track your crypto portfolio across exchanges in real-time. Monitor balances, performance, and transactions all in one place.",
+  applicationName: "CryptoFolio",
+  keywords: ["crypto", "portfolio", "bitcoin", "ethereum", "tracker", "defi"],
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    title: "CryptoFolio",
+    statusBarStyle: "default",
+  },
+  icons: {
+    icon: "/icons/512.png",
+    apple: "/icons/192.png",
+  },
+}
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+  themeColor: "#1748ce",
+}
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={jakarta.variable}>
       <head>
-        <meta
-          content="initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, width=device-width"
-          name="viewport"
-        />
-        <meta name="theme-color" content="#1748ceff" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="CryptoFolio" />
-        <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="application-name" content="CryptoFolio" />
-        {/* PWA Icons */}
-        <link rel="icon" href="/icons/512.png" />
-        <link rel="apple-touch-icon" href="/icons/192.png" />
-        <link rel="manifest" href="/manifest.json" />
-        {/* Preload critical resources */}
-        <link rel="preload" href="/icons/512.png" as="image" />
         <link rel="dns-prefetch" href="//accounts.google.com" />
       </head>
-      <body className={inter.className}>{children}</body>
+      <body className={jakarta.className}>{children}</body>
     </html>
   )
 }

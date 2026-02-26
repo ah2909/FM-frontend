@@ -1,6 +1,6 @@
 "use client"
 
-import { Home, PieChart, Wallet2, Globe } from "lucide-react"
+import { Home, PieChart, Wallet2, Globe, BarChart3 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useGetUserInfoQuery } from "@/lib/store/services/user-api"
@@ -39,6 +39,11 @@ const items = [
     url: "/exchanges",
     icon: Globe,
   },
+  {
+    title: "Analyze",
+    url: "/analyze",
+    icon: BarChart3,
+  },
 ]
 
 export function AppSidebar() {
@@ -61,45 +66,45 @@ export function AppSidebar() {
   }
 
   return (
-    <Sidebar variant="inset" className="border-r">
-      <SidebarHeader className="border-b border-sidebar-border">
+    <Sidebar variant="inset" className="border-r bg-sidebar-background/50 backdrop-blur-xl">
+      <SidebarHeader className="border-b border-sidebar-border bg-transparent p-4">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
               size="lg"
               asChild
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              className="hover:bg-sidebar-accent/50 transition-all"
             >
               <Link 
                 href="/" 
-                className="flex items-center gap-3 px-3 py-2"
+                className="flex items-center gap-3"
                 onClick={handleMenuItemClick}
               >
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                  <Bitcoin className="size-4" />
+                <div className="flex aspect-square size-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-blue-600 text-primary-foreground shadow-lg shadow-primary/20">
+                  <Bitcoin className="size-5" />
                 </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold text-sm sm:text-base">CryptoFolio</span>
-                  <span className="truncate text-xs text-muted-foreground hidden sm:block">Portfolio Tracker</span>
+                <div className="grid flex-1 text-left leading-tight">
+                  <span className="truncate font-bold text-base tracking-tight gradient-text">CryptoFolio</span>
+                  <span className="truncate text-[10px] font-medium text-muted-foreground uppercase tracking-widest opacity-80">Portfolio Hub</span>
                 </div>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent className="px-2">
+      <SidebarContent className="px-3 py-4">
         <SidebarGroup>
-          <SidebarGroupLabel className="px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-            Platform
+          <SidebarGroupLabel className="px-3 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.2em]">
+            Maintenance
           </SidebarGroupLabel>
-          <SidebarGroupContent>
+          <SidebarGroupContent className="mt-2">
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     asChild
                     isActive={pathname === item.url}
-                    className="w-full justify-start px-3 py-4 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
+                    className="w-full justify-start px-3 py-5 text-sm font-medium transition-all hover:bg-sidebar-accent/80 hover:translate-x-1 active:scale-95 data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:font-semibold rounded-xl"
                   >
                     <Link 
                       href={item.url} 
@@ -116,15 +121,15 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="border-t border-sidebar-border p-2">
+      <SidebarFooter className="border-t border-sidebar-border p-3 bg-transparent">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild className="w-full">
+            <div className="w-full px-1">
               {!isLoading && data?.user && (
-                <div className="flex items-center gap-3 px-3 py-2">
-                  <Avatar className="h-8 w-8 rounded-lg">
+                <div className="flex items-center gap-3 p-2 rounded-xl bg-sidebar-accent/30 border border-sidebar-border/50">
+                  <Avatar className="h-9 w-9 border-2 border-background shadow-sm">
                     <AvatarImage src={data.user.avatar_url} alt={data.user.name} />
-                    <AvatarFallback className="rounded-lg bg-primary text-primary-foreground">
+                    <AvatarFallback className="rounded-lg bg-primary text-primary-foreground font-bold">
                       {data.user.name
                         ?.split(" ")
                         .map((n: string) => n[0])
@@ -133,13 +138,13 @@ export function AppSidebar() {
                     </AvatarFallback>
                   </Avatar>
 
-                  <div className="grid flex-1 text-left text-sm leading-tight">
+                  <div className="grid flex-1 text-left leading-tight overflow-hidden">
                     <span className="truncate font-semibold text-sm">{data.user.name}</span>
-                    <span className="truncate text-xs text-muted-foreground hidden sm:block">{data.user.email}</span>
+                    <span className="truncate text-xs text-muted-foreground opacity-70">{data.user.email}</span>
                   </div>
                 </div>
               )}
-            </SidebarMenuButton>
+            </div>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>

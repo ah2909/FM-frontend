@@ -19,12 +19,18 @@ interface BaseHeaderProps {
 
 export function BaseHeader({ heading, text, children, mobileMenuItems = [] }: BaseHeaderProps) {
   return (
-    <div className="flex flex-col space-y-4 md:flex-row md:justify-between md:items-center md:space-y-0 gap-4">
+    <div className="flex flex-col space-y-4 md:flex-row md:justify-between md:items-end md:space-y-0 gap-6 pb-2">
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between">
           <div className="min-w-0 flex-1">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight truncate">{heading}</h1>
-            {text && <p className="text-muted-foreground text-sm sm:text-base mt-1 line-clamp-2">{text}</p>}
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight truncate gradient-text pb-1">
+              {heading}
+            </h1>
+            {text && (
+              <p className="text-muted-foreground/80 text-sm sm:text-base font-medium max-w-2xl leading-relaxed">
+                {text}
+              </p>
+            )}
           </div>
 
           {/* Mobile Menu - Only show if we have mobile menu items */}

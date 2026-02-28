@@ -21,6 +21,8 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useGetSupportedCEXQuery, useConnectExchangeMutation, type Exchange } from "@/lib/store/services/exchange-api"
 import Image from "next/image"
+import { useDispatch } from "react-redux"
+import { portfolioApi } from "@/lib/store/services/portfolio-api"
 import { useWebSocketEvent } from "@/hooks/useWebSocketEvent"
 
 const formSchema = z.object({
@@ -35,6 +37,7 @@ type FormValues = z.infer<typeof formSchema>
 export function UserExchanges() {
   const [isOpen, setIsOpen] = useState(false)
   const [selectedExchange, setSelectedExchange] = useState<number | null>(null)
+  const dispatch = useDispatch()
 
   const { data: exchanges, isLoading } = useGetSupportedCEXQuery()
   const [connectExchange, { isLoading: isConnecting }] = useConnectExchangeMutation()
@@ -46,19 +49,23 @@ export function UserExchanges() {
       secret_key: "",
     },
   })
+
   useWebSocketEvent("update-portfolio", "", (data: any) => {
     if(data?.success) {
       toast.success("Portfolio updated successfully!", {
-        action: {
-          label: 'Update',
-          onClick: () => window.location.reload(),
-        },
+        id: "connect-exchange",
+        description: "Your assets have been synced from the exchange.",
       })
+      // Automatically refresh data
+      dispatch(portfolioApi.util.invalidateTags(['Portfolio', 'Exchange', 'Asset']))
     }
     else {
-      toast.error("Failed to update portfolio.")
+      toast.error("Failed to update portfolio data.", {
+        id: "connect-exchange",
+      })
     }
   })
+
   const handleExchangeSelect = (exchangeId: number) => {
     const exchange = exchanges?.data?.find((e: Exchange) => e.id === exchangeId)
 
@@ -77,17 +84,26 @@ export function UserExchanges() {
     data.cex_name = exchange?.name
 
     try {
+      toast.loading(`Connecting to ${exchange?.name}...`, {
+        id: "connect-exchange",
+      })
       await connectExchange(data).unwrap()
-      toast.success(`${exchange?.name} connected successfully! Processing your portfolio data...`)
+      toast.loading(`${exchange?.name} connected! Syncing assets in background...`, {
+        id: "connect-exchange",
+      })
       setSelectedExchange(null)
       setIsOpen(false)
       form.reset()
     } catch (error) {
       if(error?.status === 400) {
-        toast.error("Invalid API Key or Secret")
+        toast.error("Invalid API Key or Secret", {
+          id: "connect-exchange",
+        })
       }
       else
-        toast.error("Failed to connect exchange")
+        toast.error("Failed to connect exchange", {
+          id: "connect-exchange",
+        })
     }
   }
 

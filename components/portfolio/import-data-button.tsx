@@ -14,9 +14,10 @@ import {
 } from "@/components/ui/dialog";
 import { ExchangeAssetSelector } from "./exchange-asset-selector";
 import type { TokenExchange } from "./exchange-asset-selector";
-import { useAddTokenToPortfolioMutation } from "@/lib/store/services/portfolio-api";
+import { useAddTokenToPortfolioMutation, portfolioApi } from "@/lib/store/services/portfolio-api";
 import { cn } from "@/lib/utils";
 import { useWebSocketEvent } from "@/hooks/useWebSocketEvent";
+import { useDispatch } from "react-redux";
 
 interface ImportDataButtonProps {
   portfolio_id: number
@@ -33,19 +34,30 @@ export function ImportDataButton({
 }: ImportDataButtonProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [addTokenToPortfolio] = useAddTokenToPortfolioMutation()
+  const dispatch = useDispatch()
 
   useWebSocketEvent("add-token-to-port", "", (data: any) => {
     if(data?.success) {
-      toast.success(data?.message ?? 'Add tokens to portfolio successfully.')
-      setTimeout(() => window.location.reload(), 2000)
+      toast.success(data?.message ?? 'Add tokens to portfolio successfully.', {
+        id: "import-assets",
+      })
+      // Invalidate tags to refresh UI without page reload
+      dispatch(portfolioApi.util.invalidateTags(['Portfolio', 'Asset']))
     }
     else {
-      toast.error("Failed to add tokens to portfolio.")
+      toast.error("Failed to add tokens to portfolio.", {
+        id: "import-assets",
+      })
     }
   })
 
   const handleAssetsSelected = async (assets: TokenExchange[]) => {
     if (assets.length === 0) return
+    
+    toast.loading("Importing assets...", {
+      id: "import-assets",
+    })
+
     try {
       const response = await addTokenToPortfolio({
         portfolio_id: portfolio_id,
@@ -55,12 +67,18 @@ export function ImportDataButton({
           exchange: asset.exchanges,
         })),
       })
+      
       if (!response.data?.success) {
-        toast.error("Failed to add assets to portfolio.")
+        toast.error(response.data?.message || "Failed to add assets to portfolio.", {
+          id: "import-assets",
+        })
       }
+      // We don't close the toast here because we wait for the WebSocket event
       setIsOpen(false)
     } catch (error) {
-      toast.error("Failed to add assets to portfolio")
+      toast.error("Failed to add assets to portfolio", {
+        id: "import-assets",
+      })
     }
   }
 

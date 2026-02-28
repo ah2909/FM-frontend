@@ -25,21 +25,29 @@ export function TransactionSyncButton({ className = "", portfolio_id }: Transact
   const assets = useSelector((state: any) => state.portfolios.assets)
   const hasInitialSync = useRef(false)
 
-  //TODO: Change to button sync, avoid duplicate request
+  // Synchronize status with session storage on mount
   useEffect(() => {
     const savedStatus = sessionStorage.getItem(syncStatusKey)
     if (savedStatus) {
       setSyncStatus(savedStatus as SyncStatus)
-    } else if (!hasInitialSync.current) {
+    }
+    
+    // Auto-start sync only if not already syncing and haven't tried this session
+    if (!savedStatus && !hasInitialSync.current) {
       hasInitialSync.current = true
       startSync()
-      sessionStorage.setItem(syncStatusKey, "syncing")
     }
-  }, [])
+  }, [syncStatusKey])
 
   const startSync = async () => {
+    // Prevent multiple concurrent sync calls
+    if (syncStatus === "syncing" || sessionStorage.getItem(syncStatusKey) === "syncing") {
+      return
+    }
+
     setSyncStatus("syncing")
     setErrorMessage("")
+    sessionStorage.setItem(syncStatusKey, "syncing")
 
     try {
       const res = await syncTransactions({ portfolio_id }).unwrap()
@@ -63,6 +71,43 @@ export function TransactionSyncButton({ className = "", portfolio_id }: Transact
     return exchangeMap[exchange] ?? null
   }, [])
 
+  // Listen for sync-transactions event
+  // Note: If multiple instances of this button are mounted (e.g. Mobile + Desktop menus),
+  // they will all receive this event. The Redux reducer is now idempotent to handle this.
+  useWebSocketEvent("sync-transactions", "", (data: any) => {
+    console.log("sync-transactions", data)
+    const status = data?.status
+    if (!status) return
+
+    setSyncStatus(status)
+    sessionStorage.setItem(syncStatusKey, status)
+
+    if (status === "success" && data?.data && data.data.length > 0) {
+      data.data.forEach((transaction: any) => {
+        // Find matching asset
+        const asset = assets.find((a: any) => 
+          a.symbol.toUpperCase() === transaction.symbol.split('/')[0].toUpperCase()
+        )
+        
+        if (asset) {
+          dispatch(syncTransactionsByAssetID({
+            assetId: asset.id,
+            transaction: {
+              id: transaction.id,
+              portfolio_id: portfolio_id,
+              asset_id: asset.id,
+              exchange_id: getExchangeId(transaction.exchange),
+              quantity: transaction.amount,
+              price: transaction.price,
+              type: transaction.side.toUpperCase(),
+              transact_date: new Date(transaction.timestamp).toISOString().slice(0, 19).replace("T", " "),
+            },
+          }))
+        }
+      })
+    }
+  })
+
   // Memoize sync content
   const syncContent = useMemo(() => {
     const content = {
@@ -84,32 +129,6 @@ export function TransactionSyncButton({ className = "", portfolio_id }: Transact
     }
     return content[syncStatus as keyof typeof content] || content.syncing
   }, [syncStatus])
-
-  useWebSocketEvent("sync-transactions", "", (data: any) => {
-    setSyncStatus(data?.status)
-    sessionStorage.setItem(syncStatusKey, data?.status || "error")
-
-    if (data?.status === "success" && data?.data.length > 0) {
-      data.data.forEach((transaction: any) => {
-        const asset = assets.find((asset: any) => asset.symbol.toUpperCase() + "/USDT" === transaction.symbol)
-        if (asset) {
-          dispatch(syncTransactionsByAssetID({
-              assetId: asset.id,
-              transaction: {
-                portfolio_id: portfolio_id,
-                asset_id: asset.id,
-                exchange_id: getExchangeId(transaction.exchange),
-                quantity: transaction.amount,
-                price: transaction.price,
-                type: transaction.side.toUpperCase(),
-                transact_date: new Date(transaction.timestamp).toISOString().slice(0, 19).replace("T", " "),
-              },
-            }),
-          )
-        }
-      })
-    }
-  })
 
   return (
     <div className={`transaction-sync-container ${className}`}>

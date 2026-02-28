@@ -22,6 +22,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import { TransactionSyncButton } from "@/components/dashboard/transaction-sync-button";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Lazy-load heavy chart components so they don't block initial render
 const PortfolioChart = dynamic(
@@ -104,6 +105,7 @@ export default function DashboardPage() {
   const portfolio = useSelector((state: any) => state.portfolios.portfolio);
   const tokens = useSelector((state: any) => state.portfolios.assets ?? []);
   const isLoading = isLoadingPortfolio || isLoadingBalance;
+  const isMobile = useIsMobile();
 
   const hasPortfolioData = portfolio && Object.keys(portfolio).length > 0;
   const hasTokens = tokens && tokens.length > 0;
@@ -114,7 +116,7 @@ export default function DashboardPage() {
     if (data?.data?.length === 0) router.push("/welcome");
   }, [data, isLoadingPortfolio, dispatch]);
 
-  const mobileMenuItems = hasTokens
+  const mobileMenuItems = hasTokens && isMobile
     ? [{ label: "Import Data", component: <TransactionSyncButton portfolio_id={portfolio?.id} /> }]
     : [];
 
@@ -125,7 +127,7 @@ export default function DashboardPage() {
         text="Welcome back! Here's your portfolio overview"
         mobileMenuItems={mobileMenuItems}
       >
-        {hasTokens && (
+        {hasTokens && !isMobile && (
           <div className="flex items-center justify-between mb-4">
             <TransactionSyncButton portfolio_id={portfolio?.id} />
           </div>
@@ -196,7 +198,7 @@ export default function DashboardPage() {
 
         {/* Row 2: Holdings + Activity */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-          <div className="lg:col-span-8">
+          <div className="lg:col-span-7">
             <Card className="h-full card-hover border-none glass shadow-sm overflow-hidden flex flex-col pt-2">
               <CardHeader className="pb-4">
                 <CardTitle className="text-lg sm:text-xl font-bold tracking-tight">Top Holdings</CardTitle>
@@ -211,7 +213,7 @@ export default function DashboardPage() {
             </Card>
           </div>
 
-          <div className="lg:col-span-4">
+          <div className="lg:col-span-5">
             <Card className="h-full card-hover border-none glass shadow-sm overflow-hidden flex flex-col pt-2">
               <CardHeader className="pb-4">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">

@@ -40,9 +40,16 @@ export const portfoliosSlice = createSlice({
     },
     syncTransactionsByAssetID: (state, action: PayloadAction<{ assetId: string, transaction: any }>) => {
       const { assetId, transaction } = action.payload;
+      const isDuplicate = state.transactions[assetId]?.some((t: any) => 
+        t.transact_date === transaction.transact_date && 
+        t.quantity === transaction.quantity
+      );
+      if (isDuplicate) return; 
+
       state.transactions[assetId] = [...state.transactions[assetId], transaction];
       let updatedAmount = transaction.type === 'BUY' ? transaction.quantity : -transaction.quantity;
       const assetIndex = state.assets.findIndex((asset: any) => asset.id === assetId);
+      
       if (assetIndex !== -1) {
         state.assets[assetIndex].amount += updatedAmount;
         state.assets[assetIndex].value = state.assets[assetIndex].amount * state.assets[assetIndex].price;

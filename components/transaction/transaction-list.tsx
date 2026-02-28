@@ -12,10 +12,6 @@ interface TransactionListProps {
 }
 
 export function TransactionList({ selectedToken }: TransactionListProps) {
-  const [selectedExchange, setSelectedExchange] = useState<string>("all")
-  const [selectedType, setSelectedType] = useState<string>("all")
-  const [searchQuery, setSearchQuery] = useState<string>("")
-
   const transactions = useSelector((state: any) => state.portfolios.transactions)
   const transByAsset = [...transactions[selectedToken?.id]].sort((a: any, b: any) => {
     return new Date(b.transact_date).getTime() - new Date(a.transact_date).getTime()
@@ -47,23 +43,6 @@ export function TransactionList({ selectedToken }: TransactionListProps) {
     }
   }
 
-  const filteredTransactions = transByAsset?.filter((transaction: any) => {
-    if (selectedExchange !== "all" && transaction.exchange !== selectedExchange) {
-      return false
-    }
-    if (selectedType !== "all" && transaction.type !== selectedType) {
-      return false
-    }
-    if (
-      searchQuery &&
-      !transaction.token.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      !transaction.symbol.toLowerCase().includes(searchQuery.toLowerCase())
-    ) {
-      return false
-    }
-    return true
-  })
-
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     return date.toLocaleDateString("en-US", {
@@ -85,9 +64,9 @@ export function TransactionList({ selectedToken }: TransactionListProps) {
     <Card className="border-0 shadow-none">
       <CardContent className="px-0 sm:px-6">
         <div className="space-y-1">
-          {filteredTransactions?.length === 0 ? (
+          {transByAsset?.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-muted-foreground">No transactions found matching your filters.</p>
+              <p className="text-muted-foreground">No transactions found.</p>
             </div>
           ) : (
             <div className="space-y-3 sm:space-y-2">

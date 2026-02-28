@@ -50,6 +50,14 @@ export function PortfolioTokens({ portfolio }: PortfolioTokensProps) {
   const [removeTokenFromPortfolio] = useRemoveTokenFromPortfolioMutation()
   const dispatch = useDispatch()
   const [priceData, setPriceData] = useState<Record<string, {price: number, percentChange: number}>>({})
+  const [searchQuery, setSearchQuery] = useState("")
+
+  const filteredTokens = useMemo(() => {
+    return tokens.filter((token: Token) =>
+      token.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      token.symbol.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  }, [tokens, searchQuery])
 
   // Memoize the WebSocket stream to prevent recreation
   const stream = useMemo(() => {
@@ -102,12 +110,12 @@ export function PortfolioTokens({ portfolio }: PortfolioTokensProps) {
 
   // Memoize sorted tokens for desktop table
   const sortedTokensForTable = useMemo(() => {
-    return [...tokens].sort((a: Token, b: Token) => {
+    return [...filteredTokens].sort((a: Token, b: Token) => {
       const aValue = (priceData[a.symbol]?.price || a.price) * a.amount
       const bValue = (priceData[b.symbol]?.price || b.price) * b.amount
       return bValue - aValue
     })
-  }, [tokens, priceData])
+  }, [filteredTokens, priceData])
 
   const calculateTotalValue = useMemo(() => {
   if (!tokens || tokens.length === 0) return portfolio.totalValue;
@@ -172,6 +180,8 @@ useEffect(() => {
                 type="search"
                 placeholder="Search assets..."
                 className="pl-8 w-full lg:w-[240px] text-sm"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
             <Button variant="outline" className="flex items-center gap-1 bg-transparent text-sm px-3">
@@ -184,12 +194,18 @@ useEffect(() => {
       <CardContent className="px-3 sm:px-6">
         {/* Mobile View - Optimized Card Layout */}
         <div className="block sm:hidden">
-          <TokenMobileList
-            tokens={tokens}
-            portfolioTotalValue={portfolio.totalValue}
-            priceData={priceData}
-            onDeleteClick={handleDeleteClick}
-          />
+          {filteredTokens.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">No assets found matching your search.</p>
+            </div>
+          ) : (
+            <TokenMobileList
+              tokens={filteredTokens}
+              portfolioTotalValue={portfolio.totalValue}
+              priceData={priceData}
+              onDeleteClick={handleDeleteClick}
+            />
+          )}
         </div>
 
         {/* Desktop View - Table Layout */}
@@ -207,90 +223,98 @@ useEffect(() => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {sortedTokensForTable.map((token: Token) => {
-                const currentPrice = priceData[token.symbol]?.price || token.price
-                const currentValue = currentPrice * token.amount
-                const unrealizedPnL = Number((currentValue - token.avg_price * token.amount).toFixed(2))
-                const allocation = Number(((currentValue / portfolio.totalValue) * 100).toFixed(0))
-                const percentChange = priceData[token.symbol]?.percentChange || token.percentChange
-                const isIncrease = Number(percentChange) >= 0
+              {sortedTokensForTable.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                    No assets found matching your search.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                sortedTokensForTable.map((token: Token) => {
+                  const currentPrice = priceData[token.symbol]?.price || token.price
+                  const currentValue = currentPrice * token.amount
+                  const unrealizedPnL = Number((currentValue - token.avg_price * token.amount).toFixed(2))
+                  const allocation = Number(((currentValue / portfolio.totalValue) * 100).toFixed(0))
+                  const percentChange = priceData[token.symbol]?.percentChange || token.percentChange
+                  const isIncrease = Number(percentChange) >= 0
 
-                return (
-                  <TableRow key={token.id} className="hover:bg-muted/30 transition-colors">
-                    <TableCell>
-                      <div className="flex items-center min-w-0">
-                        <Avatar className="h-8 w-8 sm:h-9 sm:w-9 flex-shrink-0">
-                          <AvatarImage src={token.img_url} alt={token.symbol} />
-                          <AvatarFallback>{token.symbol.toUpperCase().slice(0, 2)}</AvatarFallback>
-                        </Avatar>
-                        <div className="ml-3 sm:ml-4 min-w-0">
-                          <p className="font-medium text-sm sm:text-base truncate">{token.name}</p>
-                          <p className="text-xs sm:text-sm text-muted-foreground">{token.symbol.toUpperCase()}</p>
+                  return (
+                    <TableRow key={token.id} className="hover:bg-muted/30 transition-colors">
+                      <TableCell>
+                        <div className="flex items-center min-w-0">
+                          <Avatar className="h-8 w-8 sm:h-9 sm:w-9 flex-shrink-0">
+                            <AvatarImage src={token.img_url} alt={token.symbol} />
+                            <AvatarFallback>{token.symbol.toUpperCase().slice(0, 2)}</AvatarFallback>
+                          </Avatar>
+                          <div className="ml-3 sm:ml-4 min-w-0">
+                            <p className="font-medium text-sm sm:text-base truncate">{token.name}</p>
+                            <p className="text-xs sm:text-sm text-muted-foreground">{token.symbol.toUpperCase()}</p>
+                          </div>
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <div className="flex items-center gap-2 justify-center">
-                        <span className="text-sm font-medium">{allocation}%</span>
-                        <div className="w-16 lg:w-24 h-2 rounded-full overflow-hidden bg-muted">
-                          <div
-                            className="h-full rounded-full bg-primary transition-all duration-300"
-                            style={{ width: `${Math.min(allocation, 100)}%` }}
-                          />
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <div className="flex items-center gap-2 justify-center">
+                          <span className="text-sm font-medium">{allocation}%</span>
+                          <div className="w-16 lg:w-24 h-2 rounded-full overflow-hidden bg-muted">
+                            <div
+                              className="h-full rounded-full bg-primary transition-all duration-300"
+                              style={{ width: `${Math.min(allocation, 100)}%` }}
+                            />
+                          </div>
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <p className="font-medium">${Number(currentPrice)}</p>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {/* percentchange */}
-                      <div className={`font-medium text-sm ${Number(percentChange) >= 0 ? "text-green-600" : "text-red-600"}`}>
-                        {isIncrease ? "+" : "-"}
-                        {Math.abs(Number(percentChange)).toFixed(2)}%
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <div>
-                        <div className="font-medium text-sm sm:text-base">${currentValue.toFixed(2)}</div>
-                        <p className="text-xs text-muted-foreground">
-                          {token.amount.toFixed(4)} {token.symbol.toUpperCase()}
-                        </p>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <div className={`font-medium text-sm ${unrealizedPnL >= 0 ? "text-green-600" : "text-red-600"}`}>
-                        ${Math.abs(unrealizedPnL).toFixed(2)}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Open menu for {token.name}</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem asChild>
-                            <Link href={`/transactions?id=${token.id}`}>
-                              <Plus className="mr-2 h-4 w-4" />
-                              View Transactions
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => handleDeleteClick(token.symbol)}
-                            className="text-destructive focus:text-destructive"
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Remove Token
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <p className="font-medium">${Number(currentPrice)}</p>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {/* percentchange */}
+                        <div className={`font-medium text-sm ${Number(percentChange) >= 0 ? "text-green-600" : "text-red-600"}`}>
+                          {isIncrease ? "+" : "-"}
+                          {Math.abs(Number(percentChange)).toFixed(2)}%
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <div>
+                          <div className="font-medium text-sm sm:text-base">${currentValue.toFixed(2)}</div>
+                          <p className="text-xs text-muted-foreground">
+                            {token.amount.toFixed(4)} {token.symbol.toUpperCase()}
+                          </p>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <div className={`font-medium text-sm ${unrealizedPnL >= 0 ? "text-green-600" : "text-red-600"}`}>
+                          ${Math.abs(unrealizedPnL).toFixed(2)}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">Open menu for {token.name}</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem asChild>
+                              <Link href={`/transactions?id=${token.id}`}>
+                                <Plus className="mr-2 h-4 w-4" />
+                                View Transactions
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleDeleteClick(token.symbol)}
+                              className="text-destructive focus:text-destructive"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Remove Token
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })
+              )}
             </TableBody>
           </Table>
         </div>

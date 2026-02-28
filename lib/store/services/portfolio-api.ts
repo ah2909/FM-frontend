@@ -87,11 +87,13 @@ export const portfolioApi = baseApi.injectEndpoints({
 			query: () => ({
 				url: `/portfolio/balance`,
 			}),
+			providesTags: ["Portfolio", "Asset"],
 		}),
 		getRecentActivity: builder.query<Response, void>({
 			query: () => ({
 				url: `/portfolio/recent-activity`,
 			}),
+			providesTags: ["Portfolio"],
 		}),
 		importTransactions: builder.mutation<Response, FormData>({
 			query: (data) => ({

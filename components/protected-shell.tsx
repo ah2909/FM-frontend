@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "sonner"
 import { store } from "@/lib/store/store"
@@ -24,39 +24,43 @@ interface ProtectedShellProps {
 
 export function ProtectedShell({ children }: ProtectedShellProps) {
   const isMobile = useIsMobile()
+  const [hasMounted, setHasMounted] = useState(false)
 
   useEffect(() => {
+    setHasMounted(true)
     registerServiceWorker()
   }, [])
+
+  const layoutContent = (!hasMounted || !isMobile) ? (
+    <>
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          <SiteHeader />
+          <main className="flex-1 min-h-0">
+            {children}
+          </main>
+        </SidebarInset>
+      </SidebarProvider>
+    </>
+  ) : (
+    <>
+      <PullToRefresh>
+        <MobileSiteHeader />
+        <main className="flex-1 pb-16 overflow-auto">
+          {children}
+        </main>
+      </PullToRefresh>
+      <MobileBottomNav />
+    </>
+  )
 
   return (
     <AuthProvider>
       <ThemeProvider attribute="class" enableSystem disableTransitionOnChange>
         <WebSocketProvider>
           <Provider store={store}>
-            {isMobile ? (
-              <>
-                <PullToRefresh>
-                  <MobileSiteHeader />
-                  <main className="flex-1 pb-16 overflow-auto animate-fade-in">
-                    {children}
-                  </main>
-                </PullToRefresh>
-                <MobileBottomNav />
-              </>
-            ) : (
-              <>
-                <SidebarProvider>
-                  <AppSidebar />
-                  <SidebarInset>
-                    <SiteHeader />
-                    <main className="flex-1 min-h-0 animate-fade-in">
-                      {children}
-                    </main>
-                  </SidebarInset>
-                </SidebarProvider>
-              </>
-            )}
+            {layoutContent}
           </Provider>
         </WebSocketProvider>
         <PWAInstallPrompt />

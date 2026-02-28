@@ -2,11 +2,12 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Plus } from "lucide-react"
-import { useState } from "react"
+import { useState, memo } from "react"
 import { Skeleton } from "../ui/skeleton"
 import { useWebSocketEvent } from "@/hooks/useWebSocketEvent"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Token } from "../portfolio/portfolio-tokens"
+import Image from "next/image"
 
 interface AssetTableProps {
   tokens: Token[]
@@ -116,80 +117,93 @@ export function AssetTable({ tokens, totalValue, isLoading = false }: AssetTable
             </TableRow>
           </TableHeader>
           <TableBody>
-            {top5Tokens.map((token: Token, index: number) => {
-              const currentPrice = priceData[token.symbol]?.price ?? token.price
-              const value = currentPrice ? Number(currentPrice * token.amount) : 0
-              const allocation = Number((value / totalValue) * 100).toFixed(0)
-              const percentChange = priceData[token.symbol]?.percentChange || token.percentChange
-              const isIncrease = Number(percentChange) >= 0
-
-              return (
-                <TableRow key={token.id}>
-                  <TableCell className="font-medium">{index + 1}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2 min-w-0">
-                      <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full overflow-hidden flex-shrink-0">
-                        <img
-                          src={token.img_url}
-                          alt={token.symbol}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="min-w-0">
-                        <div className="font-medium text-sm sm:text-base truncate">{token.name}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {token.symbol.toUpperCase()}
-                          <span className={`ml-2 font-medium text-sm ${Number(percentChange) >= 0 ? "text-green-600" : "text-red-600"}`}>
-                            {isIncrease ? "+" : "-"}
-                            {Math.abs(Number(percentChange)).toFixed(2)}%
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell">
-                    <div className="flex items-center gap-1 sm:gap-2 justify-center">
-                      {!isNaN(Number(allocation)) ? (
-                        <span className="text-xs sm:text-sm">{allocation}%</span>
-                      ) : (
-                        <Skeleton className="h-3 w-8 sm:h-4 sm:w-4" />
-                      )}
-                      <div
-                        className="w-16 sm:w-24 h-1.5 sm:h-2 rounded-full overflow-hidden"
-                        style={{ backgroundColor: "hsl(var(--muted))" }}
-                      >
-                        <div
-                          className="h-full rounded-full"
-                          style={{
-                            width: `${!isNaN(Number(allocation)) ? allocation : 0}%`,
-                            backgroundColor: "hsl(var(--primary))",
-                          }}
-                        ></div>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div>
-                      {token.amount} {token.symbol.toUpperCase()}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {currentPrice ? `$${value.toFixed(2)}` : <Skeleton className="h-4 w-16" />}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {currentPrice ? `$${currentPrice}` : <Skeleton className="h-4 w-16" />}
-                  </TableCell>
-                  {/* <TableCell>
-                    <Button variant="ghost" size="icon">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </TableCell> */}
-                </TableRow>
-              )
-            })}
+            {top5Tokens.map((token: Token, index: number) => (
+              <AssetTableRow
+                key={token.id}
+                token={token}
+                index={index}
+                totalValue={totalValue}
+                priceData={priceData}
+              />
+            ))}
           </TableBody>
         </Table>
       </div>
     </div>
   )
 }
+
+const AssetTableRow = memo(function AssetTableRow({
+  token,
+  index,
+  totalValue,
+  priceData,
+}: {
+  token: Token 
+  index: number
+  totalValue: number
+  priceData: any
+}) {
+  const currentPrice = priceData[token.symbol]?.price ?? token.price
+  const value = currentPrice ? Number(currentPrice * token.amount) : 0
+  const allocation = Number((value / totalValue) * 100).toFixed(0)
+  const percentChange = priceData[token.symbol]?.percentChange || token.percentChange
+  const isIncrease = Number(percentChange) >= 0
+
+  return (
+    <TableRow>
+      <TableCell className="font-medium text-xs sm:text-sm">{index + 1}</TableCell>
+      <TableCell>
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full overflow-hidden flex-shrink-0 bg-muted relative">
+            <Image 
+              src={token.img_url} 
+              alt={token.symbol} 
+              fill
+              sizes="(max-width: 640px) 24px, 32px"
+              className="object-cover" 
+            />
+          </div>
+          <div className="min-w-0">
+            <div className="font-medium text-xs sm:text-sm truncate">{token.name}</div>
+            <div className="text-[10px] sm:text-xs text-muted-foreground">
+              {token.symbol.toUpperCase()}
+              <span className={`ml-2 font-medium ${Number(percentChange) >= 0 ? "text-green-600" : "text-red-600"}`}>
+                {isIncrease ? "+" : "-"}
+                {Math.abs(Number(percentChange)).toFixed(2)}%
+              </span>
+            </div>
+          </div>
+        </div>
+      </TableCell>
+      <TableCell className="hidden sm:table-cell">
+        <div className="flex items-center gap-1 sm:gap-2 justify-center">
+          {!isNaN(Number(allocation)) ? (
+            <span className="text-xs sm:text-sm">{allocation}%</span>
+          ) : (
+            <Skeleton className="h-3 w-8 sm:h-4 sm:w-4" />
+          )}
+          <div className="w-16 sm:w-24 h-1.5 sm:h-2 rounded-full overflow-hidden bg-muted">
+            <div
+              className="h-full rounded-full bg-primary"
+              style={{
+                width: `${!isNaN(Number(allocation)) ? allocation : 0}%`,
+              }}
+            ></div>
+          </div>
+        </div>
+      </TableCell>
+      <TableCell className="text-center text-xs sm:text-sm">
+        <div className="font-medium">
+          {token.amount} {token.symbol.toUpperCase()}
+        </div>
+        <div className="text-[10px] sm:text-xs text-muted-foreground">
+          {currentPrice ? `$${value.toFixed(2)}` : <Skeleton className="h-3 w-12" />}
+        </div>
+      </TableCell>
+      <TableCell className="text-center text-xs sm:text-sm font-semibold">
+        {currentPrice ? `$${currentPrice}` : <Skeleton className="h-4 w-12 mx-auto" />}
+      </TableCell>
+    </TableRow>
+  )
+})

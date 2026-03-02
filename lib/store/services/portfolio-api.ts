@@ -102,6 +102,12 @@ export const portfolioApi = baseApi.injectEndpoints({
 				body: data,
 			}),
 		}),
+		getPortfolioAnalysis: builder.query<Response, void>({
+			query: () => ({
+				url: `/portfolio/analyze`,
+			}),
+			providesTags: ["Portfolio"],
+		}),
 	}),
 });
 
@@ -117,4 +123,5 @@ export const {
 	useGetBalanceDataQuery,
 	useGetRecentActivityQuery,
 	useImportTransactionsMutation,
+	useGetPortfolioAnalysisQuery,
 } = portfolioApi;

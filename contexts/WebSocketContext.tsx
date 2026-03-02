@@ -23,7 +23,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
   useEffect(() => {
     const newSocket = io(process.env.NEXT_PUBLIC_WS_URL, {
       auth: {
-        token: localStorage.getItem('user_id') || '',
+        token: localStorage.getItem('token') || '',
       },
       transports: ['websocket'],
       reconnectionAttempts: 5,

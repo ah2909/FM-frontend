@@ -1,5 +1,22 @@
 "use client";
 
+import { useState } from "react";
+import { toast } from "sonner";
+import { 
+  TrendingUp, 
+  TrendingDown, 
+  AlertTriangle, 
+  ShieldCheck, 
+  Info,
+  Target,
+  BarChart3,
+  Zap,
+  CheckCircle2,
+  XCircle,
+  Activity,
+  PieChart
+} from "lucide-react";
+
 import { BaseHeader } from "@/components/base-header";
 import { BaseShell } from "@/components/base-shell";
 import { 
@@ -9,337 +26,341 @@ import {
   CardTitle, 
   CardDescription 
 } from "@/components/ui/card";
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  AlertTriangle, 
-  ShieldCheck, 
-  Info,
-  Lightbulb,
-  Target,
-  BarChart3,
-  Zap,
-  CheckCircle2,
-  XCircle,
-  Clock,
-  Globe
-} from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 
-// --- Sub-components for better organization ---
+import { useGetPortfolioAnalysisQuery } from "@/lib/store/services/portfolio-api";
+import { useWebSocketEvent } from "@/hooks/useWebSocketEvent";
 
-const StatCard = ({ title, value, subValue, icon: Icon, trend, colorClass }: any) => (
-  <Card className="glass border-none shadow-sm card-hover overflow-hidden relative">
-    <div className={cn("absolute top-0 right-0 w-24 h-24 -mr-8 -mt-8 opacity-10 rounded-full", colorClass)} />
-    <CardHeader className="pb-2 flex flex-row items-center justify-between">
-      <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{title}</CardTitle>
-      <Icon className={cn("size-4", trend === 'up' ? "text-green-500" : trend === 'down' ? "text-red-500" : "text-primary")} />
-    </CardHeader>
-    <CardContent>
-      <div className="text-2xl font-black tracking-tight">{value}</div>
-      {subValue && (
-        <div className={cn("text-xs font-bold mt-1", trend === 'up' ? "text-green-500" : trend === 'down' ? "text-red-500" : "text-muted-foreground")}>
-          {subValue}
-        </div>
-      )}
-    </CardContent>
-  </Card>
-);
+// Sub-components
+import { StatCard } from "@/components/analyze/stat-card";
+import { AlertCard, type Alert } from "@/components/analyze/alert-card";
+import { RiskScoreGauge } from "@/components/analyze/risk-score-gauge";
+import { PerformerItem } from "@/components/analyze/performer-item";
+import { RecommendationCard } from "@/components/analyze/recommendation-card";
+import { AssetBreakdownTable } from "@/components/analyze/asset-breakdown-table";
+import { LoadingSkeleton } from "@/components/analyze/loading-skeleton";
+import { AnalyzingInterface } from "@/components/analyze/analyzing-interface";
 
-const PerformerCard = ({ title, performers, icon: Icon, type }: any) => (
-  <Card className="glass border-none shadow-sm h-full">
-    <CardHeader className="pb-3 border-b border-white/5">
-      <div className="flex items-center gap-2">
-        <Icon className={cn("size-5", type === 'best' ? "text-green-500" : "text-red-500")} />
-        <CardTitle className="text-sm font-bold uppercase tracking-wide">{title}</CardTitle>
-      </div>
-    </CardHeader>
-    <CardContent className="pt-4 px-3">
-      <div className="space-y-3">
-        {performers?.map((p: any) => (
-            <div key={p.symbol} className="p-3 rounded-xl bg-white/5 border border-white/5 group hover:bg-white/10 transition-colors">
-                <div className="flex items-center justify-between mb-1">
-                    <span className="font-black text-xs uppercase tracking-tighter">{p.symbol}</span>
-                    <Badge variant={type === 'best' ? "outline" : "destructive"} className={cn("text-[10px] font-bold px-1.5 py-0 h-4 border-none", type === 'best' ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500")}>
-                        {p.pnl_pct >= 0 ? "+" : ""}{p.pnl_pct.toFixed(2)}%
-                    </Badge>
-                </div>
-                <p className="text-[10px] text-muted-foreground/80 leading-relaxed font-medium line-clamp-2 italic">"{p.reason}"</p>
-            </div>
-        ))}
-        {(!performers || performers.length === 0) && (
-            <div className="text-center py-6 text-muted-foreground text-xs font-medium">No performance data available</div>
-        )}
-      </div>
-    </CardContent>
-  </Card>
-);
+// Types
+interface Performer {
+  symbol: string;
+  pnl_pct: number;
+  reason: string;
+}
 
-const RecommendationCard = ({ recommendations }: { recommendations: string[] }) => (
-  <Card className="glass-morphism border-none shadow-xl overflow-hidden group">
-    <CardHeader className="pb-4 bg-gradient-to-r from-primary/10 to-transparent">
-      <div className="flex items-center gap-3">
-        <div className="p-2 rounded-xl bg-primary/20 text-primary animate-pulse">
-            <Lightbulb className="size-5" />
-        </div>
-        <div>
-            <CardTitle className="text-lg font-black tracking-tight">Active Recommendations</CardTitle>
-            <CardDescription className="text-xs font-medium opacity-80">AI-powered insights to optimize your portfolio</CardDescription>
-        </div>
-      </div>
-    </CardHeader>
-    <CardContent className="pt-6">
-      <div className="grid gap-4">
-        {recommendations?.map((rec, i) => (
-          <div key={i} className="flex gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-primary/30 transition-all hover:translate-x-1 group">
-             <div className="flex-shrink-0 size-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black text-xs group-hover:bg-primary group-hover:text-white transition-colors">
-                 {i + 1}
-             </div>
-             <p className="text-sm font-medium leading-relaxed group-hover:text-foreground transition-colors">{rec}</p>
-          </div>
-        ))}
-      </div>
-    </CardContent>
-  </Card>
-);
+interface AssetPnl {
+  symbol: string;
+  invested: number;
+  current: number;
+  pnl: number;
+  pnl_pct: number;
+}
 
-const ScoreCircular = ({ score, label, color, description }: any) => {
-    const radius = 45;
-    const circumference = 2 * Math.PI * radius;
-    const offset = circumference - (score / 100) * circumference;
+interface PnlAnalysis {
+  total_invested: number;
+  total_current_value: number;
+  unrealized_pnl: number;
+  unrealized_pnl_pct: number;
+  per_asset: AssetPnl[];
+}
 
-    return (
-        <div className="flex flex-col items-center gap-4 group">
-            <div className="relative size-32">
-                {/* Background Ring */}
-                <svg className="size-full -rotate-90 transform">
-                    <circle
-                        cx="64"
-                        cy="64"
-                        r={radius}
-                        stroke="currentColor"
-                        strokeWidth="10"
-                        fill="transparent"
-                        className="text-white/5"
-                    />
-                    {/* Progress Ring */}
-                    <circle
-                        cx="64"
-                        cy="64"
-                        r={radius}
-                        stroke={color}
-                        strokeWidth="10"
-                        fill="transparent"
-                        strokeDasharray={circumference}
-                        style={{ strokeDashoffset: offset }}
-                        strokeLinecap="round"
-                        className="transition-all duration-1000 ease-out"
-                    />
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-3xl font-black tracking-tighter leading-none">{score}</span>
-                    <span className="text-[8px] font-black uppercase text-muted-foreground/60 mt-0.5 tracking-tighter">/ 100</span>
-                </div>
-            </div>
-            <div className="text-center">
-                <h4 className="font-black text-sm uppercase tracking-widest">{label}</h4>
-                <p className="text-[10px] text-muted-foreground mt-1 max-w-[120px] font-medium leading-tight">{description}</p>
-            </div>
-        </div>
-    );
-};
+interface VolatilityRisk {
+  overall_volatility: string;
+  assets_overbought: string[];
+  assets_oversold: string[];
+}
 
-// --- Dummy data following the provided structure ---
-const DUMMY_DATA = {
-    risk_assessment: {
-        risk_score: 35,
-        concentration_risk: {
-            allocations: [
-                { symbol: "ETH", percentage: 42.5, flag: "safe" },
-                { symbol: "BTC", percentage: 28.1, flag: "safe" },
-                { symbol: "SOL", percentage: 15.4, flag: "moderate" },
-                { symbol: "LINK", percentage: 8.2, flag: "safe" },
-                { symbol: "UNI", percentage: 5.8, flag: "safe" },
-            ],
-            herfindahl_index: 0.28
-        },
-        volatility_risk: {
-            assets_overbought: ["SOL", "NEAR"],
-            assets_oversold: ["ETH"],
-            high_bb_volatility: ["SOL"],
-            overall_volatility: "moderate"
-        },
-        pnl_analysis: {
-            total_invested: 12450.50,
-            total_current_value: 15820.75,
-            unrealized_pnl: 3370.25,
-            unrealized_pnl_pct: 27.06,
-        },
-        summary: "The portfolio shows healthy growth but is starting to show signs of concentration in SOL, which is currently in an overbought RSI territory. Diversification remains strong with a focus on blue-chip Layer 1s and DeFi."
-    },
-    insights: {
-        best_performers: [
-            { symbol: "SOL", pnl_pct: 142.50, reason: "Strong ecosystem growth and TVL expansion over the last quarter." },
-            { symbol: "ETH", pnl_pct: 22.15, reason: "Consistent accumulation and institutional interest in L2 scaling." },
-            { symbol: "PENDLE", pnl_pct: 88.40, reason: "Yield stripping demand increasing within the re-staking narrative." }
-        ],
-        worst_performers: [
-            { symbol: "LDO", pnl_pct: -18.40, reason: "Governance concerns and competition from decentralized liquid staking." },
-            { symbol: "ARB", pnl_pct: -12.10, reason: "Token unlocks and increased competition among optimistic rollups." }
-        ],
-        diversification_score: 74,
-        diversification_notes: "The portfolio is well-balanced across L1s, L2s, and Oracle sectors. Adding exposure to RWA or DePIN could push this score into the 80s.",
-        market_trend_alignment: "aligned",
-        recommendations: [
-            "Consider take-profit on SOL as technicals signal an overextended weekly run.",
-            "Rebalance L1 exposure by rotating 5% into BTC to hedge against potential alt-market drawdown.",
-            "Implement a trailing stop-loss on PENDLE to protect unrealized gains during volatile cycles.",
-            "Investigate sector rotation into RWA (Real World Assets) to lower overall asset correlation."
-        ]
-    }
-};
+interface ConcentrationRisk {
+  herfindahl_index: number;
+  allocations: { symbol: string; percentage: number; flag: string }[];
+}
+
+interface RiskAssessment {
+  pnl_analysis: PnlAnalysis;
+  volatility_risk: VolatilityRisk;
+  risk_score: number;
+  concentration_risk: ConcentrationRisk;
+  summary: string;
+}
+
+interface Insight {
+  market_trend_alignment: string;
+  recommendations: string[];
+  best_performers: Performer[];
+  worst_performers: Performer[];
+}
+
+interface PortfolioAnalysis {
+  risk_assessment: RiskAssessment;
+  alerts: Alert[];
+  insights: Insight;
+}
+
 
 export default function AnalyzePage() {
-  const analysis = DUMMY_DATA;
+  const { isLoading: isApiLoading} = useGetPortfolioAnalysisQuery();
+  const [analysis, setAnalysis] = useState<PortfolioAnalysis | null>(null);
+  const [isWaitingForWs, setIsWaitingForWs] = useState(true);
 
-  const getRiskColor = (score: number) => {
-    if (score < 30) return "#22c55e"; // Low risk
-    if (score < 60) return "#eab308"; // Medium risk
-    return "#ef4444"; // High risk
+  useWebSocketEvent<{ data: PortfolioAnalysis }>(
+    "portfolio-analysis",
+    "",
+    (payload) => {
+      console.log("Received portfolio-analysis update:", payload);
+      const newData = payload.data;
+      setAnalysis(newData);
+      setIsWaitingForWs(false);
+      toast.success("Analysis updated in real-time");
+    }
+  );
+
+  const isWaitingAnalysis = isWaitingForWs && !analysis;
+
+  if (isApiLoading) {
+    return <LoadingSkeleton text={"Crunching numbers and market data..."} />;
+  }
+
+  if (isWaitingAnalysis) {
+    return <AnalyzingInterface />;
+  }
+
+  // Deeply safe field extraction with defaults for every single used property
+  const risk: RiskAssessment = {
+    pnl_analysis: {
+      total_invested: analysis?.risk_assessment?.pnl_analysis?.total_invested ?? 0,
+      total_current_value: analysis?.risk_assessment?.pnl_analysis?.total_current_value ?? 0,
+      unrealized_pnl: analysis?.risk_assessment?.pnl_analysis?.unrealized_pnl ?? 0,
+      unrealized_pnl_pct: analysis?.risk_assessment?.pnl_analysis?.unrealized_pnl_pct ?? 0,
+      per_asset: analysis?.risk_assessment?.pnl_analysis?.per_asset || [],
+    },
+    volatility_risk: {
+      overall_volatility: analysis?.risk_assessment?.volatility_risk?.overall_volatility || 'neutral',
+      assets_overbought: analysis?.risk_assessment?.volatility_risk?.assets_overbought || [],
+      assets_oversold: analysis?.risk_assessment?.volatility_risk?.assets_oversold || [],
+    },
+    risk_score: analysis?.risk_assessment?.risk_score ?? 0,
+    concentration_risk: {
+      herfindahl_index: analysis?.risk_assessment?.concentration_risk?.herfindahl_index ?? 0,
+      allocations: analysis?.risk_assessment?.concentration_risk?.allocations || [],
+    },
+    summary: analysis?.risk_assessment?.summary || 'Strategic analysis is being generated...'
   };
 
-  const getDiversificationColor = (score: number) => {
-    if (score > 70) return "#22c55e"; 
-    if (score > 40) return "#eab308";
-    return "#ef4444";
+  const alerts = analysis?.alerts || [];
+
+  const insights: Insight = {
+    market_trend_alignment: analysis?.insights?.market_trend_alignment || 'neutral',
+    recommendations: analysis?.insights?.recommendations || [],
+    best_performers: analysis?.insights?.best_performers || [],
+    worst_performers: analysis?.insights?.worst_performers || []
   };
 
-  const pnl = analysis.risk_assessment?.pnl_analysis;
-  const insights = analysis.insights;
-  const risk = analysis.risk_assessment;
+  const mobileMenuItems = [
+    {
+      label: "AI Model",
+      component: (
+        <Badge variant="outline" className="bg-primary/10 text-primary border-none font-bold uppercase tracking-widest text-[10px] py-1.5 px-3 w-full justify-start">
+            <Zap className="size-3 mr-1.5" /> Google Gemini
+        </Badge>
+      )
+    },
+    ...(isWaitingAnalysis ? [{
+      label: "Status",
+      component: (
+        <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-none font-bold uppercase tracking-widest text-[10px] py-1.5 px-3 w-full justify-start">
+            <Activity className="size-3 mr-1.5 animate-spin" /> Analyzing...
+        </Badge>
+      )
+    }] : [])
+  ];
 
   return (
     <BaseShell>
       <BaseHeader 
         heading="Portfolio Analysis" 
         text="Deep dive into your risk metrics and AI investment recommendations"
+        mobileMenuItems={mobileMenuItems}
       >
         <div className="flex items-center gap-2">
-            <Badge variant="outline" className="bg-primary/10 text-primary border-none font-bold uppercase tracking-widest text-[10px] py-1 px-3">
-                <Zap className="size-3 mr-1" /> AI Powered
-            </Badge>
-            <Badge variant="outline" className="bg-muted/40 border-none font-bold uppercase tracking-widest text-[10px] py-1 px-3">
-                <Clock className="size-3 mr-1" /> Real-time
+            {isWaitingAnalysis && (
+              <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-none font-bold uppercase tracking-widest text-[10px] py-1.5 px-3">
+                  <Activity className="size-3 mr-1.5 animate-spin" /> Analyzing...
+              </Badge>
+            )}
+            <Badge variant="outline" className="bg-primary/10 text-primary border-none font-bold uppercase tracking-widest text-[10px] py-1.5 px-3">
+                <Zap className="size-3 mr-1.5" /> Google Gemini
             </Badge>
         </div>
       </BaseHeader>
 
-      <div className="space-y-8">
-        {/* Core Metrics Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="space-y-8 pb-12">
+        {/* Core Financial Metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <StatCard 
             title="Total Invested" 
-            value={`$${Number(pnl?.total_invested || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}`}
+            value={`$${risk.pnl_analysis.total_invested.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+            subValue="Principal capital"
             icon={Target}
+            colorClass="bg-indigo-500"
+          />
+          <StatCard 
+            title="Equity Value" 
+            value={`$${risk.pnl_analysis.total_current_value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+            subValue={`${risk.pnl_analysis.unrealized_pnl >= 0 ? "+" : ""}${risk.pnl_analysis.unrealized_pnl.toLocaleString()} Unrealized`}
+            trend={risk.pnl_analysis.unrealized_pnl >= 0 ? "up" : "down"}
+            icon={Activity}
             colorClass="bg-primary"
           />
           <StatCard 
-            title="Current Value" 
-            value={`$${Number(pnl?.total_current_value || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}`}
-            subValue={`${pnl?.unrealized_pnl >= 0 ? "+" : ""}${pnl?.unrealized_pnl_pct?.toFixed(2)}% Performance`}
-            trend={pnl?.unrealized_pnl >= 0 ? "up" : "down"}
+            title="Portfolio Yield" 
+            value={`${risk.pnl_analysis.unrealized_pnl_pct.toFixed(2)}%`}
+            subValue="Since initial deposit"
+            trend={risk.pnl_analysis.unrealized_pnl_pct >= 0 ? "up" : "down"}
             icon={BarChart3}
             colorClass="bg-blue-500"
           />
-          <StatCard 
-            title="Volatility Risk" 
-            value={risk?.volatility_risk?.overall_volatility?.toUpperCase() || "N/A"}
-            subValue={`${risk?.volatility_risk?.assets_overbought?.length || 0} Overbought Assets`}
-            icon={Zap}
-            colorClass="bg-yellow-500"
-          />
-          <StatCard 
-            title="Trend Alignment" 
-            value={insights?.market_trend_alignment?.replace('_', ' ')?.toUpperCase() || "N/A"}
-            icon={Globe}
-            colorClass="bg-indigo-500"
-          />
         </div>
 
-        {/* Risk & Diversification Overview */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Card className="lg:col-span-1 glass-morphism border-none shadow-xl flex flex-col items-center justify-center p-8 text-center group">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-12 w-full">
-                <ScoreCircular 
-                    score={risk?.risk_score || 0} 
-                    label="Risk Index" 
-                    color={getRiskColor(risk?.risk_score || 0)}
-                    description="Aggregate risk based on volatility and loss"
-                />
-                <ScoreCircular 
-                    score={insights?.diversification_score || 0} 
-                    label="Diversification" 
-                    color={getDiversificationColor(insights?.diversification_score || 0)}
-                    description="Asset spread and sector exposure effectiveness"
-                />
-              </div>
-          </Card>
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+          {/* Left Column: Risk and Strategy */}
+          <div className="xl:col-span-8 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card className="glass-morphism border-none shadow-xl flex flex-col items-center justify-center p-6 text-center group md:col-span-1">
+                <CardHeader className="p-0 pb-2">
+                  <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Portfolio Integrity</CardTitle>
+                </CardHeader>
+                <RiskScoreGauge score={risk.risk_score} />
+                <p className="text-[10px] text-muted-foreground font-medium mt-2 max-w-[150px]">
+                  Based on current volatility, concentration (HHI: {risk.concentration_risk.herfindahl_index.toFixed(2)}), and technical indicators.
+                </p>
+              </Card>
 
-          <Card className="lg:col-span-2 glass-morphism border-none shadow-lg overflow-hidden flex flex-col">
-            <CardHeader className="pb-4 bg-white/5">
-                <CardTitle className="text-xl font-bold tracking-tight">System Summary</CardTitle>
-                <CardDescription className="text-xs font-medium">Automatic summary of your portfolio health</CardDescription>
-            </CardHeader>
-            <CardContent className="flex-1 p-6 relative">
-              <div className="absolute top-6 left-6 opacity-10">
-                  <Info className="size-16" />
-              </div>
-              <p className="text-base font-medium leading-relaxed italic text-foreground/90 relative z-10">
-                "{risk?.summary || insights?.diversification_notes}"
-              </p>
-              
-              <div className="mt-8 pt-6 border-t border-white/5">
-                <h5 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4">Concentration Check</h5>
-                <div className="flex flex-wrap gap-2">
-                    {risk?.concentration_risk?.allocations?.slice(0, 10).map((a: any) => (
-                        <div key={a.symbol} className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5">
-                            <span className="text-[10px] font-black">{a.symbol}</span>
-                            <Badge variant="outline" className={cn("text-[8px] font-bold px-1 h-3.5 border-none", a.flag === 'safe' ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500")}>
-                                {a.flag?.toUpperCase()}
-                            </Badge>
-                        </div>
-                    ))}
-                    {(risk?.concentration_risk?.allocations?.length || 0) > 10 && (
-                        <span className="text-[10px] font-bold text-muted-foreground flex items-center px-2">+{risk.concentration_risk.allocations.length - 10} more</span>
-                    )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              <Card className="glass-morphism border-none shadow-xl md:col-span-2 overflow-hidden flex flex-col">
+                <CardHeader className="pb-4 bg-white/5 border-b border-white/5">
+                    <div className="flex items-center gap-3">
+                      <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
+                        <ShieldCheck className="size-4" />
+                      </div>
+                      <CardTitle className="text-sm font-black uppercase tracking-widest">Analysis Executive Summary</CardTitle>
+                    </div>
+                </CardHeader>
+                <CardContent className="flex-1 p-6 relative">
+                  <div className="absolute top-4 right-4 opacity-5">
+                      <Info className="size-24" />
+                  </div>
+                  <div className="space-y-4 relative z-10">
+                    <p className="text-base font-bold leading-relaxed italic text-foreground/90">
+                      "{risk.summary}"
+                    </p>
+                    <div className="pt-4 border-t border-white/5">
+                      <h5 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-3">Concentration Analysis</h5>
+                      <div className="flex flex-wrap gap-2">
+                          {risk.concentration_risk.allocations.length > 0 ? (
+                            risk.concentration_risk.allocations.map((a) => (
+                                <div key={a.symbol} className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/5 group hover:border-primary/30 transition-colors">
+                                    <span className="text-[10px] font-black">{a.symbol}</span>
+                                    <span className="text-[10px] font-mono text-muted-foreground">{a.percentage.toFixed(1)}%</span>
+                                    <div className={cn("size-1.5 rounded-full", 
+                                      a.flag === 'safe' ? "bg-green-500" : 
+                                      a.flag === 'moderate' ? "bg-yellow-500" : 
+                                      a.flag === 'high' ? "bg-orange-500" : "bg-red-500"
+                                    )} />
+                                </div>
+                            ))
+                          ) : (
+                            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/5 border-dashed">
+                              <span className="text-[10px] font-black uppercase text-muted-foreground/50">No concentration risk</span>
+                            </div>
+                          )}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
 
-        {/* Performance & Recommendations */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          <div className="xl:col-span-1 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 gap-6">
-            <PerformerCard 
-              title="Best Performers" 
-              performers={insights?.best_performers?.slice(0, 5)} 
-              icon={TrendingUp} 
-              type="best" 
-            />
-            <PerformerCard 
-              title="Worst Performers" 
-              performers={insights?.worst_performers?.slice(0, 5)} 
-              icon={TrendingDown} 
-              type="worst" 
+            <RecommendationCard recommendations={insights.recommendations} />
+            
+            <AssetBreakdownTable 
+              pnlAnalysis={risk.pnl_analysis} 
+              volatilityRisk={risk.volatility_risk} 
             />
           </div>
-          <div className="xl:col-span-2">
-            <RecommendationCard recommendations={insights?.recommendations} />
+
+          {/* Right Column: Alerts and Trends */}
+          <div className="xl:col-span-4 space-y-6">
+            <Card className="glass-morphism border-none shadow-xl h-fit">
+              <CardHeader className="pb-4 border-b border-white/5 flex flex-row items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 rounded-lg bg-orange-500/10 text-orange-500">
+                    <AlertTriangle className="size-4" />
+                  </div>
+                  <CardTitle className="text-sm font-black uppercase tracking-widest">Active Alerts</CardTitle>
+                </div>
+                <Badge variant="destructive" className="font-black text-[10px] px-2 py-0 h-5 border-none bg-red-500/20 text-red-500">{alerts.length}</Badge>
+              </CardHeader>
+              <CardContent className="pt-4 px-4 space-y-4">
+                {alerts.length > 0 ? (
+                  alerts.map((alert: Alert, idx: number) => (
+                    <AlertCard key={`${alert.asset}-${idx}`} alert={alert} />
+                  ))
+                ) : (
+                  <div className="py-12 flex flex-col items-center gap-3 text-muted-foreground opacity-30">
+                    <CheckCircle2 className="size-10" />
+                    <p className="text-xs font-black uppercase tracking-widest">No active alerts</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <div className="grid grid-cols-1 gap-6">
+              <Card className="glass border-none shadow-sm h-full overflow-hidden">
+                <CardHeader className="pb-3 border-b border-white/5 bg-green-500/5">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-lg bg-green-500/10 text-green-500">
+                      <TrendingUp className="size-4" />
+                    </div>
+                    <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em]">Alpha Leaders</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-4 px-3 space-y-3">
+                  {insights.best_performers.length > 0 ? (
+                    insights.best_performers.map((p) => (
+                      <PerformerItem key={p.symbol} p={p} type="best" />
+                    ))
+                  ) : (
+                    <div className="py-8 flex flex-col items-center gap-2 text-muted-foreground opacity-30">
+                      <TrendingUp className="size-8" />
+                      <p className="text-[8px] font-black uppercase tracking-widest">No top performers</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card className="glass border-none shadow-sm h-full overflow-hidden">
+                <CardHeader className="pb-3 border-b border-white/5 bg-red-500/5">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-lg bg-red-500/10 text-red-500">
+                      <TrendingDown className="size-4" />
+                    </div>
+                    <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em]">Risk Exposure</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-4 px-3 space-y-3">
+                  {insights.worst_performers.length > 0 ? (
+                    insights.worst_performers.map((p) => (
+                      <PerformerItem key={p.symbol} p={p} type="worst" />
+                    ))
+                  ) : (
+                    <div className="py-8 flex flex-col items-center gap-2 text-muted-foreground opacity-30">
+                      <TrendingDown className="size-8" />
+                      <p className="text-[8px] font-black uppercase tracking-widest">No major risks</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </div>

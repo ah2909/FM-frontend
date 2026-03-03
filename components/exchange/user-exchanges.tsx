@@ -23,7 +23,6 @@ import { useGetSupportedCEXQuery, useConnectExchangeMutation, type Exchange } fr
 import Image from "next/image"
 import { useDispatch } from "react-redux"
 import { portfolioApi } from "@/lib/store/services/portfolio-api"
-import { useWebSocketEvent } from "@/hooks/useWebSocketEvent"
 
 const formSchema = z.object({
   api_key: z.string().min(1, { message: "API Key is required" }),
@@ -48,22 +47,6 @@ export function UserExchanges() {
       api_key: "",
       secret_key: "",
     },
-  })
-
-  useWebSocketEvent("update-portfolio", "", (data: any) => {
-    if(data?.success) {
-      toast.success("Portfolio updated successfully!", {
-        id: "connect-exchange",
-        description: "Your assets have been synced from the exchange.",
-      })
-      // Automatically refresh data
-      dispatch(portfolioApi.util.invalidateTags(['Portfolio', 'Exchange', 'Asset']))
-    }
-    else {
-      toast.error("Failed to update portfolio data.", {
-        id: "connect-exchange",
-      })
-    }
   })
 
   const handleExchangeSelect = (exchangeId: number) => {

@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRegisterMutation, useGoogleVerifyMutation } from "@/lib/store/services/auth-api";
 
 declare global {
 	interface Window {
@@ -31,6 +32,8 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 const RegisterPage: React.FC = () => {
 	const router = useRouter();
 	const { login } = useAuth();
+	const [registerMutation] = useRegisterMutation();
+	const [googleVerify] = useGoogleVerifyMutation();
 	const {
 		register,
 		handleSubmit,
@@ -39,38 +42,18 @@ const RegisterPage: React.FC = () => {
 		resolver: zodResolver(registerSchema),
 	});
 
-	const handleRegisterSuccess = () => {
-		toast.success("Register Successful!");
-		router.push("/login");
-	};
-
-	const handleRegisterFailure = (error: Error) => {
-		console.error("Register error:", error.message);
-		toast.error("Registration failed. Please try again.");
-	};
-
 	const handleGoogleOneTap = useCallback(
 		async (response: { credential: string }) => {
 			try {
-				const res = await fetch(
-					`${process.env.NEXT_PUBLIC_AUTH_SERVICE_URL}/auth/google/verify`,
-					{
-						method: "POST",
-						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify({ idToken: response.credential }),
-					}
-				);
-				if (!res.ok) throw new Error("Google verification failed");
-				const data: any = await res.json();
-				toast.success("Login Successful!");
-				login(data.access_token);
+				const data = await googleVerify({ idToken: response.credential }).unwrap();
+				login(data);
 				setTimeout(() => {router.replace('/')}, 0);
 			} catch (error) {
 				console.error("Google login error:", error);
 				toast.error("Login failed. Please try again.");
 			}
 		},
-		[]
+		[googleVerify, login, router]
 	);
 
 	useEffect(() => {
@@ -91,19 +74,12 @@ const RegisterPage: React.FC = () => {
 
 	const onSubmit = async (data: RegisterFormValues) => {
 		try {
-			const response = await fetch(
-				`${process.env.NEXT_PUBLIC_AUTH_SERVICE_URL}/register`,
-				{
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify(data),
-				}
-			);
-			if (!response.ok) throw new Error("Registration failed");
-			const result: any = await response.json();
-			handleRegisterSuccess();
+			await registerMutation(data).unwrap();
+			toast.success("Register Successful!");
+			router.push("/login");
 		} catch (error) {
-			handleRegisterFailure(error as Error);
+			console.error("Register error:", error);
+			toast.error("Registration failed. Please try again.");
 		}
 	};
 

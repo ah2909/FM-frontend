@@ -17,12 +17,54 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import { MobileSiteHeader } from "@/components/mobile-site-header"
 import { PullToRefresh } from "@/components/pull-to-refresh"
 import { SiteHeader } from "@/components/site-header"
+import { WsEventListener } from "@/components/ws-event-listener"
+import { ConnectionProgress } from "@/components/exchange/connection-progress"
+import { useAuth } from "@/contexts/AuthContext"
+import { useRouter } from "next/navigation"
 
 interface ProtectedShellProps {
   children: React.ReactNode
 }
 
 export function ProtectedShell({ children }: ProtectedShellProps) {
+  return (
+    <AuthProvider>
+      <AuthGuard>
+        <ProtectedContent>{children}</ProtectedContent>
+      </AuthGuard>
+    </AuthProvider>
+  )
+}
+
+function AuthGuard({ children }: { children: React.ReactNode }) {
+  const { user, isLoading } = useAuth()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.replace("/login")
+    }
+  }, [isLoading, user, router])
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          <p className="text-sm font-medium text-muted-foreground">Securing your session...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return null
+  }
+
+  return <>{children}</>
+}
+
+function ProtectedContent({ children }: ProtectedShellProps) {
   const isMobile = useIsMobile()
   const [hasMounted, setHasMounted] = useState(false)
 
@@ -56,17 +98,18 @@ export function ProtectedShell({ children }: ProtectedShellProps) {
   )
 
   return (
-    <AuthProvider>
-      <ThemeProvider attribute="class" enableSystem disableTransitionOnChange>
-        <WebSocketProvider>
-          <Provider store={store}>
-            {layoutContent}
-          </Provider>
-        </WebSocketProvider>
-        <PWAInstallPrompt />
-        <OfflineIndicator />
-        <Toaster richColors expand={false} position="top-right" />
-      </ThemeProvider>
-    </AuthProvider>
+    <ThemeProvider attribute="class" enableSystem disableTransitionOnChange>
+      <WebSocketProvider>
+        <Provider store={store}>
+          <WsEventListener />
+          <ConnectionProgress />
+          {layoutContent}
+        </Provider>
+      </WebSocketProvider>
+      <PWAInstallPrompt />
+      <OfflineIndicator />
+      <Toaster richColors expand={false} position="top-right" />
+    </ThemeProvider>
   )
 }
+

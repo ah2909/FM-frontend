@@ -5,9 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2, CheckCircle, XCircle, RefreshCw, AlertTriangle } from "lucide-react"
 import { useSyncTransactionsMutation } from "@/lib/store/services/portfolio-api"
-import { useWebSocketEvent } from "@/hooks/useWebSocketEvent"
-import { useDispatch, useSelector } from "react-redux"
-import { syncTransactionsByAssetID } from "@/lib/store/features/portfolios-slice"
+import { useAppDispatch, useAppSelector } from "@/lib/store/hooks"
+import { setSyncStatus } from "@/lib/store/features/portfolios-slice"
 
 type SyncStatus = "syncing" | "success" | "error" | ""
 
@@ -17,22 +16,27 @@ interface TransactionSyncButtonProps {
 }
 
 export function TransactionSyncButton({ className = "", portfolio_id }: TransactionSyncButtonProps) {
-  const [syncStatus, setSyncStatus] = useState<SyncStatus>("")
+  const [syncStatus, setSyncStatusLocal] = useState<SyncStatus>("")
   const [errorMessage, setErrorMessage] = useState("")
   const [syncTransactions] = useSyncTransactionsMutation()
   const syncStatusKey = `sync-transactions-${portfolio_id}`
-  const dispatch = useDispatch()
-  const assets = useSelector((state: any) => state.portfolios.assets)
+  const dispatch = useAppDispatch()
+  const rSyncStatus = useAppSelector((state) => state.portfolios.syncStatus)
   const hasInitialSync = useRef(false)
 
-  // Synchronize status with session storage on mount
+  useEffect(() => {
+    if (rSyncStatus) {
+      setSyncStatusLocal(rSyncStatus)
+      sessionStorage.setItem(syncStatusKey, rSyncStatus)
+    }
+  }, [rSyncStatus, syncStatusKey])
+
   useEffect(() => {
     const savedStatus = sessionStorage.getItem(syncStatusKey)
     if (savedStatus) {
-      setSyncStatus(savedStatus as SyncStatus)
+      setSyncStatusLocal(savedStatus as SyncStatus)
     }
-    
-    // Auto-start sync only if not already syncing and haven't tried this session
+
     if (!savedStatus && !hasInitialSync.current) {
       hasInitialSync.current = true
       startSync()
@@ -40,73 +44,30 @@ export function TransactionSyncButton({ className = "", portfolio_id }: Transact
   }, [syncStatusKey])
 
   const startSync = async () => {
-    // Prevent multiple concurrent sync calls
     if (syncStatus === "syncing" || sessionStorage.getItem(syncStatusKey) === "syncing") {
       return
     }
 
-    setSyncStatus("syncing")
+    setSyncStatusLocal("syncing")
+    dispatch(setSyncStatus("syncing"))
     setErrorMessage("")
     sessionStorage.setItem(syncStatusKey, "syncing")
 
     try {
       const res = await syncTransactions({ portfolio_id }).unwrap()
       const status = res.data?.status || "error"
-      setSyncStatus(status)
+      setSyncStatusLocal(status)
+      dispatch(setSyncStatus(status))
       sessionStorage.setItem(syncStatusKey, status)
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : "Synchronization failed"
-      setSyncStatus("error")
+      setSyncStatusLocal("error")
+      dispatch(setSyncStatus("error"))
       sessionStorage.setItem(syncStatusKey, "error")
       setErrorMessage(errorMsg)
     }
   }
 
-  const getExchangeId = useCallback((exchange: string) => {
-    const exchangeMap: Record<string, number> = {
-      binance: 1,
-      okx: 2,
-      bybit: 3,
-    }
-    return exchangeMap[exchange] ?? null
-  }, [])
-
-  // Listen for sync-transactions event
-  // Note: If multiple instances of this button are mounted (e.g. Mobile + Desktop menus),
-  // they will all receive this event. The Redux reducer is now idempotent to handle this.
-  useWebSocketEvent("sync-transactions", "", (data: any) => {
-    console.log("sync-transactions", data)
-    const status = data?.status
-    if (!status) return
-
-    setSyncStatus(status)
-    sessionStorage.setItem(syncStatusKey, status)
-
-    if (status === "success" && data?.data && data.data.length > 0) {
-      data.data.forEach((transaction: any) => {
-        // Find matching asset
-        const asset = assets.find((a: any) => 
-          a.symbol.toUpperCase() === transaction.symbol.split('/')[0].toUpperCase()
-        )
-        
-        if (asset) {
-          dispatch(syncTransactionsByAssetID({
-            assetId: asset.id,
-            transaction: {
-              id: transaction.id,
-              portfolio_id: portfolio_id,
-              asset_id: asset.id,
-              exchange_id: getExchangeId(transaction.exchange),
-              quantity: transaction.amount,
-              price: transaction.price,
-              type: transaction.side.toUpperCase(),
-              transact_date: new Date(transaction.timestamp).toISOString().slice(0, 19).replace("T", " "),
-            },
-          }))
-        }
-      })
-    }
-  })
 
   // Memoize sync content
   const syncContent = useMemo(() => {

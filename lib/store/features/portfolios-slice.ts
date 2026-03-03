@@ -2,11 +2,14 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit"
 import type { Portfolio } from "../services/portfolio-api"
 import { portfolioApi } from "../services/portfolio-api"
 
+type SyncStatus = "syncing" | "success" | "error" | ""
+
 interface PortfoliosState {
   portfolio: any
   assets: any[]
   transactions: any
   performance: number[]
+  syncStatus: SyncStatus
 }
 
 const initialState: PortfoliosState = {
@@ -14,6 +17,7 @@ const initialState: PortfoliosState = {
   assets: [],
   transactions: {},
   performance: [],
+  syncStatus: "",
 }
 
 export const portfoliosSlice = createSlice({
@@ -25,6 +29,13 @@ export const portfoliosSlice = createSlice({
     },
     setAssets: (state, action: PayloadAction<any[]>) => {
       state.assets = action.payload
+      if (state.portfolio) {
+        state.portfolio.assets = action.payload
+        state.portfolio.totalValue = action.payload.reduce(
+          (acc: number, asset: any) => acc + (asset.price || 0) * asset.amount,
+          0
+        )
+      }
     },
     removeSymbol: (state, action: PayloadAction<string>) => {
       const symbol = action.payload
@@ -59,6 +70,9 @@ export const portfoliosSlice = createSlice({
     updateTotalValue: (state, action: PayloadAction<number>) => {
       state.portfolio.totalValue = action.payload;
     },
+    setSyncStatus: (state, action: PayloadAction<SyncStatus>) => {
+      state.syncStatus = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder.addMatcher(
@@ -82,6 +96,6 @@ export const portfoliosSlice = createSlice({
   }
 })
 
-export const { setPortfolio, setAssets, removeSymbol, editPortfolio, syncTransactionsByAssetID, updateTotalValue } = portfoliosSlice.actions
+export const { setPortfolio, setAssets, removeSymbol, editPortfolio, syncTransactionsByAssetID, updateTotalValue, setSyncStatus } = portfoliosSlice.actions
 export default portfoliosSlice.reducer
 

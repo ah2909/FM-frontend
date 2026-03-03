@@ -34,11 +34,10 @@ const nextConfig = {
         source: '/api/:path*', // Matches any request starting with /api/
         destination: `${process.env.NEXT_PUBLIC_API_URL}/:path*`, // Proxies to your backend API
       },
-      // You can add more rewrite rules as needed
-      // {
-      //   source: '/images/:path*',
-      //   destination: `http://another-service.com/images/:path*`,
-      // },
+      {
+        source: '/auth/:path*',
+        destination: `${process.env.NEXT_PUBLIC_AUTH_SERVICE_URL}/:path*`,
+      },
     ];
   },
 }

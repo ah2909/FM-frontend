@@ -1,18 +1,18 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
 import { Mutex } from "async-mutex"
+import { getAccessToken, setAccessToken } from "@/lib/token-store"
 
 // Create a mutex to prevent multiple refresh calls
 const mutex = new Mutex()
 
 // Base query with auth header
 const baseQuery = fetchBaseQuery({
-    // baseUrl: process.env.NEXT_PUBLIC_API_URL,
     baseUrl: "/api",
     prepareHeaders: (headers: any) => {
-        headers.set(
-            "Authorization",
-            `Bearer ${localStorage.getItem("token")}`
-        );
+        const token = getAccessToken();
+        if (token) {
+            headers.set("Authorization", `Bearer ${token}`);
+        }
         return headers;
     },
 })
@@ -22,7 +22,8 @@ const baseQueryWithRefresh = async (args: any, api: any, extraOptions: any) => {
   await mutex.waitForUnlock()
   let result = await baseQuery(args, api, extraOptions)
 
-  if (result.error && result.error.status === 403) {
+  // According to the new requirements, if we get 401, we try to refresh
+  if (result.error && result.error.status === 401) {
     // Check if mutex is locked (another query is already refreshing)
     if (!mutex.isLocked()) {
         const release = await mutex.acquire()
@@ -34,14 +35,19 @@ const baseQueryWithRefresh = async (args: any, api: any, extraOptions: any) => {
                     credentials: 'include',
                 },
             )
+            
             if (!refreshResult.ok) {
-                localStorage.clear();
-                sessionStorage.clear();
-                window.location.href = "/login";
+                setAccessToken(null);
+                // Clear session and redirect only if it's a hard failure
+                if (typeof window !== 'undefined') {
+                    window.location.href = "/login";
+                }
                 throw new Error("Refresh JWT failed");
             }
+            
             const res: any = await refreshResult.json();
-            localStorage.setItem("token", res.access_token)
+            // Store new access token in memory
+            setAccessToken(res.access_token);
 
             // Retry the original query with new access token
             result = await baseQuery(args, api, extraOptions)

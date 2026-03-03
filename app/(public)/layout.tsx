@@ -7,19 +7,23 @@ import { Toaster } from "sonner"
 import { AuthProvider } from "@/contexts/AuthContext"
 import Script from "next/script"
 import { OfflineIndicator } from "@/components/offline-indicator"
+import { Provider } from "react-redux"
+import { store } from "@/lib/store/store"
 
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
-    <AuthProvider>
-        <ThemeProvider attribute="class" enableSystem disableTransitionOnChange>
-        <div className="min-h-screen flex flex-col">
-            <main className="flex-1">{children}</main>
-        </div>
-        <OfflineIndicator />
-        <Script src="https://accounts.google.com/gsi/client" strategy="beforeInteractive" />
-        <Toaster richColors />
-        </ThemeProvider>   
-    </AuthProvider>
+    <Provider store={store}>
+      <AuthProvider>
+          <ThemeProvider attribute="class" enableSystem disableTransitionOnChange>
+          <div className="min-h-screen flex flex-col">
+              <main className="flex-1">{children}</main>
+          </div>
+          <OfflineIndicator />
+          <Script src="https://accounts.google.com/gsi/client" strategy="beforeInteractive" />
+          <Toaster richColors />
+          </ThemeProvider>
+      </AuthProvider>
+    </Provider>
   )
 }

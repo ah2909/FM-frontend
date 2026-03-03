@@ -3,16 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { ShieldAlert, ArrowRight } from "lucide-react";
-
-export type Severity = "critical" | "high" | "medium" | "low";
-
-export interface Alert {
-  severity: Severity;
-  asset: string;
-  type: string;
-  message: string;
-  action: string;
-}
+import type { Alert, Severity } from "@/lib/store/features/analyze-slice";
 
 interface AlertCardProps {
   alert: Alert;

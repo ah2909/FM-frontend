@@ -19,6 +19,7 @@ import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useLoginMutation, useGoogleVerifyMutation } from "@/lib/store/services/auth-api";
 
 declare global {
 	interface Window {
@@ -37,6 +38,8 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 const LoginPage: React.FC = () => {
 	const router = useRouter();
 	const { login } = useAuth();
+	const [loginMutation] = useLoginMutation();
+	const [googleVerify] = useGoogleVerifyMutation();
 	const {
 		register,
 		handleSubmit,
@@ -48,17 +51,7 @@ const LoginPage: React.FC = () => {
 	const handleGoogleOneTap = useCallback(
 		async (response: { credential: string }) => {
 			try {
-				const res = await fetch(
-					`${process.env.NEXT_PUBLIC_AUTH_SERVICE_URL}/auth/google/verify`,
-					{
-						method: "POST",
-						credentials: "include",
-						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify({ idToken: response.credential }),
-					}
-				);
-				if (!res.ok) throw new Error("Google verification failed");
-				const data: any = await res.json();
+				const data = await googleVerify({ idToken: response.credential }).unwrap();
 				login(data);
 				setTimeout(() => {router.replace('/')}, 0);
 			} catch (error) {
@@ -66,7 +59,7 @@ const LoginPage: React.FC = () => {
 				toast.error("Login failed. Please try again.");
 			}
 		},
-		[]
+		[googleVerify, login, router]
 	);
 
 	useEffect(() => {
@@ -87,17 +80,7 @@ const LoginPage: React.FC = () => {
 
 	const onSubmit = async (data: LoginFormValues) => {
 		try {
-			const response = await fetch(
-				`${process.env.NEXT_PUBLIC_AUTH_SERVICE_URL}/login`,
-				{
-					method: "POST",
-					credentials: "include",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify(data),
-				}
-			);
-			if (!response.ok) throw new Error("Login failed");
-			const result: any = await response.json();
+			const result = await loginMutation(data).unwrap();
 			login(result);
 			setTimeout(() => {router.replace('/')}, 0);
 		} catch (error) {

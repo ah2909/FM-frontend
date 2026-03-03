@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
 import io, { Socket } from 'socket.io-client';
+import { getAccessToken, subscribeToToken } from '@/lib/token-store';
 
 interface WebSocketContextType {
   socket: Socket | null;
@@ -19,35 +20,75 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
-    const newSocket = io(process.env.NEXT_PUBLIC_WS_URL, {
-      auth: {
-        token: localStorage.getItem('token') || '',
-      },
-      transports: ['websocket'],
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
-    }); // Replace with your WebSocket server URL
-    setSocket(newSocket);
+    const initializeSocket = (token: string | null) => {
+      if (socketRef.current) {
+        socketRef.current.close();
+      }
 
-    newSocket.on('connect', () => {
-      setIsConnected(true);
-      setError(null);
-    });
+      if (!token) {
+        setSocket(null);
+        socketRef.current = null;
+        setIsConnected(false);
+        return;
+      }
 
-    newSocket.on('disconnect', () => {
-      setIsConnected(false);
-    });
+      const newSocket = io(process.env.NEXT_PUBLIC_WS_URL as string, {
+        auth: {
+          token: token,
+        },
+        transports: ['websocket'],
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+      });
 
-    newSocket.on('connect_error', (err) => {
-      console.error('Connection error:', err);
-      setError(err.message);
-      setIsConnected(false);
+      newSocket.on('connect', () => {
+        setIsConnected(true);
+        setError(null);
+      });
+
+      newSocket.on('disconnect', () => {
+        setIsConnected(false);
+      });
+
+      newSocket.on('connect_error', (err: any) => {
+        console.error('Connection error:', err);
+        setError(err.message);
+        setIsConnected(false);
+        
+        // If it's an auth error, it will likely be handled by the token refresh flow
+        if (err.message === "Authentication error: Invalid or expired token") {
+            // Wait for refresh
+        }
+      });
+
+      setSocket(newSocket);
+      socketRef.current = newSocket;
+    };
+
+    // Initial connection
+    const currentToken = getAccessToken();
+    initializeSocket(currentToken);
+
+    // Subscribe to token changes
+    const unsubscribeToken = subscribeToToken((newToken) => {
+      if (newToken && socketRef.current) {
+        // Update existing socket auth and reconnect
+        socketRef.current.auth = { token: newToken };
+        socketRef.current.disconnect().connect();
+      } else {
+        // Re-initialize (e.g. on logout)
+        initializeSocket(newToken);
+      }
     });
 
     return () => {
-      newSocket.close();
+      unsubscribeToken();
+      if (socketRef.current) {
+        socketRef.current.close();
+      }
     };
   }, []);
 

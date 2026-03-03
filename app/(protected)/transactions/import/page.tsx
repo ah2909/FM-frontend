@@ -30,7 +30,6 @@ import {
 	useGetSupportedCEXQuery,
 	type Exchange,
 } from "@/lib/store/services/exchange-api";
-import { useWebSocketEvent } from "@/hooks/useWebSocketEvent";
 import Image from "next/image";
 
 interface ExchangeGuide {
@@ -100,17 +99,6 @@ export default function ImportPage() {
 			(exchange: Exchange) => exchange.is_connected
 		) || [];
 	const hasConnectedExchanges = connectedExchanges.length > 0;
-
-	useWebSocketEvent("import-csv-transactions", "", (data: any) => {
-		if (data?.success) {
-			toast.success(
-				data?.message ?? "CSV transactions imported successfully."
-			);
-			setTimeout(() => (window.location.href = "/portfolios"), 2000);
-		} else {
-			toast.error("Failed to import CSV transactions.");
-		}
-	});
 
 	const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const file = event.target.files?.[0];

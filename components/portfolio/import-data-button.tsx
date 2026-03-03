@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,10 +14,8 @@ import {
 } from "@/components/ui/dialog";
 import { ExchangeAssetSelector } from "./exchange-asset-selector";
 import type { TokenExchange } from "./exchange-asset-selector";
-import { useAddTokenToPortfolioMutation, portfolioApi } from "@/lib/store/services/portfolio-api";
+import { useAddTokenToPortfolioMutation } from "@/lib/store/services/portfolio-api";
 import { cn } from "@/lib/utils";
-import { useWebSocketEvent } from "@/hooks/useWebSocketEvent";
-import { useDispatch } from "react-redux";
 
 interface ImportDataButtonProps {
   portfolio_id: number
@@ -34,22 +32,6 @@ export function ImportDataButton({
 }: ImportDataButtonProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [addTokenToPortfolio] = useAddTokenToPortfolioMutation()
-  const dispatch = useDispatch()
-
-  useWebSocketEvent("add-token-to-port", "", (data: any) => {
-    if(data?.success) {
-      toast.success(data?.message ?? 'Add tokens to portfolio successfully.', {
-        id: "import-assets",
-      })
-      // Invalidate tags to refresh UI without page reload
-      dispatch(portfolioApi.util.invalidateTags(['Portfolio', 'Asset']))
-    }
-    else {
-      toast.error("Failed to add tokens to portfolio.", {
-        id: "import-assets",
-      })
-    }
-  })
 
   const handleAssetsSelected = async (assets: TokenExchange[]) => {
     if (assets.length === 0) return

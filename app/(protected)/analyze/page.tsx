@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { toast } from "sonner";
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  AlertTriangle, 
-  ShieldCheck, 
+import { useEffect } from "react";
+import {
+  TrendingUp,
+  TrendingDown,
+  AlertTriangle,
+  ShieldCheck,
   Info,
   Target,
   BarChart3,
@@ -19,22 +18,23 @@ import {
 
 import { BaseHeader } from "@/components/base-header";
 import { BaseShell } from "@/components/base-shell";
-import { 
-  Card, 
-  CardContent, 
-  CardHeader, 
-  CardTitle, 
-  CardDescription 
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 import { useGetPortfolioAnalysisQuery } from "@/lib/store/services/portfolio-api";
-import { useWebSocketEvent } from "@/hooks/useWebSocketEvent";
+import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
+import { setHasRequested } from "@/lib/store/features/analyze-slice";
 
 // Sub-components
 import { StatCard } from "@/components/analyze/stat-card";
-import { AlertCard, type Alert } from "@/components/analyze/alert-card";
+import { AlertCard } from "@/components/analyze/alert-card";
 import { RiskScoreGauge } from "@/components/analyze/risk-score-gauge";
 import { PerformerItem } from "@/components/analyze/performer-item";
 import { RecommendationCard } from "@/components/analyze/recommendation-card";
@@ -42,90 +42,34 @@ import { AssetBreakdownTable } from "@/components/analyze/asset-breakdown-table"
 import { LoadingSkeleton } from "@/components/analyze/loading-skeleton";
 import { AnalyzingInterface } from "@/components/analyze/analyzing-interface";
 
-// Types
-interface Performer {
-  symbol: string;
-  pnl_pct: number;
-  reason: string;
-}
-
-interface AssetPnl {
-  symbol: string;
-  invested: number;
-  current: number;
-  pnl: number;
-  pnl_pct: number;
-}
-
-interface PnlAnalysis {
-  total_invested: number;
-  total_current_value: number;
-  unrealized_pnl: number;
-  unrealized_pnl_pct: number;
-  per_asset: AssetPnl[];
-}
-
-interface VolatilityRisk {
-  overall_volatility: string;
-  assets_overbought: string[];
-  assets_oversold: string[];
-}
-
-interface ConcentrationRisk {
-  herfindahl_index: number;
-  allocations: { symbol: string; percentage: number; flag: string }[];
-}
-
-interface RiskAssessment {
-  pnl_analysis: PnlAnalysis;
-  volatility_risk: VolatilityRisk;
-  risk_score: number;
-  concentration_risk: ConcentrationRisk;
-  summary: string;
-}
-
-interface Insight {
-  market_trend_alignment: string;
-  recommendations: string[];
-  best_performers: Performer[];
-  worst_performers: Performer[];
-}
-
-interface PortfolioAnalysis {
-  risk_assessment: RiskAssessment;
-  alerts: Alert[];
-  insights: Insight;
-}
-
+import type {
+  RiskAssessment,
+  Insight,
+  Alert,
+} from "@/lib/store/features/analyze-slice";
 
 export default function AnalyzePage() {
-  const { isLoading: isApiLoading} = useGetPortfolioAnalysisQuery();
-  const [analysis, setAnalysis] = useState<PortfolioAnalysis | null>(null);
-  const [isWaitingForWs, setIsWaitingForWs] = useState(true);
+  const dispatch = useAppDispatch();
+  const { analysis, hasRequested } = useAppSelector((state) => state.analyze);
 
-  useWebSocketEvent<{ data: PortfolioAnalysis }>(
-    "portfolio-analysis",
-    "",
-    (payload) => {
-      console.log("Received portfolio-analysis update:", payload);
-      const newData = payload.data;
-      setAnalysis(newData);
-      setIsWaitingForWs(false);
-      toast.success("Analysis updated in real-time");
-    }
-  );
+  // Skip the API call if we already triggered it — prevents re-triggering on return visits
+  const { isLoading: isApiLoading } = useGetPortfolioAnalysisQuery(undefined, {
+    skip: hasRequested,
+  });
 
-  const isWaitingAnalysis = isWaitingForWs && !analysis;
+  // Mark as requested on first mount so navigating away and back doesn't fire again
+  useEffect(() => {
+    if (!hasRequested) dispatch(setHasRequested());
+  }, []);
 
   if (isApiLoading) {
     return <LoadingSkeleton text={"Crunching numbers and market data..."} />;
   }
 
-  if (isWaitingAnalysis) {
+  if (!analysis) {
     return <AnalyzingInterface />;
   }
 
-  // Deeply safe field extraction with defaults for every single used property
   const risk: RiskAssessment = {
     pnl_analysis: {
       total_invested: analysis?.risk_assessment?.pnl_analysis?.total_invested ?? 0,
@@ -165,14 +109,6 @@ export default function AnalyzePage() {
         </Badge>
       )
     },
-    ...(isWaitingAnalysis ? [{
-      label: "Status",
-      component: (
-        <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-none font-bold uppercase tracking-widest text-[10px] py-1.5 px-3 w-full justify-start">
-            <Activity className="size-3 mr-1.5 animate-spin" /> Analyzing...
-        </Badge>
-      )
-    }] : [])
   ];
 
   return (
@@ -183,11 +119,6 @@ export default function AnalyzePage() {
         mobileMenuItems={mobileMenuItems}
       >
         <div className="flex items-center gap-2">
-            {isWaitingAnalysis && (
-              <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-none font-bold uppercase tracking-widest text-[10px] py-1.5 px-3">
-                  <Activity className="size-3 mr-1.5 animate-spin" /> Analyzing...
-              </Badge>
-            )}
             <Badge variant="outline" className="bg-primary/10 text-primary border-none font-bold uppercase tracking-widest text-[10px] py-1.5 px-3">
                 <Zap className="size-3 mr-1.5" /> Google Gemini
             </Badge>

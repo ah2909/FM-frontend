@@ -3,6 +3,7 @@
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
 import { ModeToggle } from "@/components/mode-toggle"
+import { NotificationBell } from "@/components/notification-bell"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -63,6 +64,7 @@ export function SiteHeader() {
           </BreadcrumbList>
         </Breadcrumb>
         <div className="ml-auto flex items-center gap-2">
+          <NotificationBell />
           <ModeToggle />
         </div>
       </div>

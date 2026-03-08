@@ -5,6 +5,7 @@ import { useWebSocketEvent } from "@/hooks/useWebSocketEvent"
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks"
 import { setAnalysis, type PortfolioAnalysis } from "@/lib/store/features/analyze-slice"
 import { syncTransactionsByAssetID, setSyncStatus, setAssets } from "@/lib/store/features/portfolios-slice"
+import { prependNotification } from "@/lib/store/features/notifications-slice"
 import { portfolioApi } from "@/lib/store/services/portfolio-api"
 
 const EXCHANGE_ID: Record<string, number> = { binance: 1, okx: 2, bybit: 3 }
@@ -13,6 +14,11 @@ export function WsEventListener() {
   const dispatch = useAppDispatch()
   const assets = useAppSelector((state) => state.portfolios.assets)
   const portfolioId = useAppSelector((state) => state.portfolios.portfolio?.id)
+
+  // ── Real-time notification ───────────────────────────────────────────────
+  useWebSocketEvent("new-notification", "", (data: any) => {
+    dispatch(prependNotification(data))
+  })
 
   // ── Portfolio Analysis (LLM result, slow) ────────────────────────────────
   useWebSocketEvent<{ data: PortfolioAnalysis }>(

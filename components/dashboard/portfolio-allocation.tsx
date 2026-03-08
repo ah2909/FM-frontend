@@ -35,11 +35,19 @@ export function PortfolioAllocation({ tokens, totalValue, isLoading = false }: P
         <CardHeader>
           <CardTitle className="text-lg sm:text-xl font-bold">Portfolio Allocation</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="h-[300px] flex items-center justify-center relative">
-            <div className="animate-pulse flex flex-col items-center">
-              <div className="w-44 h-44 border-[16px] border-muted rounded-full"></div>
-              <div className="mt-6 w-32 h-4 bg-muted rounded"></div>
+        <CardContent className="pt-4 pb-6">
+          <div className="flex flex-col items-center gap-5 animate-pulse">
+            <div className="w-[200px] h-[200px] border-[20px] border-muted rounded-full" />
+            <div className="w-full space-y-2.5">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-2.5 h-2.5 rounded-full bg-muted" />
+                    <div className="h-3 w-12 bg-muted rounded" />
+                  </div>
+                  <div className="h-3 w-16 bg-muted rounded" />
+                </div>
+              ))}
             </div>
           </div>
         </CardContent>
@@ -136,45 +144,47 @@ export function PortfolioAllocation({ tokens, totalValue, isLoading = false }: P
       <CardHeader className="pb-0">
         <CardTitle className="text-lg sm:text-xl font-bold tracking-tight">Portfolio Allocation</CardTitle>
       </CardHeader>
-      <CardContent className="pt-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-          <div className="relative h-[240px] w-full">
-            <Doughnut data={data} options={options} />
-            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Total Value</span>
-              <span className="text-xl sm:text-2xl font-black tracking-tighter">
-                ${Number(totalValue).toLocaleString(undefined, { maximumFractionDigits: 0 })}
-              </span>
-            </div>
+      <CardContent className="pt-4 pb-6">
+        {/* Donut chart */}
+        <div className="relative h-[200px] w-full max-w-[200px] mx-auto">
+          <Doughnut data={data} options={options} />
+          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Total</span>
+            <span className="text-lg font-black tracking-tighter">
+              ${Number(totalValue).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+            </span>
           </div>
-          
-          <div className="space-y-3">
-            {chartItems.map((item, index) => (
-              <div key={item.symbol} className="flex items-center justify-between group">
-                <div className="flex items-center gap-3">
-                  <div 
-                    className="w-2.5 h-2.5 rounded-full shadow-sm group-hover:scale-125 transition-transform" 
-                    style={{ backgroundColor: colors[index] }}
+        </div>
+
+        {/* Legend */}
+        <div className="mt-5 space-y-2.5">
+          {chartItems.map((item, index) => (
+            <div key={item.symbol} className="flex items-center justify-between group">
+              <div className="flex items-center gap-2.5">
+                <div
+                  className="w-2.5 h-2.5 rounded-full flex-shrink-0 group-hover:scale-125 transition-transform"
+                  style={{ backgroundColor: colors[index] }}
+                />
+                <span className="text-xs font-bold tracking-tight text-foreground/90 uppercase">
+                  {item.symbol}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-medium text-muted-foreground/80">
+                  {((item.value / totalValue) * 100).toFixed(1)}%
+                </span>
+                <div className="w-16 h-1 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-1000 ease-out"
+                    style={{
+                      width: `${(item.value / totalValue) * 100}%`,
+                      backgroundColor: colors[index],
+                    }}
                   />
-                  <span className="text-xs font-bold tracking-tight text-foreground/90 uppercase">{item.symbol}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-medium text-muted-foreground/80">
-                    {((item.value / totalValue) * 100).toFixed(1)}%
-                  </span>
-                  <div className="w-16 h-1 bg-muted rounded-full overflow-hidden hidden sm:block">
-                    <div 
-                      className="h-full rounded-full transition-all duration-1000 ease-out"
-                      style={{ 
-                        width: `${(item.value / totalValue) * 100}%`,
-                        backgroundColor: colors[index]
-                      }}
-                    />
-                  </div>
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       </CardContent>
     </Card>

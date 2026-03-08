@@ -95,6 +95,18 @@ export const portfolioApi = baseApi.injectEndpoints({
 			}),
 			providesTags: ["Portfolio"],
 		}),
+		markNotificationRead: builder.mutation<Response, number>({
+			query: (id) => ({
+				url: `/portfolio/recent-activity/${id}/read`,
+				method: "PATCH",
+			}),
+		}),
+		markAllNotificationsRead: builder.mutation<Response, void>({
+			query: () => ({
+				url: `/portfolio/recent-activity/read-all`,
+				method: "PATCH",
+			}),
+		}),
 		importTransactions: builder.mutation<Response, FormData>({
 			query: (data) => ({
 				url: `/portfolio/import-transactions`,
@@ -122,6 +134,8 @@ export const {
 	useSyncTransactionsMutation,
 	useGetBalanceDataQuery,
 	useGetRecentActivityQuery,
+	useMarkNotificationReadMutation,
+	useMarkAllNotificationsReadMutation,
 	useImportTransactionsMutation,
 	useGetPortfolioAnalysisQuery,
 } = portfolioApi;

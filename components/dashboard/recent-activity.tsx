@@ -2,35 +2,26 @@
 
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Calendar, Plus, RefreshCw, Trash2, TrendingUp, Filter } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useGetRecentActivityQuery } from "@/lib/store/services/portfolio-api"
+import { useAppSelector } from "@/lib/store/hooks"
+import { type Notification } from "@/lib/store/features/notifications-slice"
 
-// Activity types based on your schema
 type ActivityType = "Add asset" | "Remove asset" | "Sync asset transactions" | "Update asset"
 
-interface RecentActivity {
-  id: string
-  user_id: string
-  type: ActivityType
-  symbol: string
-  name: string
-  img_url: string
-  transaction_count?: number
-  created_at: string
-}
 interface RecentActivityProps {
   typeFilter: string
 }
 
 export default function RecentActivity({ typeFilter }: RecentActivityProps) {
-  const { data, isLoading } = useGetRecentActivityQuery()
+  const { isLoading } = useGetRecentActivityQuery()
+  const notifications = useAppSelector((state) => state.notifications.notifications)
 
-  // Filter activities based on selected filters
-  const filteredActivities = data?.data.filter((activity: RecentActivity) => {
-    return typeFilter === "all" || activity.type === typeFilter
-  })
+  const filtered = notifications.filter((n: Notification) =>
+    typeFilter === "all" || n.type === typeFilter
+  )
 
   const getActivityIcon = (type: ActivityType) => {
     switch (type) {
@@ -62,7 +53,7 @@ export default function RecentActivity({ typeFilter }: RecentActivityProps) {
     }
   }
 
-  const getActivityDescription = (activity: RecentActivity) => {
+  const getActivityDescription = (activity: Notification) => {
     switch (activity.type) {
       case "Add asset":
         return "Added to portfolio"
@@ -77,74 +68,37 @@ export default function RecentActivity({ typeFilter }: RecentActivityProps) {
     }
   }
 
-  // const formatTimeAgo = (dateString: string) => {
-  //   const now = new Date()
-  //   const date = new Date(dateString)
-  //   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
-
-  //   if (diffInSeconds < 60) return "Just now"
-  //   if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`
-  //   if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`
-  //   if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`
-  //   return date.toLocaleDateString()
-  // }
-
-  const groupActivitiesByDate = (activities: RecentActivity[]) => {
-    const groups: { [key: string]: RecentActivity[] } = {}
+  const groupByDate = (activities: Notification[]) => {
+    const groups: { [key: string]: Notification[] } = {}
     const today = new Date()
     const yesterday = new Date(today)
     yesterday.setDate(yesterday.getDate() - 1)
 
-    activities?.forEach((activity) => {
-      const activityDate = new Date(activity.created_at)
-      let dateKey: string
-
-      if (activityDate.toDateString() === today.toDateString()) {
-        dateKey = "Today"
-      } else if (activityDate.toDateString() === yesterday.toDateString()) {
-        dateKey = "Yesterday"
-      } else {
-        dateKey = activityDate.toLocaleDateString("en-US", {
-          weekday: "long",
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        })
-      }
-
-      if (!groups[dateKey]) {
-        groups[dateKey] = []
-      }
-      groups[dateKey].push(activity)
+    activities.forEach((activity) => {
+      const d = new Date(activity.created_at)
+      let key: string
+      if (d.toDateString() === today.toDateString()) key = "Today"
+      else if (d.toDateString() === yesterday.toDateString()) key = "Yesterday"
+      else key = d.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })
+      if (!groups[key]) groups[key] = []
+      groups[key].push(activity)
     })
 
-    // Sort groups by date (most recent first)
-    const sortedGroups = Object.entries(groups).sort(([dateA], [dateB]) => {
-      if (dateA === "Today") return -1
-      if (dateB === "Today") return 1
-      if (dateA === "Yesterday") return -1
-      if (dateB === "Yesterday") return 1
-      return new Date(dateB).getTime() - new Date(dateA).getTime()
+    return Object.entries(groups).sort(([a], [b]) => {
+      if (a === "Today") return -1
+      if (b === "Today") return 1
+      if (a === "Yesterday") return -1
+      if (b === "Yesterday") return 1
+      return new Date(b).getTime() - new Date(a).getTime()
     })
-
-    return sortedGroups
   }
 
   if (isLoading) {
     return (
       <div className="flex flex-col h-full max-h-[500px]">
-        {/* Filters Skeleton */}
-        <div className="flex-shrink-0 space-y-4 pb-4 border-b">
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-            <Skeleton className="h-9 w-full sm:w-32" />
-            <Skeleton className="h-9 w-full sm:w-40" />
-          </div>
-        </div>
-        {/* Activities Skeleton */}
-
         <div className="flex-1 overflow-y-auto pt-3 lg:pt-4 space-y-3">
-          {Array.from({ length: 6 }).map((_, index) => (
-            <div key={index} className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 border rounded-lg">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 border rounded-lg">
               <Skeleton className="h-8 w-8 sm:h-10 sm:w-10 rounded-full flex-shrink-0" />
               <div className="flex-1 space-y-2">
                 <div className="flex items-center justify-between">
@@ -161,7 +115,7 @@ export default function RecentActivity({ typeFilter }: RecentActivityProps) {
     )
   }
 
-  if (data?.data?.length === 0) {
+  if (notifications.length === 0) {
     return (
       <Card className="border-dashed">
         <CardHeader className="text-center pb-4">
@@ -169,7 +123,9 @@ export default function RecentActivity({ typeFilter }: RecentActivityProps) {
             <Calendar className="h-6 w-6 text-muted-foreground" />
           </div>
           <CardTitle className="text-lg text-muted-foreground">No Recent Activity</CardTitle>
-          <CardDescription>Your portfolio activity will appear here as you add assets and sync data.</CardDescription>
+          <CardDescription>
+            Your portfolio activity will appear here as you add assets and sync data.
+          </CardDescription>
         </CardHeader>
       </Card>
     )
@@ -177,35 +133,29 @@ export default function RecentActivity({ typeFilter }: RecentActivityProps) {
 
   return (
     <div className="flex flex-col h-full max-h-[500px] lg:max-h-[600px]">
-      {/* Scrollable Activities List */}
-
-      <div className="flex-1 overflow-y-auto pt-3 lg:pt-4 space-y-4 lg:space-y-6 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-        {filteredActivities?.length === 0 ? (
+      <div className="flex-1 overflow-y-auto space-y-4 lg:space-y-6 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+        {filtered.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <Filter className="h-8 w-8 mx-auto mb-2 opacity-50" />
             <p>No activities found for the selected filters.</p>
           </div>
         ) : (
-          groupActivitiesByDate(filteredActivities).map(([dateGroup, activities]) => (
+          groupByDate(filtered).map(([dateGroup, activities]) => (
             <div key={dateGroup} className="space-y-3">
-              {/* Date Group Header */}
-
               <div className="flex items-center space-x-2 sticky top-0 bg-background py-1.5 lg:py-2 z-10">
                 <h3 className="text-xs sm:text-sm font-semibold text-muted-foreground">{dateGroup}</h3>
-                <div className="flex-1 h-px bg-border"></div>
+                <div className="flex-1 h-px bg-border" />
                 <span className="text-xs text-muted-foreground hidden sm:inline">
                   {activities.length} {activities.length === 1 ? "activity" : "activities"}
                 </span>
               </div>
 
-              {/* Activities for this date */}
               <div className="space-y-2 pb-2">
                 {activities.map((activity) => (
                   <div
                     key={activity.id}
                     className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 border rounded-lg hover:bg-muted/30 transition-colors"
                   >
-                    {/* Asset Avatar */}
                     <div className="relative flex-shrink-0">
                       <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
                         <AvatarImage src={activity.img_url} alt={activity.symbol} />
@@ -213,20 +163,23 @@ export default function RecentActivity({ typeFilter }: RecentActivityProps) {
                           {activity.symbol?.slice(0, 2).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      {/* Activity Icon Overlay */}
                       <div className="absolute -bottom-0.5 -right-0.5 sm:-bottom-1 sm:-right-1 bg-background rounded-full p-0.5 sm:p-1 border">
-                        <div className="h-3 w-3 sm:h-4 sm:w-4">{getActivityIcon(activity.type)}</div>
+                        <div className="h-3 w-3 sm:h-4 sm:w-4">
+                          {getActivityIcon(activity.type as ActivityType)}
+                        </div>
                       </div>
                     </div>
 
-                    {/* Activity Details */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between mb-1 gap-2">
                         <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-2 min-w-0">
                           <span className="font-medium text-xs sm:text-sm truncate">
                             {activity.name} ({activity.symbol?.toUpperCase()})
                           </span>
-                          <Badge variant="outline" className={`text-xs w-fit ${getActivityBadgeColor(activity.type)}`}>
+                          <Badge
+                            variant="outline"
+                            className={`text-xs w-fit ${getActivityBadgeColor(activity.type as ActivityType)}`}
+                          >
                             <span className="hidden sm:inline">{activity.type}</span>
                             <span className="sm:hidden">
                               {activity.type === "Add asset"
@@ -247,7 +200,9 @@ export default function RecentActivity({ typeFilter }: RecentActivityProps) {
                           })}
                         </span>
                       </div>
-                      <p className="text-xs text-muted-foreground truncate">{getActivityDescription(activity)}</p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {getActivityDescription(activity)}
+                      </p>
                     </div>
                   </div>
                 ))}

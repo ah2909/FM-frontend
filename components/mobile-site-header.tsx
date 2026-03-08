@@ -1,6 +1,7 @@
 "use client"
 
 import { ModeToggle } from "@/components/mode-toggle"
+import { NotificationBell } from "@/components/notification-bell"
 import Link from "next/link"
 import { Bitcoin } from "lucide-react"
 
@@ -18,7 +19,8 @@ export function MobileSiteHeader() {
           <span className="truncate font-semibold text-base">CryptoFolio</span>
         </div>
       </Link>
-      <div className="ml-auto px-1 sm:px-3">
+      <div className="ml-auto flex items-center gap-2 px-1 sm:px-3">
+        <NotificationBell />
         <ModeToggle />
       </div>
     </header>

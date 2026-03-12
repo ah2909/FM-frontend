@@ -6,6 +6,7 @@ export interface Notification {
   asset_id: number
   type: string
   transaction_count: number | null
+  amount: number | null
   is_read: boolean
   created_at: string
   symbol: string

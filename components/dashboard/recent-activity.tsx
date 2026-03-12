@@ -3,13 +3,13 @@
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Calendar, Plus, RefreshCw, Trash2, TrendingUp, Filter } from "lucide-react"
+import { Calendar, Plus, RefreshCw, Trash2, TrendingUp, Filter, ArrowDownToLine, ArrowUpFromLine } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useGetRecentActivityQuery } from "@/lib/store/services/portfolio-api"
 import { useAppSelector } from "@/lib/store/hooks"
 import { type Notification } from "@/lib/store/features/notifications-slice"
 
-type ActivityType = "Add asset" | "Remove asset" | "Sync asset transactions" | "Update asset"
+type ActivityType = "Add asset" | "Remove asset" | "Sync asset transactions" | "Update asset" | "Deposit" | "Withdrawn"
 
 interface RecentActivityProps {
   typeFilter: string
@@ -33,6 +33,10 @@ export default function RecentActivity({ typeFilter }: RecentActivityProps) {
         return <RefreshCw className="h-4 w-4 text-blue-600" />
       case "Update asset":
         return <TrendingUp className="h-4 w-4 text-orange-600" />
+      case "Deposit":
+        return <ArrowDownToLine className="h-4 w-4 text-green-600" />
+      case "Withdrawn":
+        return <ArrowUpFromLine className="h-4 w-4 text-red-600" />
       default:
         return <Calendar className="h-4 w-4 text-gray-600" />
     }
@@ -48,6 +52,10 @@ export default function RecentActivity({ typeFilter }: RecentActivityProps) {
         return "bg-blue-100 text-blue-700 border-blue-200"
       case "Update asset":
         return "bg-orange-100 text-orange-700 border-orange-200"
+      case "Deposit":
+        return "bg-green-100 text-green-700 border-green-200"
+      case "Withdrawn":
+        return "bg-red-100 text-red-700 border-red-200"
       default:
         return "bg-gray-100 text-gray-700 border-gray-200"
     }
@@ -63,6 +71,10 @@ export default function RecentActivity({ typeFilter }: RecentActivityProps) {
         return `Synced ${activity.transaction_count || 0} transactions`
       case "Update asset":
         return `Updated ${activity.transaction_count || 0} transactions from new connected exchange`
+      case "Deposit":
+        return `+${activity.amount} ${activity.symbol?.toUpperCase()} deposited`
+      case "Withdrawn":
+        return `-${activity.amount} ${activity.symbol?.toUpperCase()} withdrawn`
       default:
         return "Activity recorded"
     }
@@ -188,7 +200,11 @@ export default function RecentActivity({ typeFilter }: RecentActivityProps) {
                                   ? "Remove"
                                   : activity.type === "Sync asset transactions"
                                     ? "Sync"
-                                    : "Update"}
+                                    : activity.type === "Deposit"
+                                      ? "Deposit"
+                                      : activity.type === "Withdrawn"
+                                        ? "Withdrawn"
+                                        : "Update"}
                             </span>
                           </Badge>
                         </div>

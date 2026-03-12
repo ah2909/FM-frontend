@@ -7,6 +7,7 @@ import { setAnalysis, type PortfolioAnalysis } from "@/lib/store/features/analyz
 import { syncTransactionsByAssetID, setSyncStatus, setAssets } from "@/lib/store/features/portfolios-slice"
 import { prependNotification } from "@/lib/store/features/notifications-slice"
 import { portfolioApi } from "@/lib/store/services/portfolio-api"
+import { randomUUID } from "crypto"
 
 const EXCHANGE_ID: Record<string, number> = { binance: 1, okx: 2, bybit: 3 }
 
@@ -80,7 +81,7 @@ export function WsEventListener() {
 
   // ── Transaction sync (exchange → portfolio) ───────────────────────────────
   useWebSocketEvent("sync-transactions", "", (data: any) => {
-    const status = data?.status
+    const status = data?.success ? 'success' : 'error'
     if (!status) return
 
     dispatch(setSyncStatus(status))
@@ -98,11 +99,11 @@ export function WsEventListener() {
                 id: tx.id,
                 portfolio_id: portfolioId,
                 asset_id: asset.id,
-                exchange_id: EXCHANGE_ID[tx.exchange] ?? null,
-                quantity: tx.amount,
+                exchange_id: EXCHANGE_ID[tx.exchange],
+                quantity: tx.quantity,
                 price: tx.price,
-                type: tx.side.toUpperCase(),
-                transact_date: new Date(tx.timestamp)
+                type: tx.type.toUpperCase(),
+                transact_date: new Date(tx.transact_date)
                   .toISOString()
                   .slice(0, 19)
                   .replace("T", " "),

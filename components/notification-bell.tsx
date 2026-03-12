@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect } from "react"
-import { Bell, Plus, RefreshCw, Trash2, TrendingUp, Calendar, CheckCheck } from "lucide-react"
+import { Bell, Plus, RefreshCw, Trash2, TrendingUp, Calendar, CheckCheck, ArrowDownToLine, ArrowUpFromLine } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -21,7 +21,7 @@ import {
   useMarkAllNotificationsReadMutation,
 } from "@/lib/store/services/portfolio-api"
 
-type ActivityType = "Add asset" | "Remove asset" | "Sync asset transactions" | "Update asset"
+type ActivityType = "Add asset" | "Remove asset" | "Sync asset transactions" | "Update asset" | "Deposit" | "Withdrawn"
 
 function getActivityIcon(type: ActivityType) {
   switch (type) {
@@ -33,6 +33,10 @@ function getActivityIcon(type: ActivityType) {
       return <RefreshCw className="h-3 w-3 text-blue-600" />
     case "Update asset":
       return <TrendingUp className="h-3 w-3 text-orange-600" />
+    case "Deposit":
+      return <ArrowDownToLine className="h-3 w-3 text-green-600" />
+    case "Withdrawn":
+      return <ArrowUpFromLine className="h-3 w-3 text-red-600" />
     default:
       return <Calendar className="h-3 w-3 text-gray-600" />
   }
@@ -48,6 +52,10 @@ function getDescription(n: Notification) {
       return `Synced ${n.transaction_count ?? 0} transactions`
     case "Update asset":
       return `Updated ${n.transaction_count ?? 0} transactions`
+    case "Deposit":
+      return `+${n.amount} ${n.symbol?.toUpperCase()} deposited`
+    case "Withdrawn":
+      return `-${n.amount} ${n.symbol?.toUpperCase()} withdrawn`
     default:
       return "Activity recorded"
   }
@@ -104,13 +112,13 @@ export function NotificationBell() {
         <Button
           variant="outline"
           size="icon"
-          className="relative overflow-hidden transition-all duration-300 hover:bg-muted"
+          className="relative transition-all duration-300 hover:bg-muted"
         >
           <Bell className="h-4 w-4" />
           {unreadCount > 0 && (
-            <span className="absolute top-0 right-0 translate-x-1 -translate-y-1 h-4 min-w-4 px-0.5 rounded-full bg-blue-500 text-[9px] font-bold text-white flex items-center justify-center leading-none">
+            <Badge className="absolute top-0 right-0 translate-x-1 -translate-y-1 h-4 min-w-4 px-0.5 rounded-full bg-blue-500 hover:bg-blue-500 text-[9px] font-bold text-white flex items-center justify-center leading-none">
               {unreadCount > 99 ? "99+" : unreadCount}
-            </span>
+            </Badge>
           )}
           <span className="sr-only">Notifications</span>
         </Button>

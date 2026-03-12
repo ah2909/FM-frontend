@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { useSelector } from "react-redux"
-import { TrendingUp, TrendingDown } from "lucide-react"
+import { TrendingUp, TrendingDown, ArrowDownToLine, ArrowUpFromLine } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { memo } from "react"
@@ -142,12 +142,20 @@ const TransactionRow = memo(function TransactionRow({
               className={`text-xs font-semibold px-3 py-1.5 rounded-full border-0 ${
                 transaction.type === "BUY"
                   ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400"
-                  : "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400"
+                  : transaction.type === "DEPOSIT"
+                    ? "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-400"
+                    : transaction.type === "WITHDRAWAL"
+                      ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-400"
+                      : "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400"
               }`}
             >
               <div className="flex items-center gap-1">
                 {transaction.type === "BUY" ? (
                   <TrendingUp className="h-3 w-3" />
+                ) : transaction.type === "DEPOSIT" ? (
+                  <ArrowDownToLine className="h-3 w-3" />
+                ) : transaction.type === "WITHDRAWAL" ? (
+                  <ArrowUpFromLine className="h-3 w-3" />
                 ) : (
                   <TrendingDown className="h-3 w-3" />
                 )}
@@ -161,15 +169,31 @@ const TransactionRow = memo(function TransactionRow({
         {/* Value Row */}
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <div className="font-bold text-xl text-foreground">
-              ${Number(transaction.price * transaction.quantity).toLocaleString()}
-            </div>
-            <div className="text-sm text-muted-foreground">
-              {formatAmount(transaction.quantity, selectedToken.symbol.toUpperCase())}
-            </div>
+            {transaction.type === "DEPOSIT" ? (
+              <div className="font-bold text-xl text-emerald-600 dark:text-emerald-400">
+                +{formatAmount(transaction.quantity, selectedToken.symbol.toUpperCase())}
+              </div>
+            ) : transaction.type === "WITHDRAWAL" ? (
+              <div className="font-bold text-xl text-yellow-600 dark:text-yellow-400">
+                -{formatAmount(transaction.quantity, selectedToken.symbol.toUpperCase())}
+              </div>
+            ) : (
+              <>
+                <div className="font-bold text-xl text-foreground">
+                  ${Number(transaction.price * transaction.quantity).toLocaleString()}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  {formatAmount(transaction.quantity, selectedToken.symbol.toUpperCase())}
+                </div>
+              </>
+            )}
           </div>
           <div className="text-right space-y-1">
-            <div className="text-xl font-bold text-foreground">${transaction.price}</div>
+            <div className="text-xl font-bold text-foreground">
+              {transaction.type === "DEPOSIT" || transaction.type === "WITHDRAWAL"
+                ? <span className="text-sm font-normal text-muted-foreground">Transfer</span>
+                : `$${transaction.price}`}
+            </div>
           </div>
         </div>
       </div>
@@ -197,7 +221,11 @@ const TransactionRow = memo(function TransactionRow({
           className={`${
             transaction.type === "BUY"
               ? "border-green-200 bg-green-50 text-green-700 hover:bg-green-100"
-              : "border-red-200 bg-red-50 text-red-700 hover:bg-red-100"
+              : transaction.type === "DEPOSIT"
+                ? "border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100"
+                : transaction.type === "WITHDRAWAL"
+                  ? "border-yellow-200 bg-yellow-50 text-yellow-700 hover:bg-yellow-100"
+                  : "border-red-200 bg-red-50 text-red-700 hover:bg-red-100"
           }`}
         >
           {transaction.type}
@@ -206,17 +234,33 @@ const TransactionRow = memo(function TransactionRow({
 
       {/* Buy price */}
       <div className="col-span-2 flex text-left">
-        <div className="font-semibold text-lg">$ {Number(transaction.price).toLocaleString()}</div>
+        {transaction.type === "DEPOSIT" || transaction.type === "WITHDRAWAL" ? (
+          <span className="text-sm text-muted-foreground">Transfer</span>
+        ) : (
+          <div className="font-semibold text-lg">$ {Number(transaction.price).toLocaleString()}</div>
+        )}
       </div>
 
       {/* Amount and Value */}
       <div className="col-span-2 text-left">
-        <div className="font-semibold text-lg">
-          $ {Number(transaction.price * transaction.quantity).toLocaleString()}
-        </div>
-        <div className="text-sm text-muted-foreground">
-          {formatAmount(transaction.quantity, selectedToken.symbol.toUpperCase())}
-        </div>
+        {transaction.type === "DEPOSIT" ? (
+          <div className="font-semibold text-lg text-emerald-600 dark:text-emerald-400">
+            +{formatAmount(transaction.quantity, selectedToken.symbol.toUpperCase())}
+          </div>
+        ) : transaction.type === "WITHDRAWAL" ? (
+          <div className="font-semibold text-lg text-yellow-600 dark:text-yellow-400">
+            -{formatAmount(transaction.quantity, selectedToken.symbol.toUpperCase())}
+          </div>
+        ) : (
+          <>
+            <div className="font-semibold text-lg">
+              $ {Number(transaction.price * transaction.quantity).toLocaleString()}
+            </div>
+            <div className="text-sm text-muted-foreground">
+              {formatAmount(transaction.quantity, selectedToken.symbol.toUpperCase())}
+            </div>
+          </>
+        )}
       </div>
 
       {/* Exchange */}

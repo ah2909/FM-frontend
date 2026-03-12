@@ -1,5 +1,5 @@
 // hooks/useWebSocketEvent.ts
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useWebSocket } from '../contexts/WebSocketContext';
 
 export const useWebSocketEvent = <T>(
@@ -8,13 +8,18 @@ export const useWebSocketEvent = <T>(
   callback: (data: T) => void
 ): void => {
   const { socket, isConnected, subscribe, unsubscribe } = useWebSocket();
+  const callbackRef = useRef(callback);
+
+  useEffect(() => {
+    callbackRef.current = callback;
+  });
 
   //For connecting CEXs stream
   useEffect(() => {
     if (!socket || !isConnected || !eventName || stream === '') return;
 
     subscribe(stream);
-    const handler = (data: T) => callback(data);
+    const handler = (data: T) => callbackRef.current(data);
     socket.on(eventName, handler);
 
     return () => {
@@ -26,10 +31,10 @@ export const useWebSocketEvent = <T>(
   //For in-app event
   useEffect(() => {
     if (stream !== '') return;
-    const handler = (data: T) => callback(data);
+    const handler = (data: T) => callbackRef.current(data);
     socket?.on(eventName, handler)
     return () => {
         socket?.off(eventName, handler);
     };
-  }, [socket, eventName, stream]); 
+  }, [socket, eventName, stream]);
 };

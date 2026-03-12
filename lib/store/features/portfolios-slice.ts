@@ -58,7 +58,7 @@ export const portfoliosSlice = createSlice({
       if (isDuplicate) return; 
 
       state.transactions[assetId] = [...state.transactions[assetId], transaction];
-      let updatedAmount = transaction.type === 'BUY' ? transaction.quantity : -transaction.quantity;
+      let updatedAmount = (transaction.type === 'BUY' || transaction.type === 'DEPOSIT') ? transaction.quantity : -transaction.quantity;
       const assetIndex = state.assets.findIndex((asset: any) => asset.id === assetId);
       
       if (assetIndex !== -1) {

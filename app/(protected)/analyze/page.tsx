@@ -5,26 +5,14 @@ import {
   TrendingUp,
   TrendingDown,
   AlertTriangle,
-  ShieldCheck,
-  Info,
-  Target,
-  BarChart3,
-  Zap,
   CheckCircle2,
-  XCircle,
+  Lightbulb,
+  Zap,
   Activity,
-  PieChart
 } from "lucide-react";
 
 import { BaseHeader } from "@/components/base-header";
 import { BaseShell } from "@/components/base-shell";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription
-} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -32,15 +20,12 @@ import { useGetPortfolioAnalysisQuery } from "@/lib/store/services/portfolio-api
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 import { setHasRequested } from "@/lib/store/features/analyze-slice";
 
-// Sub-components
-import { StatCard } from "@/components/analyze/stat-card";
-import { AlertCard } from "@/components/analyze/alert-card";
-import { RiskScoreGauge } from "@/components/analyze/risk-score-gauge";
-import { PerformerItem } from "@/components/analyze/performer-item";
-import { RecommendationCard } from "@/components/analyze/recommendation-card";
-import { AssetBreakdownTable } from "@/components/analyze/asset-breakdown-table";
-import { LoadingSkeleton } from "@/components/analyze/loading-skeleton";
-import { AnalyzingInterface } from "@/components/analyze/analyzing-interface";
+import { AlertCard }            from "@/components/analyze/alert-card";
+import { RiskScoreGauge }       from "@/components/analyze/risk-score-gauge";
+import { PerformerItem }        from "@/components/analyze/performer-item";
+import { LoadingSkeleton }      from "@/components/analyze/loading-skeleton";
+import { AnalyzingInterface }   from "@/components/analyze/analyzing-interface";
+import { ConcentrationAnalysis } from "@/components/analyze/concentration-analysis";
 
 import type {
   RiskAssessment,
@@ -48,252 +33,313 @@ import type {
   Alert,
 } from "@/lib/store/features/analyze-slice";
 
+/* ─── helpers ────────────────────────────────────────────────── */
+
+const fmt = (n: number, dec = 2) =>
+  Math.abs(n).toLocaleString(undefined, {
+    minimumFractionDigits: dec,
+    maximumFractionDigits: dec,
+  });
+
+/* ─── reusable panel shell ───────────────────────────────────── */
+
+function Panel({
+  className,
+  children,
+}: {
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className={cn(
+        "rounded-2xl border border-border/60 bg-card p-5 flex flex-col",
+        "dark:bg-card dark:border-border/40",
+        className
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
+function PanelLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground mb-3">
+      {children}
+    </p>
+  );
+}
+
+/* ─── page ───────────────────────────────────────────────────── */
+
 export default function AnalyzePage() {
   const dispatch = useAppDispatch();
-  const { analysis, hasRequested } = useAppSelector((state) => state.analyze);
+  const { analysis, hasRequested } = useAppSelector((s) => s.analyze);
 
-  // Skip the API call if we already triggered it — prevents re-triggering on return visits
-  const { isLoading: isApiLoading } = useGetPortfolioAnalysisQuery(undefined, {
+  const { isLoading } = useGetPortfolioAnalysisQuery(undefined, {
     skip: hasRequested,
   });
 
-  // Mark as requested on first mount so navigating away and back doesn't fire again
   useEffect(() => {
     if (!hasRequested) dispatch(setHasRequested());
   }, []);
 
-  if (isApiLoading) {
-    return <LoadingSkeleton text={"Crunching numbers and market data..."} />;
-  }
+  if (isLoading) return <LoadingSkeleton text="Crunching numbers and market data…" />;
+  if (!analysis)  return <AnalyzingInterface />;
 
-  if (!analysis) {
-    return <AnalyzingInterface />;
-  }
-
+  /* ─── normalise ─────────────────────────────────────────── */
   const risk: RiskAssessment = {
     pnl_analysis: {
-      total_invested: analysis?.risk_assessment?.pnl_analysis?.total_invested ?? 0,
-      total_current_value: analysis?.risk_assessment?.pnl_analysis?.total_current_value ?? 0,
-      unrealized_pnl: analysis?.risk_assessment?.pnl_analysis?.unrealized_pnl ?? 0,
-      unrealized_pnl_pct: analysis?.risk_assessment?.pnl_analysis?.unrealized_pnl_pct ?? 0,
-      per_asset: analysis?.risk_assessment?.pnl_analysis?.per_asset || [],
+      total_invested:      analysis.risk_assessment?.pnl_analysis?.total_invested      ?? 0,
+      total_current_value: analysis.risk_assessment?.pnl_analysis?.total_current_value ?? 0,
+      unrealized_pnl:      analysis.risk_assessment?.pnl_analysis?.unrealized_pnl      ?? 0,
+      unrealized_pnl_pct:  analysis.risk_assessment?.pnl_analysis?.unrealized_pnl_pct  ?? 0,
+      per_asset:           analysis.risk_assessment?.pnl_analysis?.per_asset           || [],
     },
     volatility_risk: {
-      overall_volatility: analysis?.risk_assessment?.volatility_risk?.overall_volatility || 'neutral',
-      assets_overbought: analysis?.risk_assessment?.volatility_risk?.assets_overbought || [],
-      assets_oversold: analysis?.risk_assessment?.volatility_risk?.assets_oversold || [],
+      overall_volatility: analysis.risk_assessment?.volatility_risk?.overall_volatility || "neutral",
+      assets_overbought:  analysis.risk_assessment?.volatility_risk?.assets_overbought  || [],
+      assets_oversold:    analysis.risk_assessment?.volatility_risk?.assets_oversold    || [],
     },
-    risk_score: analysis?.risk_assessment?.risk_score ?? 0,
-    concentration_risk: {
-      herfindahl_index: analysis?.risk_assessment?.concentration_risk?.herfindahl_index ?? 0,
-      allocations: analysis?.risk_assessment?.concentration_risk?.allocations || [],
+    risk_score:        analysis.risk_assessment?.risk_score ?? 0,
+    concentration_risk:{
+      herfindahl_index: analysis.risk_assessment?.concentration_risk?.herfindahl_index ?? 0,
+      allocations:      analysis.risk_assessment?.concentration_risk?.allocations      || [],
     },
-    summary: analysis?.risk_assessment?.summary || 'Strategic analysis is being generated...'
+    summary: analysis.risk_assessment?.summary || "",
   };
 
-  const alerts = analysis?.alerts || [];
-
+  const alerts: Alert[] = analysis.alerts || [];
   const insights: Insight = {
-    market_trend_alignment: analysis?.insights?.market_trend_alignment || 'neutral',
-    recommendations: analysis?.insights?.recommendations || [],
-    best_performers: analysis?.insights?.best_performers || [],
-    worst_performers: analysis?.insights?.worst_performers || []
+    market_trend_alignment: analysis.insights?.market_trend_alignment || "neutral",
+    recommendations:        analysis.insights?.recommendations        || [],
+    best_performers:        analysis.insights?.best_performers        || [],
+    worst_performers:       analysis.insights?.worst_performers       || [],
   };
 
-  const mobileMenuItems = [
-    {
-      label: "AI Model",
-      component: (
-        <Badge variant="outline" className="bg-primary/10 text-primary border-none font-bold uppercase tracking-widest text-[10px] py-1.5 px-3 w-full justify-start">
-            <Zap className="size-3 mr-1.5" /> Google Gemini
-        </Badge>
-      )
-    },
-  ];
+  const pnl  = risk.pnl_analysis;
+  const pnlUp = pnl.unrealized_pnl >= 0;
+
+  const VOL_COLORS: Record<string, string> = {
+    low:     "bg-emerald-500/10 text-emerald-400",
+    medium:  "bg-yellow-500/10 text-yellow-400",
+    high:    "bg-orange-500/10 text-orange-400",
+    extreme: "bg-red-500/10 text-red-400",
+  };
+
+  const mobileMenuItems = [{
+    label: "AI Model",
+    component: (
+      <Badge variant="outline" className="bg-primary/10 text-primary border-none font-bold uppercase tracking-widest text-[10px] py-1.5 px-3 w-full justify-start">
+        <Zap className="size-3 mr-1.5" /> Google Gemini
+      </Badge>
+    ),
+  }];
 
   return (
     <BaseShell>
-      <BaseHeader 
-        heading="Portfolio Analysis" 
+      <BaseHeader
+        heading="Portfolio Analysis"
         text="Deep dive into your risk metrics and AI investment recommendations"
         mobileMenuItems={mobileMenuItems}
       >
-        <div className="flex items-center gap-2">
-            <Badge variant="outline" className="bg-primary/10 text-primary border-none font-bold uppercase tracking-widest text-[10px] py-1.5 px-3">
-                <Zap className="size-3 mr-1.5" /> Google Gemini
-            </Badge>
-        </div>
+        <Badge variant="outline" className="bg-primary/10 text-primary border-none font-bold uppercase tracking-widest text-[10px] py-1.5 px-3">
+          <Zap className="size-3 mr-1.5" /> Google Gemini
+        </Badge>
       </BaseHeader>
 
-      <div className="space-y-8 pb-12">
-        {/* Core Financial Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <StatCard 
-            title="Total Invested" 
-            value={`$${risk.pnl_analysis.total_invested.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
-            subValue="Principal capital"
-            icon={Target}
-            colorClass="bg-indigo-500"
-          />
-          <StatCard 
-            title="Equity Value" 
-            value={`$${risk.pnl_analysis.total_current_value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-            subValue={`${risk.pnl_analysis.unrealized_pnl >= 0 ? "+" : ""}${risk.pnl_analysis.unrealized_pnl.toLocaleString()} Unrealized`}
-            trend={risk.pnl_analysis.unrealized_pnl >= 0 ? "up" : "down"}
-            icon={Activity}
-            colorClass="bg-primary"
-          />
-          <StatCard 
-            title="Portfolio Yield" 
-            value={`${risk.pnl_analysis.unrealized_pnl_pct.toFixed(2)}%`}
-            subValue="Since initial deposit"
-            trend={risk.pnl_analysis.unrealized_pnl_pct >= 0 ? "up" : "down"}
-            icon={BarChart3}
-            colorClass="bg-blue-500"
-          />
+      <div className="space-y-4 pb-12">
+
+        {/* ══ ROW 1 — 4 panels ══════════════════════════════════ */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+
+          {/* 1 · Risk Profile */}
+          <Panel className="items-center text-center gap-2">
+            <PanelLabel>Risk Profile</PanelLabel>
+            <RiskScoreGauge score={risk.risk_score} />
+            <div className="mt-2 flex flex-col items-center gap-1.5">
+              <Badge
+                variant="outline"
+                className={cn(
+                  "text-[9px] font-bold border-none px-2.5",
+                  VOL_COLORS[risk.volatility_risk.overall_volatility] ?? "bg-muted text-muted-foreground"
+                )}
+              >
+                Volatility: {risk.volatility_risk.overall_volatility}
+              </Badge>
+              {(risk.volatility_risk.assets_overbought.length > 0 || risk.volatility_risk.assets_oversold.length > 0) && (
+                <div className="flex flex-wrap justify-center gap-1">
+                  {risk.volatility_risk.assets_overbought.map((s) => (
+                    <span key={s} className="text-[9px] px-1.5 py-0.5 rounded bg-red-500/10 text-red-400 font-bold">{s}↑</span>
+                  ))}
+                  {risk.volatility_risk.assets_oversold.map((s) => (
+                    <span key={s} className="text-[9px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 font-bold">{s}↓</span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </Panel>
+
+          {/* 2 · Total Value */}
+          <Panel className="justify-between">
+            <PanelLabel>Total Value</PanelLabel>
+            <div className="flex-1 flex flex-col justify-center">
+              <p className="text-4xl font-black tracking-tight font-mono">
+                ${fmt(pnl.total_current_value)}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1.5 font-medium">
+                Invested: <span className="text-foreground font-bold">${fmt(pnl.total_invested, 0)}</span>
+              </p>
+            </div>
+            <div className="flex items-center gap-1.5 mt-4 pt-3 border-t border-border/40">
+              <Activity className="size-3 text-muted-foreground" />
+              <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+                {insights.market_trend_alignment.replace(/_/g, " ")}
+              </span>
+            </div>
+          </Panel>
+
+          {/* 3 · Unrealized P&L */}
+          <Panel className="justify-between">
+            <PanelLabel>Unrealized P&L</PanelLabel>
+            <div className="flex-1 flex flex-col justify-center">
+              <p className={cn("text-4xl font-black tracking-tight font-mono", pnlUp ? "text-emerald-400" : "text-red-400")}>
+                {pnlUp ? "+" : "-"}${fmt(pnl.unrealized_pnl)}
+              </p>
+              <div className={cn("flex items-center gap-1 mt-1.5", pnlUp ? "text-emerald-400" : "text-red-400")}>
+                {pnlUp ? <TrendingUp className="size-3" /> : <TrendingDown className="size-3" />}
+                <span className="text-sm font-bold font-mono">
+                  {pnlUp ? "+" : ""}{pnl.unrealized_pnl_pct.toFixed(2)}%
+                </span>
+                <span className="text-xs text-muted-foreground font-medium">since deposit</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5 mt-4 pt-3 border-t border-border/40">
+              {pnlUp
+                ? <TrendingUp  className="size-3 text-emerald-500" />
+                : <TrendingDown className="size-3 text-red-500" />
+              }
+              <span className="text-[10px] text-muted-foreground font-medium">
+                {pnlUp ? "Portfolio performing above cost" : "Portfolio below cost basis"}
+              </span>
+            </div>
+          </Panel>
+
+          {/* 4 · Concentration Analysis */}
+          <Panel>
+            <ConcentrationAnalysis
+              allocations={risk.concentration_risk.allocations}
+              herfindahl_index={risk.concentration_risk.herfindahl_index}
+            />
+          </Panel>
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-          {/* Left Column: Risk and Strategy */}
-          <div className="xl:col-span-8 space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card className="glass-morphism border-none shadow-xl flex flex-col items-center justify-center p-6 text-center group md:col-span-1">
-                <CardHeader className="p-0 pb-2">
-                  <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Portfolio Integrity</CardTitle>
-                </CardHeader>
-                <RiskScoreGauge score={risk.risk_score} />
-                <p className="text-[10px] text-muted-foreground font-medium mt-2 max-w-[150px]">
-                  Based on current volatility, concentration (HHI: {risk.concentration_risk.herfindahl_index.toFixed(2)}), and technical indicators.
-                </p>
-              </Card>
+        {/* ══ ROW 2 — 3 panels ══════════════════════════════════ */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
 
-              <Card className="glass-morphism border-none shadow-xl md:col-span-2 overflow-hidden flex flex-col">
-                <CardHeader className="pb-4 bg-white/5 border-b border-white/5">
-                    <div className="flex items-center gap-3">
-                      <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
-                        <ShieldCheck className="size-4" />
-                      </div>
-                      <CardTitle className="text-sm font-black uppercase tracking-widest">Analysis Executive Summary</CardTitle>
-                    </div>
-                </CardHeader>
-                <CardContent className="flex-1 p-6 relative">
-                  <div className="absolute top-4 right-4 opacity-5">
-                      <Info className="size-24" />
-                  </div>
-                  <div className="space-y-4 relative z-10">
-                    <p className="text-base font-bold leading-relaxed italic text-foreground/90">
-                      "{risk.summary}"
-                    </p>
-                    <div className="pt-4 border-t border-white/5">
-                      <h5 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-3">Concentration Analysis</h5>
-                      <div className="flex flex-wrap gap-2">
-                          {risk.concentration_risk.allocations.length > 0 ? (
-                            risk.concentration_risk.allocations.map((a) => (
-                                <div key={a.symbol} className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/5 group hover:border-primary/30 transition-colors">
-                                    <span className="text-[10px] font-black">{a.symbol}</span>
-                                    <span className="text-[10px] font-mono text-muted-foreground">{a.percentage.toFixed(1)}%</span>
-                                    <div className={cn("size-1.5 rounded-full", 
-                                      a.flag === 'safe' ? "bg-green-500" : 
-                                      a.flag === 'moderate' ? "bg-yellow-500" : 
-                                      a.flag === 'high' ? "bg-orange-500" : "bg-red-500"
-                                    )} />
-                                </div>
-                            ))
-                          ) : (
-                            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/5 border-dashed">
-                              <span className="text-[10px] font-black uppercase text-muted-foreground/50">No concentration risk</span>
-                            </div>
-                          )}
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+          {/* Active Alerts */}
+          <Panel className="gap-0">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="size-4 text-orange-400" />
+                <PanelLabel>Active Alerts</PanelLabel>
+              </div>
+              <span className={cn(
+                "text-[10px] font-black px-2 py-0.5 rounded-full",
+                alerts.length > 0 ? "bg-red-500/10 text-red-400" : "bg-emerald-500/10 text-emerald-400"
+              )}>
+                {alerts.length}
+              </span>
             </div>
-
-            <RecommendationCard recommendations={insights.recommendations} />
-            
-            <AssetBreakdownTable 
-              pnlAnalysis={risk.pnl_analysis} 
-              volatilityRisk={risk.volatility_risk} 
-            />
-          </div>
-
-          {/* Right Column: Alerts and Trends */}
-          <div className="xl:col-span-4 space-y-6">
-            <Card className="glass-morphism border-none shadow-xl h-fit">
-              <CardHeader className="pb-4 border-b border-white/5 flex flex-row items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-1.5 rounded-lg bg-orange-500/10 text-orange-500">
-                    <AlertTriangle className="size-4" />
-                  </div>
-                  <CardTitle className="text-sm font-black uppercase tracking-widest">Active Alerts</CardTitle>
+            <div className="space-y-2.5">
+              {alerts.length > 0 ? (
+                alerts.map((alert: Alert, idx: number) => (
+                  <AlertCard key={`${alert.asset}-${idx}`} alert={alert} />
+                ))
+              ) : (
+                <div className="py-10 flex flex-col items-center gap-2 text-muted-foreground/30">
+                  <CheckCircle2 className="size-8" />
+                  <p className="text-[10px] font-black uppercase tracking-widest">No active alerts</p>
                 </div>
-                <Badge variant="destructive" className="font-black text-[10px] px-2 py-0 h-5 border-none bg-red-500/20 text-red-500">{alerts.length}</Badge>
-              </CardHeader>
-              <CardContent className="pt-4 px-4 space-y-4">
-                {alerts.length > 0 ? (
-                  alerts.map((alert: Alert, idx: number) => (
-                    <AlertCard key={`${alert.asset}-${idx}`} alert={alert} />
+              )}
+            </div>
+          </Panel>
+
+          {/* Recommendations */}
+          <Panel className="gap-0">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Lightbulb className="size-4 text-primary" />
+                <PanelLabel>Recommendations</PanelLabel>
+              </div>
+              <span className="text-[10px] font-black bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                {insights.recommendations.length}
+              </span>
+            </div>
+            <div className="space-y-2.5">
+              {insights.recommendations.map((rec, i) => (
+                <div
+                  key={i}
+                  className="flex gap-3 rounded-xl border border-border/50 bg-card/50 p-3 hover:border-primary/30 hover:bg-card transition-all group"
+                >
+                  <div className="size-5 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-[9px] font-black shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                    {i + 1}
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed group-hover:text-foreground transition-colors">
+                    {rec}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </Panel>
+
+          {/* Asset Performance */}
+          <Panel className="gap-0">
+            <PanelLabel>Asset Performance</PanelLabel>
+
+            {/* Top performers */}
+            <div className="mb-1">
+              <div className="flex items-center gap-1.5 mb-1">
+                <TrendingUp className="size-3 text-emerald-400" />
+                <span className="text-[9px] font-black uppercase tracking-widest text-emerald-400/70">
+                  Top Performers
+                </span>
+              </div>
+              <div>
+                {insights.best_performers.length > 0 ? (
+                  insights.best_performers.map((p) => (
+                    <PerformerItem key={p.symbol} p={p} type="best" />
                   ))
                 ) : (
-                  <div className="py-12 flex flex-col items-center gap-3 text-muted-foreground opacity-30">
-                    <CheckCircle2 className="size-10" />
-                    <p className="text-xs font-black uppercase tracking-widest">No active alerts</p>
-                  </div>
+                  <p className="text-[10px] text-muted-foreground/40 py-2 px-1">No data</p>
                 )}
-              </CardContent>
-            </Card>
-
-            <div className="grid grid-cols-1 gap-6">
-              <Card className="glass border-none shadow-sm h-full overflow-hidden">
-                <CardHeader className="pb-3 border-b border-white/5 bg-green-500/5">
-                  <div className="flex items-center gap-2">
-                    <div className="p-1.5 rounded-lg bg-green-500/10 text-green-500">
-                      <TrendingUp className="size-4" />
-                    </div>
-                    <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em]">Alpha Leaders</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-4 px-3 space-y-3">
-                  {insights.best_performers.length > 0 ? (
-                    insights.best_performers.map((p) => (
-                      <PerformerItem key={p.symbol} p={p} type="best" />
-                    ))
-                  ) : (
-                    <div className="py-8 flex flex-col items-center gap-2 text-muted-foreground opacity-30">
-                      <TrendingUp className="size-8" />
-                      <p className="text-[8px] font-black uppercase tracking-widest">No top performers</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              <Card className="glass border-none shadow-sm h-full overflow-hidden">
-                <CardHeader className="pb-3 border-b border-white/5 bg-red-500/5">
-                  <div className="flex items-center gap-2">
-                    <div className="p-1.5 rounded-lg bg-red-500/10 text-red-500">
-                      <TrendingDown className="size-4" />
-                    </div>
-                    <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em]">Risk Exposure</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-4 px-3 space-y-3">
-                  {insights.worst_performers.length > 0 ? (
-                    insights.worst_performers.map((p) => (
-                      <PerformerItem key={p.symbol} p={p} type="worst" />
-                    ))
-                  ) : (
-                    <div className="py-8 flex flex-col items-center gap-2 text-muted-foreground opacity-30">
-                      <TrendingDown className="size-8" />
-                      <p className="text-[8px] font-black uppercase tracking-widest">No major risks</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+              </div>
             </div>
-          </div>
+
+            <div className="my-2 border-t border-border/40" />
+
+            {/* Worst performers */}
+            <div>
+              <div className="flex items-center gap-1.5 mb-1">
+                <TrendingDown className="size-3 text-red-400" />
+                <span className="text-[9px] font-black uppercase tracking-widest text-red-400/70">
+                  Underperformers
+                </span>
+              </div>
+              <div>
+                {insights.worst_performers.length > 0 ? (
+                  insights.worst_performers.map((p) => (
+                    <PerformerItem key={p.symbol} p={p} type="worst" />
+                  ))
+                ) : (
+                  <p className="text-[10px] text-muted-foreground/40 py-2 px-1">No data</p>
+                )}
+              </div>
+            </div>
+          </Panel>
         </div>
+
       </div>
     </BaseShell>
   );

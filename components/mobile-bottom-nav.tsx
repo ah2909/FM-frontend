@@ -1,6 +1,6 @@
 "use client"
 
-import { Home, PieChart, Globe } from "lucide-react"
+import { Home, PieChart, Globe, Gauge } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -20,6 +20,11 @@ const navItems = [
     title: "Exchanges",
     url: "/exchanges",
     icon: Globe,
+  },
+  {
+    title: "Analyze",
+    url: "/analyze",
+    icon: Gauge,
   },
 ]
 

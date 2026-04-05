@@ -1,42 +1,71 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { ShieldAlert, ArrowRight } from "lucide-react";
 import type { Alert, Severity } from "@/lib/store/features/analyze-slice";
 
 interface AlertCardProps {
   alert: Alert;
 }
 
+const SEVERITY: Record<Severity, { border: string; badge: string; dot: string }> = {
+  critical: {
+    border: "border-l-red-500",
+    badge:  "bg-red-500/10 text-red-400",
+    dot:    "bg-red-500",
+  },
+  high: {
+    border: "border-l-orange-500",
+    badge:  "bg-orange-500/10 text-orange-400",
+    dot:    "bg-orange-500",
+  },
+  medium: {
+    border: "border-l-yellow-500",
+    badge:  "bg-yellow-500/10 text-yellow-400",
+    dot:    "bg-yellow-500",
+  },
+  low: {
+    border: "border-l-blue-500",
+    badge:  "bg-blue-500/10 text-blue-400",
+    dot:    "bg-blue-500",
+  },
+};
+
 export const AlertCard = ({ alert }: AlertCardProps) => {
-  const severityColors: Record<Severity, string> = {
-    critical: "bg-red-500/10 text-red-500 border-red-500/20",
-    high: "bg-orange-500/10 text-orange-500 border-orange-500/20",
-    medium: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
-    low: "bg-blue-500/10 text-blue-500 border-blue-500/20",
-  };
+  const cfg = SEVERITY[alert.severity] ?? SEVERITY.low;
+  const typeLabel = alert.type.replace(/_/g, " ");
 
   return (
-    <div className={cn("p-4 rounded-2xl border transition-all hover:bg-white/5 group", severityColors[alert.severity])}>
-      <div className="flex items-start gap-3">
-        <div className={cn("p-1.5 rounded-lg", severityColors[alert.severity])}>
-          <ShieldAlert className="size-4" />
+    <div
+      className={cn(
+        "rounded-xl border border-border/50 border-l-2 bg-card/50 p-3.5 transition-colors hover:bg-card",
+        cfg.border
+      )}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <div className={cn("size-2 rounded-full shrink-0", cfg.dot)} />
+          <span className="text-sm font-black uppercase tracking-wide">
+            {alert.asset}
+          </span>
+          <span className="text-[10px] text-muted-foreground font-medium capitalize">
+            · {typeLabel}
+          </span>
         </div>
-        <div className="flex-1 space-y-1">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-black uppercase tracking-wider">{alert.asset} • {alert.type.replace('_', ' ')}</span>
-            <Badge variant="outline" className={cn("text-[8px] font-black uppercase px-2 py-0 border-none", severityColors[alert.severity])}>
-              {alert.severity}
-            </Badge>
-          </div>
-          <p className="text-sm font-bold leading-tight line-clamp-2">{alert.message}</p>
-          <div className="pt-2 flex items-center gap-2 group/action cursor-pointer">
-            <span className="text-[10px] uppercase font-black tracking-widest opacity-70 group-hover/action:opacity-100 transition-opacity">Take Action: {alert.action}</span>
-            <ArrowRight className="size-3 transition-transform group-hover/action:translate-x-1" />
-          </div>
-        </div>
+        <span className={cn("text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full", cfg.badge)}>
+          {alert.severity}
+        </span>
       </div>
+
+      {/* Message */}
+      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 mb-2">
+        {alert.message}
+      </p>
+
+      {/* Action */}
+      <p className="text-[10px] font-semibold text-foreground/60">
+        → {alert.action}
+      </p>
     </div>
   );
 };

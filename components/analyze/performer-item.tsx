@@ -1,7 +1,7 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { TrendingUp, TrendingDown } from "lucide-react";
 
 interface PerformerItemProps {
   p: {
@@ -9,24 +9,45 @@ interface PerformerItemProps {
     pnl_pct: number;
     reason: string;
   };
-  type: 'best' | 'worst';
+  type: "best" | "worst";
 }
 
-export const PerformerItem = ({ p, type }: PerformerItemProps) => (
-  <div className="p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all group">
-    <div className="flex items-center justify-between mb-2">
-      <div className="flex items-center gap-2">
-        <div className={cn("size-8 rounded-xl flex items-center justify-center font-black text-xs border border-white/10", type === 'best' ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500")}>
-          {p?.symbol || '?'}
+export const PerformerItem = ({ p, type }: PerformerItemProps) => {
+  const isPositive = p.pnl_pct >= 0;
+  const isGreen = type === "best";
+
+  return (
+    <div className="flex items-center justify-between py-2.5 border-b border-border/40 last:border-0 group">
+      {/* Symbol */}
+      <div className="flex items-center gap-2.5">
+        <div
+          className={cn(
+            "size-7 rounded-lg flex items-center justify-center text-[10px] font-black shrink-0",
+            isGreen
+              ? "bg-emerald-500/10 text-emerald-400"
+              : "bg-red-500/10 text-red-400"
+          )}
+        >
+          {p.symbol.slice(0, 3)}
         </div>
-        <span className="font-black text-xs tracking-tight uppercase">{p?.symbol || 'Unknown'}</span>
+        <div>
+          <p className="text-xs font-black uppercase tracking-wide leading-none">{p.symbol}</p>
+          <p className="text-[10px] text-muted-foreground/60 font-medium mt-0.5 line-clamp-1 max-w-[120px]">
+            {p.reason}
+          </p>
+        </div>
       </div>
-      <Badge variant="outline" className={cn("text-xs font-mono font-bold px-2 py-0 h-5 border-none", type === 'best' ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500")}>
-        {(p?.pnl_pct ?? 0) >= 0 ? "+" : ""}{(p?.pnl_pct ?? 0).toFixed(2)}%
-      </Badge>
+
+      {/* PnL */}
+      <div className={cn("flex items-center gap-1 shrink-0", isPositive ? "text-emerald-400" : "text-red-400")}>
+        {isPositive
+          ? <TrendingUp className="size-3" />
+          : <TrendingDown className="size-3" />
+        }
+        <span className="text-xs font-black font-mono">
+          {isPositive ? "+" : ""}{p.pnl_pct.toFixed(2)}%
+        </span>
+      </div>
     </div>
-    <p className="text-[11px] text-muted-foreground/80 leading-relaxed font-medium italic group-hover:text-foreground/90 transition-colors">
-      "{p?.reason || 'Strategic observation pending.'}"
-    </p>
-  </div>
-);
+  );
+};

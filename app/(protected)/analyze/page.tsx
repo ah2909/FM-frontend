@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 
 import { useGetPortfolioAnalysisQuery } from "@/lib/store/services/portfolio-api";
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
-import { setHasRequested } from "@/lib/store/features/analyze-slice";
+import { setAnalysis } from "@/lib/store/features/analyze-slice";
 
 import { AlertCard }            from "@/components/analyze/alert-card";
 import { RiskScoreGauge }       from "@/components/analyze/risk-score-gauge";
@@ -75,47 +75,56 @@ function PanelLabel({ children }: { children: React.ReactNode }) {
 
 export default function AnalyzePage() {
   const dispatch = useAppDispatch();
-  const { analysis, hasRequested } = useAppSelector((s) => s.analyze);
+  const { analysis } = useAppSelector((s) => s.analyze);
 
-  const { isLoading } = useGetPortfolioAnalysisQuery(undefined, {
-    skip: hasRequested,
-  });
+  const { data, isLoading } = useGetPortfolioAnalysisQuery();
 
   useEffect(() => {
-    if (!hasRequested) dispatch(setHasRequested());
-  }, []);
+    if (data?.data && !analysis) {
+      dispatch(setAnalysis(data.data));
+    }
+  }, [data, analysis, dispatch]);
 
-  if (isLoading) return <LoadingSkeleton text="Crunching numbers and market data…" />;
-  if (!analysis)  return <AnalyzingInterface />;
+  if (isLoading) {
+    if (!analysis && !data?.data) {
+      return <LoadingSkeleton text="Crunching numbers and market data…" />;
+    }
+  }
+
+  const analysisData = analysis || data?.data;
+
+  if (!analysisData) {
+    return <AnalyzingInterface />;
+  }
 
   /* ─── normalise ─────────────────────────────────────────── */
   const risk: RiskAssessment = {
     pnl_analysis: {
-      total_invested:      analysis.risk_assessment?.pnl_analysis?.total_invested      ?? 0,
-      total_current_value: analysis.risk_assessment?.pnl_analysis?.total_current_value ?? 0,
-      unrealized_pnl:      analysis.risk_assessment?.pnl_analysis?.unrealized_pnl      ?? 0,
-      unrealized_pnl_pct:  analysis.risk_assessment?.pnl_analysis?.unrealized_pnl_pct  ?? 0,
-      per_asset:           analysis.risk_assessment?.pnl_analysis?.per_asset           || [],
+      total_invested:      analysisData?.risk_assessment?.pnl_analysis?.total_invested      ?? 0,
+      total_current_value: analysisData?.risk_assessment?.pnl_analysis?.total_current_value ?? 0,
+      unrealized_pnl:      analysisData?.risk_assessment?.pnl_analysis?.unrealized_pnl      ?? 0,
+      unrealized_pnl_pct:  analysisData?.risk_assessment?.pnl_analysis?.unrealized_pnl_pct  ?? 0,
+      per_asset:           analysisData?.risk_assessment?.pnl_analysis?.per_asset           || [],
     },
     volatility_risk: {
-      overall_volatility: analysis.risk_assessment?.volatility_risk?.overall_volatility || "neutral",
-      assets_overbought:  analysis.risk_assessment?.volatility_risk?.assets_overbought  || [],
-      assets_oversold:    analysis.risk_assessment?.volatility_risk?.assets_oversold    || [],
+      overall_volatility: analysisData?.risk_assessment?.volatility_risk?.overall_volatility || "neutral",
+      assets_overbought:  analysisData?.risk_assessment?.volatility_risk?.assets_overbought  || [],
+      assets_oversold:    analysisData?.risk_assessment?.volatility_risk?.assets_oversold    || [],
     },
-    risk_score:        analysis.risk_assessment?.risk_score ?? 0,
+    risk_score:        analysisData?.risk_assessment?.risk_score ?? 0,
     concentration_risk:{
-      herfindahl_index: analysis.risk_assessment?.concentration_risk?.herfindahl_index ?? 0,
-      allocations:      analysis.risk_assessment?.concentration_risk?.allocations      || [],
+      herfindahl_index: analysisData?.risk_assessment?.concentration_risk?.herfindahl_index ?? 0,
+      allocations:      analysisData?.risk_assessment?.concentration_risk?.allocations      || [],
     },
-    summary: analysis.risk_assessment?.summary || "",
+    summary: analysisData?.risk_assessment?.summary || "",
   };
 
-  const alerts: Alert[] = analysis.alerts || [];
+  const alerts: Alert[] = analysisData?.alerts || [];
   const insights: Insight = {
-    market_trend_alignment: analysis.insights?.market_trend_alignment || "neutral",
-    recommendations:        analysis.insights?.recommendations        || [],
-    best_performers:        analysis.insights?.best_performers        || [],
-    worst_performers:       analysis.insights?.worst_performers       || [],
+    market_trend_alignment: analysisData?.insights?.market_trend_alignment || "neutral",
+    recommendations:        analysisData?.insights?.recommendations        || [],
+    best_performers:        analysisData?.insights?.best_performers        || [],
+    worst_performers:       analysisData?.insights?.worst_performers       || [],
   };
 
   const pnl  = risk.pnl_analysis;
@@ -131,7 +140,7 @@ export default function AnalyzePage() {
   const mobileMenuItems = [{
     label: "AI Model",
     component: (
-      <Badge variant="outline" className="bg-primary/10 text-primary border-none font-bold uppercase tracking-widest text-[10px] py-1.5 px-3 w-full justify-start">
+      <Badge className="bg-primary/10 text-primary border-none font-bold uppercase tracking-widest text-[10px] py-1.5 px-3 w-full justify-start">
         <Zap className="size-3 mr-1.5" /> Google Gemini
       </Badge>
     ),
@@ -144,7 +153,7 @@ export default function AnalyzePage() {
         text="Deep dive into your risk metrics and AI investment recommendations"
         mobileMenuItems={mobileMenuItems}
       >
-        <Badge variant="outline" className="bg-primary/10 text-primary border-none font-bold uppercase tracking-widest text-[10px] py-1.5 px-3">
+        <Badge className="bg-primary/10 text-primary border-none font-bold uppercase tracking-widest text-[10px] py-1.5 px-3">
           <Zap className="size-3 mr-1.5" /> Google Gemini
         </Badge>
       </BaseHeader>
@@ -242,7 +251,9 @@ export default function AnalyzePage() {
           <Panel className="gap-0">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <AlertTriangle className="size-4 text-orange-400" />
+                <div className="size-8 rounded-xl bg-orange-500/10 flex items-center justify-center">
+                  <AlertTriangle className="size-4 text-orange-400" />
+                </div>
                 <PanelLabel>Active Alerts</PanelLabel>
               </div>
               <span className={cn(
@@ -270,7 +281,9 @@ export default function AnalyzePage() {
           <Panel className="gap-0">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <Lightbulb className="size-4 text-primary" />
+                <div className="size-8 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <Lightbulb className="size-4 text-primary" />
+                </div>
                 <PanelLabel>Recommendations</PanelLabel>
               </div>
               <span className="text-[10px] font-black bg-primary/10 text-primary px-2 py-0.5 rounded-full">
@@ -300,7 +313,7 @@ export default function AnalyzePage() {
 
             {/* Top performers */}
             <div className="mb-1">
-              <div className="flex items-center gap-1.5 mb-1">
+              <div className="flex items-center gap-1.5 mb-1 bg-emerald-500/5 p-1 rounded-lg">
                 <TrendingUp className="size-3 text-emerald-400" />
                 <span className="text-[9px] font-black uppercase tracking-widest text-emerald-400/70">
                   Top Performers

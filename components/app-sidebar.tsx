@@ -1,6 +1,6 @@
 "use client"
 
-import { Home, PieChart, Wallet2, Globe, BarChart3 } from "lucide-react"
+import { Home, PieChart, Globe, Gauge } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useGetUserInfoQuery } from "@/lib/store/services/auth-api"
@@ -42,7 +42,7 @@ const items = [
   {
     title: "Analyze",
     url: "/analyze",
-    icon: BarChart3,
+    icon: Gauge,
   },
 ]
 

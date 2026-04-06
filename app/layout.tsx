@@ -11,7 +11,7 @@ const jakarta = Plus_Jakarta_Sans({
 
 export const metadata: Metadata = {
   title: {
-    default: "CryptoFolio – Portfolio Tracker",
+    default: "CryptoFolio - Portfolio Tracker",
     template: "%s | CryptoFolio",
   },
   description:

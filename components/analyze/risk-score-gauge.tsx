@@ -48,7 +48,7 @@ export const RiskScoreGauge = ({ score }: RiskScoreGaugeProps) => {
   return (
     <div className="flex flex-col items-center gap-3">
       <div className="relative" style={{ width: size, height: size }}>
-        <svg width={size} height={size}>
+        <svg width={size} height={size} style={{ color: "hsl(var(--border))" }}>
           {/* Track */}
           {arcPath(totalSweep, "currentColor")}
           {/* Filled arc */}
@@ -63,8 +63,6 @@ export const RiskScoreGauge = ({ score }: RiskScoreGaugeProps) => {
             / 10
           </span>
         </div>
-        {/* SVG track color class */}
-        <style>{`.relative svg path:first-child { color: hsl(var(--border)); }`}</style>
       </div>
 
       <span className={cn("text-[11px] font-black uppercase tracking-widest px-3 py-1 rounded-full", cfg.badge)}>

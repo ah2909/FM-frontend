@@ -18,13 +18,6 @@ interface AuthResponse {
   message: string
 }
 
-interface User {
-  id: number
-  email: string
-  name: string
-  avatar_url?: string
-}
-
 export const authApi = createApi({
   reducerPath: "authApi",
   baseQuery: fetchBaseQuery({
@@ -53,15 +46,6 @@ export const authApi = createApi({
         body,
       }),
     }),
-    logout: builder.mutation<void, void>({
-      query: () => ({
-        url: "logout",
-        method: "GET",
-      }),
-    }),
-    getUserInfo: builder.query<User, void>({
-      query: () => "me",
-    }),
     googleVerify: builder.mutation<AuthResponse, { idToken: string }>({
       query: (body) => ({
         url: "auth/google/verify",
@@ -75,7 +59,5 @@ export const authApi = createApi({
 export const {
   useLoginMutation,
   useRegisterMutation,
-  useLogoutMutation,
-  useGetUserInfoQuery,
   useGoogleVerifyMutation,
 } = authApi

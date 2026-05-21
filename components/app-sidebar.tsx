@@ -3,7 +3,7 @@
 import { Home, PieChart, Globe, Gauge } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useGetUserInfoQuery } from "@/lib/store/services/auth-api"
+import { useAuth } from "@/contexts/AuthContext"
 import { useSidebar } from "@/components/ui/sidebar"
 import { useEffect } from "react"
 import {
@@ -48,7 +48,7 @@ const items = [
 
 export function AppSidebar() {
   const pathname = usePathname()
-  const { data, isLoading } = useGetUserInfoQuery()
+  const { user, isLoading } = useAuth()
   const { setOpenMobile, isMobile } = useSidebar()
 
   // Close sidebar when pathname changes on mobile
@@ -125,12 +125,12 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <div className="w-full px-1">
-              {!isLoading && data && (
+              {!isLoading && user && (
                 <div className="flex items-center gap-3 p-2 rounded-xl bg-sidebar-accent/30 border border-sidebar-border/50">
                   <Avatar className="h-9 w-9 border-2 border-background shadow-sm">
-                    <AvatarImage src={data.avatar_url} alt={data.name} />
+                    <AvatarImage src={user.avatar_url} alt={user.name} />
                     <AvatarFallback className="rounded-lg bg-primary text-primary-foreground font-bold">
-                      {data.name
+                      {user.name
                         ?.split(" ")
                         .map((n: string) => n[0])
                         .join("")
@@ -139,8 +139,8 @@ export function AppSidebar() {
                   </Avatar>
 
                   <div className="grid flex-1 text-left leading-tight overflow-hidden">
-                    <span className="truncate font-semibold text-sm">{data.name}</span>
-                    <span className="truncate text-xs text-muted-foreground opacity-70">{data?.email}</span>
+                    <span className="truncate font-semibold text-sm">{user.name}</span>
+                    <span className="truncate text-xs text-muted-foreground opacity-70">{user.email}</span>
                   </div>
                 </div>
               )}

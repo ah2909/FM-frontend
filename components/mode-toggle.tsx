@@ -11,9 +11,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useTheme } from "next-themes"
+import { useAuth } from "@/contexts/AuthContext"
 
 export function ModeToggle() {
   const { setTheme, theme, resolvedTheme } = useTheme()
+  const { logout } = useAuth()
 
   return (
     <DropdownMenu>
@@ -55,13 +57,7 @@ export function ModeToggle() {
           {theme === "dark" && <Check className="h-4 w-4" />}
         </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem className="flex items-center cursor-pointer text-red-500 focus:text-red-500" onClick={async () => {
-              localStorage.clear();
-              sessionStorage.clear();
-              await fetch(`${process.env.NEXT_PUBLIC_AUTH_SERVICE_URL}/logout`, {credentials: 'include'});
-              window.location.href = '/login';
-            }}
-          >
+          <DropdownMenuItem className="flex items-center cursor-pointer text-red-500 focus:text-red-500" onClick={logout}>
             <LogOut className="mr-2 h-4 w-4" />
             <span>Log out</span>
           </DropdownMenuItem>

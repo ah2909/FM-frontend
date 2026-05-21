@@ -1,6 +1,11 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { toast } from 'sonner';
 import { setAccessToken } from '@/lib/token-store';
+import { authService } from '@/lib/services/auth';
+
+// Prevents concurrent boot-time refresh calls (React StrictMode double-invocation,
+// or navigating between route groups that each mount an AuthProvider).
+let ongoingBootRefresh: Promise<void> | null = null;
 
 interface User {
   id: number;
@@ -31,14 +36,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchUserInfo = async (token: string) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_AUTH_SERVICE_URL}/me`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const res = await authService.me(token);
       if (res.ok) {
-        const userData = await res.json();
-        setUser(userData);
+        setUser(await res.json());
       } else {
         throw new Error('Failed to fetch user info');
       }
@@ -48,14 +48,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const refreshUser = async () => {
+  const performRefresh = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_AUTH_SERVICE_URL}/refresh`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-      
+      const res = await authService.refresh();
       if (res.ok) {
         const data = await res.json();
         setAccessToken(data.access_token);
@@ -74,7 +70,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    refreshUser();
+    if (ongoingBootRefresh) return;
+    ongoingBootRefresh = performRefresh().finally(() => {
+      ongoingBootRefresh = null;
+    });
   }, []);
 
   const login = (data: { access_token: string }) => {
@@ -89,9 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_AUTH_SERVICE_URL}/logout`, {
-        credentials: 'include'
-      });
+      await authService.logout();
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
@@ -104,13 +101,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, isLoading, login, logout, refreshUser: performRefresh }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-// Custom hook to access the context
 export function useAuth() {
   return useContext(AuthContext);
 }

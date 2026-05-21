@@ -1,6 +1,7 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
 import { Mutex } from "async-mutex"
 import { getAccessToken, setAccessToken } from "@/lib/token-store"
+import { authService } from "@/lib/services/auth"
 
 // Create a mutex to prevent multiple refresh calls
 const mutex = new Mutex()
@@ -29,12 +30,7 @@ const baseQueryWithRefresh = async (args: any, api: any, extraOptions: any) => {
         const release = await mutex.acquire()
 
         try {
-            const refreshResult = await fetch(`${process.env.NEXT_PUBLIC_AUTH_SERVICE_URL}/refresh`,
-                {
-                    method: "POST",
-                    credentials: 'include',
-                },
-            )
+            const refreshResult = await authService.refresh()
             
             if (!refreshResult.ok) {
                 setAccessToken(null);

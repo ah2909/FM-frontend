@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "sonner"
 import { store } from "@/lib/store/store"
 import { Provider } from "react-redux"
@@ -98,7 +97,7 @@ function ProtectedContent({ children }: ProtectedShellProps) {
   )
 
   return (
-    <ThemeProvider attribute="class" enableSystem disableTransitionOnChange>
+    <>
       <WebSocketProvider>
         <Provider store={store}>
           <WsEventListener />
@@ -109,7 +108,7 @@ function ProtectedContent({ children }: ProtectedShellProps) {
       <PWAInstallPrompt />
       <OfflineIndicator />
       <Toaster richColors expand={false} position="top-right" />
-    </ThemeProvider>
+    </>
   )
 }
 

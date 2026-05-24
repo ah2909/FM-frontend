@@ -1,8 +1,7 @@
-// middleware.ts
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const token = req.cookies.get("refreshToken")?.value;
   const GUEST_ROUTES = ["/login", "/register"]
   const { pathname } = req.nextUrl;

@@ -7,9 +7,6 @@ try {
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -21,11 +18,6 @@ const nextConfig = {
         hostname: "**",
       },
     ],
-  },
-  experimental: {
-    webpackBuildWorker: true,
-    parallelServerBuildTraces: true,
-    parallelServerCompiles: true,
   },
   //config proxying API requests to a backend server
   async rewrites() {

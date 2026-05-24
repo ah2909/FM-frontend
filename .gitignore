@@ -29,5 +29,6 @@ next-env.d.ts
 .agents/
 .claude/
 skills-lock.json
-
 CLAUDE.md
+.mcp.json
+/test-results

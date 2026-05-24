@@ -1,12 +1,14 @@
 {
-  "name": "my-v0-project",
-  "version": "0.1.0",
+  "name": "cryptofolio",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "eslint .",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui"
   },
   "dependencies": {
     "@hookform/resolvers": "latest",
@@ -48,12 +50,12 @@
     "embla-carousel-react": "8.5.1",
     "input-otp": "1.4.1",
     "lucide-react": "^0.454.0",
-    "next": "^14.2.24",
+    "next": "16.2.6",
     "next-themes": "^0.4.4",
-    "react": "^18",
+    "react": "19.2.6",
     "react-chartjs-2": "latest",
-    "react-day-picker": "8.10.1",
-    "react-dom": "^18",
+    "react-day-picker": "9.14.0",
+    "react-dom": "19.2.6",
     "react-hook-form": "latest",
     "react-redux": "^9.2.0",
     "react-resizable-panels": "^2.1.7",
@@ -61,13 +63,16 @@
     "sonner": "^1.7.4",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
-    "vaul": "^0.9.6",
+    "vaul": "^1.1.2",
     "zod": "latest"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@types/node": "^22",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
+    "@types/react": "19.2.15",
+    "@types/react-dom": "19.2.3",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "16.2.6",
     "postcss": "^8",
     "tailwindcss": "^3.4.17",
     "typescript": "^5"

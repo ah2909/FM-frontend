@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef, useCallback, useMemo } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2, CheckCircle, XCircle, RefreshCw, AlertTriangle } from "lucide-react"
@@ -23,25 +23,6 @@ export function TransactionSyncButton({ className = "", portfolio_id }: Transact
   const dispatch = useAppDispatch()
   const rSyncStatus = useAppSelector((state) => state.portfolios.syncStatus)
   const hasInitialSync = useRef(false)
-
-  useEffect(() => {
-    if (rSyncStatus) {
-      setSyncStatusLocal(rSyncStatus)
-      sessionStorage.setItem(syncStatusKey, rSyncStatus)
-    }
-  }, [rSyncStatus, syncStatusKey])
-
-  useEffect(() => {
-    const savedStatus = sessionStorage.getItem(syncStatusKey)
-    if (savedStatus) {
-      setSyncStatusLocal(savedStatus as SyncStatus)
-    }
-
-    if (!savedStatus && !hasInitialSync.current) {
-      hasInitialSync.current = true
-      startSync()
-    }
-  }, [syncStatusKey])
 
   const startSync = async () => {
     if (syncStatus === "syncing" || sessionStorage.getItem(syncStatusKey) === "syncing") {
@@ -68,6 +49,25 @@ export function TransactionSyncButton({ className = "", portfolio_id }: Transact
     }
   }
 
+  useEffect(() => {
+    if (rSyncStatus) {
+      setSyncStatusLocal(rSyncStatus)
+      sessionStorage.setItem(syncStatusKey, rSyncStatus)
+    }
+  }, [rSyncStatus, syncStatusKey])
+
+  useEffect(() => {
+    const savedStatus = sessionStorage.getItem(syncStatusKey)
+    if (savedStatus) {
+      setSyncStatusLocal(savedStatus as SyncStatus)
+    }
+
+    if (!savedStatus && !hasInitialSync.current) {
+      hasInitialSync.current = true
+      startSync()
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [syncStatusKey])
 
   // Memoize sync content
   const syncContent = useMemo(() => {

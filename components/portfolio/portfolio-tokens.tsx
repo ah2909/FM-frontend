@@ -1,13 +1,10 @@
 "use client"
 
-import { useState, useMemo, useCallback, useEffect, memo } from "react"
-import Link from "next/link"
-import { MoreHorizontal, Plus, Trash2, Search, ChevronRight } from "lucide-react"
+import { useState, useMemo, useCallback, useEffect } from "react"
+import { Search, ChevronRight } from "lucide-react"
 import { Input } from "@/components/ui/input"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -253,7 +250,7 @@ useEffect(() => {
           <AlertDialogHeader>
             <AlertDialogTitle>Remove Token?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will remove "{tokenToDelete}" from your portfolio. This action cannot be undone.
+              This will remove &quot;{tokenToDelete}&quot; from your portfolio. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

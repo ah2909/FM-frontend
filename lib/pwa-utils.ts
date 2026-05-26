@@ -2,11 +2,9 @@
 export const registerServiceWorker = async () => {
   if (typeof window !== "undefined" && "serviceWorker" in navigator) {
     try {
-      const registration = await navigator.serviceWorker.register("/service-worker.js", {
+      return await navigator.serviceWorker.register("/service-worker.js", {
         scope: "/",
       })
-      console.log("Service Worker registered successfully")
-      return registration
     } catch (error) {
       console.error("Service Worker registration failed:", error)
     }
@@ -19,7 +17,6 @@ export const unregisterServiceWorker = async () => {
       const registration = await navigator.serviceWorker.getRegistration()
       if (registration) {
         await registration.unregister()
-        console.log("Service Worker unregistered")
       }
     } catch (error) {
       console.error("Service Worker unregistration failed:", error)
@@ -58,7 +55,6 @@ export const clearAppCache = async () => {
   if ("caches" in window) {
     const cacheNames = await caches.keys()
     await Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)))
-    console.log("App cache cleared")
   }
 }
 

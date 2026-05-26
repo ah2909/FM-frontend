@@ -105,7 +105,7 @@ export function EditPortfolioForm({ portfolio }: EditPortfolioFormProps) {
 										/>
 									</FormControl>
 									<FormDescription>
-										A brief description of your portfolio's
+										A brief description of your portfolio&apos;s
 										purpose.
 									</FormDescription>
 									<FormMessage />

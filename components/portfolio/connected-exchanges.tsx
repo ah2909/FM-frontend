@@ -72,7 +72,7 @@ export function ConnectedExchanges() {
         <CardHeader>
           <CardTitle>Connected Exchanges</CardTitle>
           <CardDescription>
-            No exchanges connected to this portfolio yet. Use the "Import Data" button to connect exchanges.
+            No exchanges connected to this portfolio yet. Use the &quot;Import Data&quot; button to connect exchanges.
           </CardDescription>
         </CardHeader>
       </Card>

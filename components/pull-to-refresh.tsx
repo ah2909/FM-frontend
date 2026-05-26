@@ -1,7 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState } from "react"
 import { Loader2, RefreshCw } from "lucide-react"
 
 interface PullToRefreshProps {
@@ -9,7 +8,6 @@ interface PullToRefreshProps {
 }
 
 export function PullToRefresh({ children }: PullToRefreshProps) {
-  const router = useRouter()
   const [startY, setStartY] = useState(0)
   const [translateY, setTranslateY] = useState(0)
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -34,11 +32,6 @@ export function PullToRefresh({ children }: PullToRefreshProps) {
       // Calculate pull distance with resistance/damping
       const pull = Math.min(delta * 0.4, MAX_PULL)
       setTranslateY(pull)
-      
-      // Prevent native scrolling if we are pulling down
-      if (e.cancelable && pull > 0) {
-        // e.preventDefault() // This might be too aggressive, let's see
-      }
     } else {
       // If we scroll down or back up, reset
       if (translateY > 0) {

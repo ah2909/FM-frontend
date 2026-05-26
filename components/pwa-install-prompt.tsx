@@ -129,7 +129,7 @@ export function PWAInstallPrompt() {
             {isIOS ? (
               <div className="space-y-2">
                 <p className="text-xs text-muted-foreground">
-                  To install on iOS: Tap the share button in Safari, then "Add to Home Screen"
+                  To install on iOS: Tap the share button in Safari, then &quot;Add to Home Screen&quot;
                 </p>
                 <Button variant="outline" size="sm" className="w-full bg-transparent" onClick={handleDismiss}>
                   Got it

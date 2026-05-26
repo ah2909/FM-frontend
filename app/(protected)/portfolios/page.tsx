@@ -8,20 +8,15 @@ import { BaseHeader } from "@/components/base-header"
 import { BaseShell } from "@/components/base-shell"
 import { PortfolioTokens } from "@/components/portfolio/portfolio-tokens"
 import { PortfolioOverview } from "@/components/portfolio/portfolio-overview"
-import { useDispatch, useSelector } from "react-redux"
+import { useSelector } from "react-redux"
 import { ImportDataButton } from "@/components/portfolio/import-data-button"
-import { 
-  useGetPortfoliosByUserIDQuery,
-  useGetBalanceDataQuery,
-} from "@/lib/store/services/portfolio-api"
+import { useGetPortfoliosByUserIDQuery } from "@/lib/store/services/portfolio-api"
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Loading from "@/components/Loading"
 
 export default function PortfolioPage() {
-  const dispatch = useDispatch()
   const { data, isLoading } = useGetPortfoliosByUserIDQuery()
-  const { data: balanceData, isLoading: isLoadingBalance } = useGetBalanceDataQuery();
 
   const portfolio = useSelector((state: any) => state.portfolios.portfolio)
   const tokens = useSelector((state: any) => state.portfolios.assets)
@@ -30,7 +25,7 @@ export default function PortfolioPage() {
   useEffect(() => {
     if (isLoading) return
     if (data?.data?.length === 0) router.push("/welcome")
-  }, [isLoading, data, dispatch])
+  }, [isLoading, data, router])
 
   // Mobile menu items
   const mobileMenuItems = [

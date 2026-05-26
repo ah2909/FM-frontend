@@ -52,7 +52,7 @@ export function OfflineIndicator() {
             ) : (
               <>
                 <WifiOff className="h-4 w-4 text-red-600" />
-                <span className="text-red-700 font-medium">You're offline</span>
+                <span className="text-red-700 font-medium">You&apos;re offline</span>
                 <span className="text-red-600 text-xs">Some features may be limited</span>
               </>
             )}

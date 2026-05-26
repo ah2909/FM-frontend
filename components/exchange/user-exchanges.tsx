@@ -21,8 +21,6 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useGetSupportedCEXQuery, useConnectExchangeMutation, type Exchange } from "@/lib/store/services/exchange-api"
 import Image from "next/image"
-import { useDispatch } from "react-redux"
-import { portfolioApi } from "@/lib/store/services/portfolio-api"
 
 const formSchema = z.object({
   api_key: z.string().min(1, { message: "API Key is required" }),
@@ -36,7 +34,6 @@ type FormValues = z.infer<typeof formSchema>
 export function UserExchanges() {
   const [isOpen, setIsOpen] = useState(false)
   const [selectedExchange, setSelectedExchange] = useState<number | null>(null)
-  const dispatch = useDispatch()
 
   const { data: exchanges, isLoading } = useGetSupportedCEXQuery()
   const [connectExchange, { isLoading: isConnecting }] = useConnectExchangeMutation()
@@ -128,7 +125,7 @@ export function UserExchanges() {
                 <DialogDescription>
                   Connect to cryptocurrency exchanges to import your balances and transactions.
                   <span className="block mt-2 p-2 bg-blue-50 dark:bg-blue-950/20 rounded text-blue-700 dark:text-blue-300 text-sm">
-                    💡 After connecting, we'll automatically compare and update your portfolio assets. This may take a
+                    💡 After connecting, we&apos;ll automatically compare and update your portfolio assets. This may take a
                     few minutes for large portfolios.
                   </span>
                 </DialogDescription>
@@ -177,7 +174,7 @@ export function UserExchanges() {
                               <Input type="password" {...field} />
                             </FormControl>
                             <FormDescription>
-                              Only required for some exchanges. Check your exchange's API documentation.
+                              Only required for some exchanges. Check your exchange&apos;s API documentation.
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
@@ -269,7 +266,7 @@ export function UserExchanges() {
             <CardHeader>
               <CardTitle>No Connected Exchanges</CardTitle>
               <CardDescription>
-                You haven't connected any exchanges yet. Connect an exchange to import your balances and transactions.
+                You haven&apos;t connected any exchanges yet. Connect an exchange to import your balances and transactions.
               </CardDescription>
             </CardHeader>
           </Card>

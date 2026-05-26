@@ -7,7 +7,6 @@ import { setAnalysis, type PortfolioAnalysis } from "@/lib/store/features/analyz
 import { syncTransactionsByAssetID, setSyncStatus, setAssets } from "@/lib/store/features/portfolios-slice"
 import { prependNotification } from "@/lib/store/features/notifications-slice"
 import { portfolioApi } from "@/lib/store/services/portfolio-api"
-import { randomUUID } from "crypto"
 
 const EXCHANGE_ID: Record<string, number> = { binance: 1, okx: 2, bybit: 3 }
 

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { BaseHeader } from "@/components/base-header";
 import { BaseShell } from "@/components/base-shell";
 import { EditPortfolioForm } from "@/components/portfolio/edit-portfolio-form";
-import { UseDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 
 export default function EditPortfolioPage() {
 	const portfolio = useSelector((state: any) => state.portfolios.portfolio);

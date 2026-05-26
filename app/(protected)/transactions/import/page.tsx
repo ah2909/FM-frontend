@@ -8,7 +8,6 @@ import {
 	CheckCircle,
 	AlertCircle,
 	ChevronLeft,
-	Loader2Icon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -21,7 +20,6 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Progress } from "@/components/ui/progress";
 import { BaseShell } from "@/components/base-shell";
 import { BaseHeader } from "@/components/base-header";
 import { toast } from "sonner";
@@ -89,8 +87,7 @@ export default function ImportPage() {
 	const [selectedExchange, setSelectedExchange] = useState<string>("bybit");
 	const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 
-	const { data: exchanges, isLoading: isLoadingExchange } =
-		useGetSupportedCEXQuery();
+	const { data: exchanges } = useGetSupportedCEXQuery();
 	const [importTransactions, { isLoading: isLoadingImport }] =
 		useImportTransactionsMutation();
 
@@ -249,7 +246,7 @@ export default function ImportPage() {
 										)}
 									</div>
 									<p className="text-sm text-green-700 dark:text-green-300">
-										Great! We'll automatically check for
+										Great! We&apos;ll automatically check for
 										duplicates when importing your CSV data.
 									</p>
 								</div>

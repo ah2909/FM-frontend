@@ -112,22 +112,6 @@ export function PortfolioChart({ timeframe, data, isLoading = false }: Portfolio
     })
   }
 
-  // Helper: aggregate yearly averages
-  // const getYearLabels = () => {
-  //   const years = Array.from(new Set(data.map((item) => new Date(item.date).getFullYear()))).sort()
-  //   return years.map((y) => y.toString())
-  // }
-  // const aggregateYearly = (years: string[]) => {
-  //   const stats: Record<string, { sum: number; count: number }> = {}
-  //   data.forEach((item) => {
-  //     const year = new Date(item.date).getFullYear().toString()
-  //     if (!stats[year]) stats[year] = { sum: 0, count: 0 }
-  //     stats[year].sum += item.balance
-  //     stats[year].count++
-  //   })
-  //   return years.map((y) => (stats[y] ? stats[y].sum / stats[y].count : 0))
-  // }
-
   useEffect(() => {
     if (!data || data.length === 0) {
       // Create empty chart data for no data state
@@ -172,11 +156,6 @@ export function PortfolioChart({ timeframe, data, isLoading = false }: Portfolio
         dataPoints = aggregateMonthly(keys)
         break
       }
-      // case "all": {
-      //   labels = getYearLabels();
-      //   dataPoints = aggregateYearly(labels);
-      //   break;
-      // }
       default: {
         const { labels: l, dateStrings } = getLastNDays(7)
         labels = l

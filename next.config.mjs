@@ -26,6 +26,10 @@ const nextConfig = {
         source: '/auth/:path*',
         destination: `${process.env.NEXT_PUBLIC_AUTH_SERVICE_URL}/:path*`,
       },
+      {
+        source: '/alert-engine/:path*',
+        destination: `${process.env.NEXT_PUBLIC_ALERT_SERVICE_URL}/:path*`,
+      },
     ]
   },
 }

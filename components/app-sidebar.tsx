@@ -1,6 +1,6 @@
 "use client"
 
-import { Home, PieChart, Globe, Gauge } from "lucide-react"
+import { Home, PieChart, Globe, Gauge, Bell } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useAuth } from "@/contexts/AuthContext"
@@ -43,6 +43,11 @@ const items = [
     title: "Analyze",
     url: "/analyze",
     icon: Gauge,
+  },
+  {
+    title: "Alerts",
+    url: "/alerts",
+    icon: Bell,
   },
 ]
 

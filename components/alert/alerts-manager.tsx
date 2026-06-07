@@ -3,6 +3,10 @@
 import { Bell, MessageSquare, ShieldCheck } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
 import {
+  useGetAlertsQuery,
+  useGetTelegramBindingQuery,
+} from "@/lib/store/services/alert-api"
+import {
   Card,
   CardContent,
   CardDescription,
@@ -12,10 +16,6 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
-import {
-  useGetAlertsQuery,
-  useGetTelegramBindingQuery,
-} from "@/lib/store/services/alert-api"
 import { TelegramSetup } from "./telegram-setup"
 import { CreateAlertDialog } from "./create-alert-dialog"
 import { AlertList } from "./alert-list"
@@ -105,10 +105,7 @@ export function AlertsManager() {
 }
 
 function BoundAlerts({ chatId }: { chatId: number }) {
-  const { data: alerts, isLoading } = useGetAlertsQuery(undefined, {
-    // No push channel to the UI — a fired alert only reflects on refetch.
-    pollingInterval: 30000,
-  })
+  const { data: alerts, isLoading } = useGetAlertsQuery(undefined)
 
   return (
     <div className="space-y-6">

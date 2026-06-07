@@ -7,6 +7,7 @@ import { setAnalysis, type PortfolioAnalysis } from "@/lib/store/features/analyz
 import { syncTransactionsByAssetID, setSyncStatus, setAssets } from "@/lib/store/features/portfolios-slice"
 import { prependNotification } from "@/lib/store/features/notifications-slice"
 import { portfolioApi } from "@/lib/store/services/portfolio-api"
+import { alertApi, type AlertCondition } from "@/lib/store/services/alert-api"
 
 const EXCHANGE_ID: Record<string, number> = { binance: 1, okx: 2, bybit: 3 }
 
@@ -14,6 +15,25 @@ export function WsEventListener() {
   const dispatch = useAppDispatch()
   const assets = useAppSelector((state) => state.portfolios.assets)
   const portfolioId = useAppSelector((state) => state.portfolios.portfolio?.id)
+
+  // ── Alert fired ─────────────────────────────────────────────────────────
+  useWebSocketEvent<{ symbol: string; condition: AlertCondition; target: number; current: number }>(
+    "alert-fired", "",
+    ({ symbol, condition, target, current }) => {
+      dispatch(
+        alertApi.util.updateQueryData("getAlerts", undefined, (draft) => {
+          const hit = draft.find(
+            (a) => a.symbol === symbol && a.condition === condition && a.price === target && !a.triggered
+          )
+          if (hit) hit.triggered = true
+        })
+      )
+      const dir = condition === "above" ? "above" : "below"
+      toast.success(`${symbol} hit your target`, {
+        description: `Price is ${current.toLocaleString()} — ${dir} ${target.toLocaleString()}`,
+      })
+    }
+  )
 
   // ── Real-time notification ───────────────────────────────────────────────
   useWebSocketEvent("new-notification", "", (data: any) => {

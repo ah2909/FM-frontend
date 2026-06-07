@@ -96,9 +96,9 @@ export const TokenMobileCard = memo(function TokenMobileCard({
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1">
           <p className="text-xs text-muted-foreground">Current Price</p>
-          <p className="text-sm font-semibold">
+          <div className="text-sm font-semibold">
             {price ? `$${Number(price)}` : <Skeleton className="h-4 w-16" />}
-          </p>
+          </div>
         </div>
         <div className="space-y-1">
           <p className="text-xs text-muted-foreground">Holdings</p>
@@ -112,9 +112,9 @@ export const TokenMobileCard = memo(function TokenMobileCard({
       <div className="grid grid-cols-2 gap-4 pt-2 border-t border-border/50">
         <div className="space-y-1">
           <p className="text-xs text-muted-foreground">Total Value</p>
-          <p className="text-base font-bold">
+          <div className="text-base font-bold">
             {price ? `$${currentValue.toFixed(2)}` : <Skeleton className="h-5 w-20" />}
-          </p>
+          </div>
         </div>
         <div className="space-y-1">
           <p className="text-xs text-muted-foreground">Unrealized P&L</p>
@@ -124,9 +124,9 @@ export const TokenMobileCard = memo(function TokenMobileCard({
             ) : (
               <TrendingDown className="h-3 w-3 text-red-500 flex-shrink-0" />
             )}
-            <p className={`text-sm font-bold ${isPnLPositive ? "text-green-500" : "text-red-500"}`}>
+            <div className={`text-sm font-bold ${isPnLPositive ? "text-green-500" : "text-red-500"}`}>
               {price ? `$${Math.abs(unrealizedPnL).toFixed(2)}` : <Skeleton className="h-4 w-16" />}
-            </p>
+            </div>
           </div>
         </div>
       </div>

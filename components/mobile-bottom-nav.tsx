@@ -21,11 +21,11 @@ const navItems = [
     url: "/exchanges",
     icon: Globe,
   },
-  // {
-  //   title: "Analyze",
-  //   url: "/analyze",
-  //   icon: Gauge,
-  // },
+  {
+    title: "Analyze",
+    url: "/analyze",
+    icon: Gauge,
+  },
   {
     title: "Alerts",
     url: "/alerts",

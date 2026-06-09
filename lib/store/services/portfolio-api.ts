@@ -120,6 +120,13 @@ export const portfolioApi = baseApi.injectEndpoints({
 			}),
 			providesTags: ["Portfolio"],
 		}),
+		getTokenResearch: builder.query<Response, string>({
+			query: (symbol) => ({
+				url: `/portfolio/analyze-token`,
+				method: "POST",
+				body: { symbol },
+			}),
+		}),
 	}),
 });
 
@@ -138,4 +145,5 @@ export const {
 	useMarkAllNotificationsReadMutation,
 	useImportTransactionsMutation,
 	useGetPortfolioAnalysisQuery,
+	useLazyGetTokenResearchQuery,
 } = portfolioApi;

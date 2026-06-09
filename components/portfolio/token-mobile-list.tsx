@@ -9,6 +9,7 @@ interface TokenMobileListProps {
   portfolioTotalValue: number
   priceData: Record<string, {price: number, percentChange: number}>
   onDeleteClick: (symbol: string) => void
+  onResearchClick: (token: Token) => void
 }
 
 export const TokenMobileList = memo(function TokenMobileList({
@@ -16,6 +17,7 @@ export const TokenMobileList = memo(function TokenMobileList({
   portfolioTotalValue,
   priceData,
   onDeleteClick,
+  onResearchClick,
 }: TokenMobileListProps) {
   // Memoize the sorted tokens to prevent re-sorting on every render
   const sortedTokens = useMemo(() => {
@@ -35,6 +37,7 @@ export const TokenMobileList = memo(function TokenMobileList({
           portfolioTotalValue={portfolioTotalValue}
           current={priceData[token.symbol]}
           onDeleteClick={onDeleteClick}
+          onResearchClick={onResearchClick}
         />
       ))}
     </div>

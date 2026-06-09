@@ -8,7 +8,7 @@ import { authService } from '@/lib/services/auth';
 let ongoingBootRefresh: Promise<void> | null = null;
 
 interface User {
-  id: number;
+  id: number; 
   email: string;
   name: string;
   avatar_url?: string;

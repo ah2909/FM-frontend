@@ -2,7 +2,7 @@
 
 import { memo } from "react"
 import Link from "next/link"
-import { MoreHorizontal, Plus, Trash2, TrendingUp, TrendingDown } from "lucide-react"
+import { MoreHorizontal, Plus, Trash2, TrendingUp, TrendingDown, Sparkles } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -15,6 +15,7 @@ interface TokenMobileCardProps {
   portfolioTotalValue: number
   current?: {price: number, percentChange: number}
   onDeleteClick: (symbol: string) => void
+  onResearchClick: (token: Token) => void
 }
 
 export const TokenMobileCard = memo(function TokenMobileCard({
@@ -22,6 +23,7 @@ export const TokenMobileCard = memo(function TokenMobileCard({
   portfolioTotalValue,
   current,
   onDeleteClick,
+  onResearchClick,
 }: TokenMobileCardProps) {
   // Memoized calculations to prevent recalculation on every render
   const price = current?.price || token.price
@@ -53,6 +55,15 @@ export const TokenMobileCard = memo(function TokenMobileCard({
             
           </div>
         </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 flex-shrink-0"
+          onClick={() => onResearchClick(token)}
+        >
+          <Sparkles className="h-4 w-4 text-primary" />
+          <span className="sr-only">AI research for {token.name}</span>
+        </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">

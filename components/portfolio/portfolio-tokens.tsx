@@ -25,6 +25,7 @@ import { useSelector } from "react-redux"
 import { TokenMobileList } from "./token-mobile-list"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { TokenTableRow } from "./token-table-row"
+import { TokenResearchDialog } from "@/components/research/token-research-dialog"
 
 export interface Token {
   id: number
@@ -45,6 +46,7 @@ interface PortfolioTokensProps {
 export function PortfolioTokens({ portfolio }: PortfolioTokensProps) {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false)
   const [tokenToDelete, setTokenToDelete] = useState<string | null>(null)
+  const [researchToken, setResearchToken] = useState<Token | null>(null)
   const tokens = useSelector((state: any) => state.portfolios.assets ?? [])
   const [removeTokenFromPortfolio] = useRemoveTokenFromPortfolioMutation()
   const dispatch = useDispatch()
@@ -88,6 +90,10 @@ export function PortfolioTokens({ portfolio }: PortfolioTokensProps) {
   const handleDeleteClick = useCallback((tokenSymbol: string) => {
     setTokenToDelete(tokenSymbol)
     setOpenDeleteDialog(true)
+  }, [])
+
+  const handleResearchClick = useCallback((token: Token) => {
+    setResearchToken(token)
   }, [])
 
   const handleDeleteConfirm = useCallback(async () => {
@@ -204,6 +210,7 @@ useEffect(() => {
                 portfolioTotalValue={portfolio.totalValue}
                 priceData={priceData}
                 onDeleteClick={handleDeleteClick}
+                onResearchClick={handleResearchClick}
               />
             )}
           </div>
@@ -236,6 +243,7 @@ useEffect(() => {
                       portfolio={portfolio}
                       priceData={priceData}
                       handleDeleteClick={handleDeleteClick}
+                      handleResearchClick={handleResearchClick}
                     />
                   ))
                 )}
@@ -264,6 +272,13 @@ useEffect(() => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <TokenResearchDialog
+        symbol={researchToken?.symbol ?? null}
+        imgUrl={researchToken?.img_url}
+        open={!!researchToken}
+        onOpenChange={(o) => !o && setResearchToken(null)}
+      />
     </Card>
   )
 }

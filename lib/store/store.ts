@@ -1,6 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit"
 import portfoliosReducer from "./features/portfolios-slice"
 import analyzeReducer from "./features/analyze-slice"
+import researchReducer from "./features/research-slice"
 import notificationsReducer from "./features/notifications-slice"
 import { baseApi } from "./services/baseApi"
 import { authApi } from "./services/auth-api"
@@ -10,6 +11,7 @@ export const store = configureStore({
   reducer: {
     portfolios: portfoliosReducer,
     analyze: analyzeReducer,
+    research: researchReducer,
     notifications: notificationsReducer,
     [baseApi.reducerPath]: baseApi.reducer,
     [authApi.reducerPath]: authApi.reducer,

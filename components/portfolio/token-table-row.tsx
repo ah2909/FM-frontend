@@ -2,7 +2,7 @@
 
 import { memo } from "react"
 import Link from "next/link"
-import { MoreHorizontal, Plus, Trash2 } from "lucide-react"
+import { MoreHorizontal, Plus, Trash2, Sparkles } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -15,6 +15,7 @@ interface TokenTableRowProps {
   portfolio: any
   priceData: any
   handleDeleteClick: (symbol: string) => void
+  handleResearchClick: (token: Token) => void
 }
 
 export const TokenTableRow = memo(function TokenTableRow({
@@ -22,6 +23,7 @@ export const TokenTableRow = memo(function TokenTableRow({
   portfolio,
   priceData,
   handleDeleteClick,
+  handleResearchClick,
 }: TokenTableRowProps) {
   const currentPrice = priceData[token.symbol]?.price || token.price
   const { currentValue, unrealizedPnL, allocation } = calculateAssetMetrics({
@@ -82,6 +84,15 @@ export const TokenTableRow = memo(function TokenTableRow({
         </div>
       </TableCell>
       <TableCell className="text-right">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={() => handleResearchClick(token)}
+        >
+          <Sparkles className="h-4 w-4 text-primary" />
+          <span className="sr-only">AI research for {token.name}</span>
+        </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="h-8 w-8">

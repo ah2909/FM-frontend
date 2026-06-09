@@ -4,6 +4,7 @@ import { toast } from "sonner"
 import { useWebSocketEvent } from "@/hooks/useWebSocketEvent"
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks"
 import { setAnalysis, type PortfolioAnalysis } from "@/lib/store/features/analyze-slice"
+import { setResearch, type TokenResearch } from "@/lib/store/features/research-slice"
 import { syncTransactionsByAssetID, setSyncStatus, setAssets } from "@/lib/store/features/portfolios-slice"
 import { prependNotification } from "@/lib/store/features/notifications-slice"
 import { portfolioApi } from "@/lib/store/services/portfolio-api"
@@ -46,6 +47,17 @@ export function WsEventListener() {
     (payload) => {
       dispatch(setAnalysis(payload.data))
       toast.success("Portfolio analysis complete")
+    }
+  )
+
+  // ── Token Research (LLM result, slow) ────────────────────────────────────
+  useWebSocketEvent<any>(
+    "token-research", "",
+    (payload) => {
+      const research: TokenResearch = payload?.outlook ? payload : payload?.data
+      if (!research?.outlook?.asset) return
+      dispatch(setResearch(research))
+      toast.success(`${research.outlook.asset} research ready`)
     }
   )
 

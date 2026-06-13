@@ -64,6 +64,10 @@ const fmtCompact = (n: number) =>
   new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 2 }).format(n);
 const fmtUsd = (n: number) =>
   `$${new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(n)}`;
+const fmtDate = (iso: string) =>
+  new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(
+    new Date(iso)
+  );
 
 function relativeTime(iso: string) {
   const diff = Date.now() - new Date(iso).getTime();
@@ -246,10 +250,20 @@ export function ResearchResult({
           {catalysts.length === 0 ? (
             <span className="text-muted-foreground/60 italic">none flagged</span>
           ) : (
-            <ul className="mt-1 space-y-1">
+            <ul className="mt-1 space-y-1.5">
               {catalysts.map((c, i) => (
-                <li key={i} className="text-foreground/90">
-                  • {c.catalyst ?? c.point}
+                <li key={i} className="flex flex-wrap items-baseline gap-x-2 text-foreground/90">
+                  {c.date && (
+                    <span className="font-mono text-[10px] tabular-nums text-muted-foreground">
+                      {fmtDate(c.date)}
+                    </span>
+                  )}
+                  <span className="text-foreground/90">{c.event}</span>
+                  {c.type && (
+                    <span className="rounded bg-muted px-1.5 py-0.5 text-[9px] font-mono uppercase tracking-wide text-muted-foreground">
+                      {c.type}
+                    </span>
+                  )}
                 </li>
               ))}
             </ul>

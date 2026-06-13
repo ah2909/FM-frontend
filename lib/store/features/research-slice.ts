@@ -14,8 +14,9 @@ export interface RiskItem {
 }
 
 export interface Catalyst {
-  catalyst?: string
-  point?: string
+  event: string
+  date?: string
+  type?: string
   source_ids?: string[]
 }
 

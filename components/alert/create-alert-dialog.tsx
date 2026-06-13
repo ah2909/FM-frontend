@@ -68,7 +68,7 @@ export function CreateAlertDialog() {
         condition: values.condition,
         price: Number(values.price),
       }).unwrap()
-      toast.success("Alert created — the engine will start watching within ~15s")
+      toast.success("Alert created — the engine will start watching within ~60s")
       setOpen(false)
       form.reset()
     } catch (error) {

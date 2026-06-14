@@ -26,11 +26,11 @@ const navItems = [
     url: "/analyze",
     icon: Gauge,
   },
-  {
-    title: "Alerts",
-    url: "/alerts",
-    icon: Bell,
-  },
+  // {
+  //   title: "Alerts",
+  //   url: "/alerts",
+  //   icon: Bell,
+  // },
 ]
 
 export function MobileBottomNav() {

@@ -16,6 +16,7 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import { TransactionSyncButton } from "@/components/dashboard/transaction-sync-button";
+import { P2PWidget } from "@/components/dashboard/p2p-widget";
 import { TrendingUp, TrendingDown, ArrowRight } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -111,6 +112,9 @@ export default function DashboardPage() {
       </BaseHeader>
 
       <div className="space-y-6">
+        {/* P2P USDT/VND live rate ticker */}
+        <P2PWidget />
+
         {/* Row 1: Performance chart (wider) + Allocation donut */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
 

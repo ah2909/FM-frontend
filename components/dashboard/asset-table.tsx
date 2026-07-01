@@ -231,13 +231,7 @@ const DashboardTableRow = memo(function DashboardTableRow({
       {/* Current price */}
       <TableCell className="text-center">
         {currentPrice ? (
-          <span className="font-medium text-sm tabular-nums">
-            $
-            {Number(currentPrice).toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}
-          </span>
+          <span className="font-medium text-sm tabular-nums">${Number(currentPrice)}</span>
         ) : (
           <Skeleton className="h-4 w-16 mx-auto" />
         )}
@@ -386,7 +380,7 @@ const DashboardMobileCard = memo(function DashboardMobileCard({
           <p className="text-xs text-muted-foreground mb-0.5">Price</p>
           <p className="text-sm font-semibold tabular-nums">
             {currentPrice ? (
-              `$${Number(currentPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+              `$${Number(currentPrice)}`
             ) : (
               <Skeleton className="h-4 w-16 inline-block" />
             )}

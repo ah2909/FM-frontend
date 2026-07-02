@@ -127,6 +127,24 @@ export const portfolioApi = baseApi.injectEndpoints({
 				body: { symbol },
 			}),
 		}),
+		enableShare: builder.mutation<
+			Response,
+			{ portfolio_id: number; share_amounts: boolean }
+		>({
+			query: ({ portfolio_id, share_amounts }) => ({
+				url: `/portfolio/${portfolio_id}/share`,
+				method: "POST",
+				body: { share_amounts },
+			}),
+			invalidatesTags: ["Portfolio"],
+		}),
+		disableShare: builder.mutation<Response, number>({
+			query: (portfolio_id) => ({
+				url: `/portfolio/${portfolio_id}/share`,
+				method: "DELETE",
+			}),
+			invalidatesTags: ["Portfolio"],
+		}),
 	}),
 });
 
@@ -146,4 +164,6 @@ export const {
 	useImportTransactionsMutation,
 	useGetPortfolioAnalysisQuery,
 	useLazyGetTokenResearchQuery,
+	useEnableShareMutation,
+	useDisableShareMutation,
 } = portfolioApi;

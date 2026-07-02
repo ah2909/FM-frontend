@@ -17,6 +17,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import { TransactionSyncButton } from "@/components/dashboard/transaction-sync-button";
 import { P2PWidget } from "@/components/dashboard/p2p-widget";
+import { StatsRow } from "@/components/dashboard/stats-row";
+import { ShareCardDialog } from "@/components/dashboard/share-card-dialog";
 import { TrendingUp, TrendingDown, ArrowRight } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -96,7 +98,20 @@ export default function DashboardPage() {
 
   const mobileMenuItems =
     hasTokens && isMobile
-      ? [{ label: "Import Data", component: <TransactionSyncButton portfolio_id={portfolio?.id} /> }]
+      ? [
+          { label: "Import Data", component: <TransactionSyncButton portfolio_id={portfolio?.id} /> },
+          {
+            label: "Share",
+            component: (
+              <ShareCardDialog
+              tokens={tokens}
+              totalValue={portfolio?.totalValue || 0}
+              portfolioId={portfolio?.id}
+              shareToken={portfolio?.share_token}
+            />
+            ),
+          },
+        ]
       : [];
 
   return (
@@ -107,13 +122,24 @@ export default function DashboardPage() {
         mobileMenuItems={mobileMenuItems}
       >
         {hasTokens && !isMobile && (
-          <TransactionSyncButton portfolio_id={portfolio?.id} />
+          <>
+            <ShareCardDialog
+              tokens={tokens}
+              totalValue={portfolio?.totalValue || 0}
+              portfolioId={portfolio?.id}
+              shareToken={portfolio?.share_token}
+            />
+            <TransactionSyncButton portfolio_id={portfolio?.id} />
+          </>
         )}
       </BaseHeader>
 
       <div className="space-y-6">
         {/* P2P USDT/VND live rate ticker */}
         <P2PWidget />
+
+        {/* At-a-glance stat cards */}
+        <StatsRow tokens={tokens} balanceData={balanceData?.data} isLoading={isLoading} />
 
         {/* Row 1: Performance chart (wider) + Allocation donut */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">

@@ -1,86 +1,230 @@
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
 import Link from "next/link"
-import { ArrowRight, BarChart3, Wallet, LineChart, TrendingUp } from "lucide-react"
-import Image from "next/image"
+import {
+  ArrowRight,
+  Sparkles,
+  RefreshCw,
+  Zap,
+  BrainCircuit,
+  BellRing,
+  TrendingUp,
+} from "lucide-react"
 
-export default async function WelcomePage() {
+const FEATURES = [
+  {
+    icon: RefreshCw,
+    title: "Exchange auto-sync",
+    text: "Connect Binance and more — balances and trades import themselves.",
+    tint: "bg-blue-500/10 text-blue-500",
+  },
+  {
+    icon: Zap,
+    title: "Real-time prices",
+    text: "Live websocket tickers, not five-minute-old snapshots.",
+    tint: "bg-amber-500/10 text-amber-500",
+  },
+  {
+    icon: BrainCircuit,
+    title: "AI portfolio analysis",
+    text: "Risk scores, concentration checks, and token research on demand.",
+    tint: "bg-emerald-500/10 text-emerald-500",
+  },
+  {
+    icon: BellRing,
+    title: "Telegram alerts",
+    text: "Price alerts delivered where you already are.",
+    tint: "bg-violet-500/10 text-violet-500",
+  },
+]
+
+const DEMO_ASSETS = [
+  { symbol: "BTC", name: "Bitcoin", alloc: 52, change: "+3.2%", color: "bg-orange-500" },
+  { symbol: "ETH", name: "Ethereum", alloc: 31, change: "+1.8%", color: "bg-indigo-500" },
+  { symbol: "SOL", name: "Solana", alloc: 17, change: "+6.4%", color: "bg-emerald-500" },
+]
+
+function DemoPortfolioCard() {
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
-      <main className="flex-1">
-        <div className="container max-w-6xl py-4 sm:py-8 md:py-16 px-4">
-          <Card className="border-none shadow-lg">
-            <CardContent className="p-0">
-              <div className="grid grid-cols-1 lg:grid-cols-2">
-                <div className="flex flex-col justify-center p-4 sm:p-6 md:p-10">
-                  <div className="space-y-2">
-                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">
-                      Welcome to Your Crypto Journey
-                    </h1>
-                    <p className="text-muted-foreground text-sm sm:text-base md:text-lg">
-                      Track, analyze, and optimize your cryptocurrency investments in one place.
-                    </p>
-                  </div>
+    <div className="relative">
+      {/* Floating accent chips */}
+      <div className="absolute -top-5 -right-3 sm:-right-8 z-10 animate-float">
+        <div className="glass rounded-2xl px-4 py-2.5 shadow-lg flex items-center gap-2">
+          <TrendingUp className="h-4 w-4 text-emerald-500" />
+          <span className="text-sm font-bold tabular-nums text-emerald-500">+12.4%</span>
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            this month
+          </span>
+        </div>
+      </div>
+      <div className="absolute -bottom-5 -left-3 sm:-left-8 z-10 animate-float-delayed">
+        <div className="glass rounded-2xl px-4 py-2.5 shadow-lg flex items-center gap-2">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+          </span>
+          <span className="text-xs font-semibold text-muted-foreground">Live · 3 exchanges synced</span>
+        </div>
+      </div>
 
-                  <div className="my-6 sm:my-8 rounded-lg bg-amber-50 p-3 sm:p-4 dark:bg-amber-950/50">
-                    <div className="flex items-start space-x-3 sm:space-x-4">
-                      <div className="rounded-full bg-amber-100 p-1.5 sm:p-2 dark:bg-amber-900 flex-shrink-0">
-                        <Wallet className="h-4 w-4 sm:h-5 sm:w-5 text-amber-600 dark:text-amber-400" />
-                      </div>
-                      <div className="min-w-0">
-                        <h3 className="font-medium text-sm sm:text-base">Create your first portfolio</h3>
-                        <p className="text-xs sm:text-sm text-muted-foreground">
-                          You need to create a portfolio to start tracking your crypto assets.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+      {/* Mock portfolio card */}
+      <div className="glass-morphism rounded-3xl p-6 sm:p-8 shadow-2xl">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/70">
+              Portfolio Value
+            </p>
+            <p className="text-3xl sm:text-4xl font-black tracking-tighter tabular-nums mt-1">
+              $48,256.90
+            </p>
+          </div>
+          <span className="badge-gain">
+            <TrendingUp className="h-3 w-3" />
+            +$1,204 today
+          </span>
+        </div>
 
-                  <div className="space-y-4 sm:space-y-6">
-                    <div className="space-y-3 sm:space-y-4">
-                      <h2 className="text-lg sm:text-xl font-medium">Why create a portfolio?</h2>
-                      <ul className="space-y-2 sm:space-y-3">
-                        {[
-                          { icon: BarChart3, text: "Track all your crypto assets in one place" },
-                          { icon: LineChart, text: "Monitor performance with real-time data" },
-                          { icon: TrendingUp, text: "Analyze your investment strategy" },
-                        ].map((item, i) => (
-                          <li key={i} className="flex items-center gap-2 sm:gap-3">
-                            <div className="rounded-full bg-slate-100 p-1 sm:p-1.5 dark:bg-slate-800 flex-shrink-0">
-                              <item.icon className="h-3 w-3 sm:h-4 sm:w-4 text-slate-600 dark:text-slate-400" />
-                            </div>
-                            <span className="text-xs sm:text-sm">{item.text}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
+        {/* Animated demo chart */}
+        <svg viewBox="0 0 400 120" className="w-full h-24 sm:h-28 mb-6" aria-hidden>
+          <defs>
+            <linearGradient id="welcome-fill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="hsl(var(--primary) / 0.25)" />
+              <stop offset="100%" stopColor="hsl(var(--primary) / 0)" />
+            </linearGradient>
+          </defs>
+          <path
+            d="M0,95 C40,88 60,70 90,74 C120,78 140,52 170,48 C200,44 220,62 250,54 C280,46 300,24 340,20 C365,17 385,14 400,10 L400,120 L0,120 Z"
+            fill="url(#welcome-fill)"
+            className="animate-fade-in-late"
+            style={{ opacity: 0 }}
+          />
+          <path
+            d="M0,95 C40,88 60,70 90,74 C120,78 140,52 170,48 C200,44 220,62 250,54 C280,46 300,24 340,20 C365,17 385,14 400,10"
+            pathLength="1"
+            fill="none"
+            stroke="hsl(var(--primary))"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            className="animate-draw"
+          />
+        </svg>
 
-                    <Button asChild size="lg" className="gap-2 w-full sm:w-auto">
-                      <Link href="/portfolios/new">
-                        Create Portfolio
-                        <ArrowRight className="h-4 w-4" />
-                      </Link>
-                    </Button>
-                  </div>
+        {/* Demo holdings */}
+        <div className="space-y-3">
+          {DEMO_ASSETS.map((asset, i) => (
+            <div
+              key={asset.symbol}
+              className="flex items-center gap-3 animate-fade-in"
+              style={{ animationDelay: `${600 + i * 150}ms`, opacity: 0 }}
+            >
+              <div
+                className={`flex h-8 w-8 items-center justify-center rounded-full ${asset.color} text-white text-[10px] font-bold flex-shrink-0`}
+              >
+                {asset.symbol.slice(0, 2)}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-semibold">{asset.name}</span>
+                  <span className="font-bold tabular-nums text-emerald-500">{asset.change}</span>
                 </div>
-
-                <div className="relative hidden lg:block">
-                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 to-blue-500/20 dark:from-emerald-500/10 dark:to-blue-500/10" />
-                  <div className="relative h-full p-6 md:p-10">
-                    <div className="flex h-full items-center justify-center">
-                      <Image
-                        src="/welcome.png"
-                        height={400}
-                        width={400}
-                        alt="Crypto portfolio illustration"
-                        className="max-w-full rounded-lg shadow-lg"
-                      />
-                    </div>
-                  </div>
+                <div className="mt-1.5 h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                  <div
+                    className={`h-full rounded-full ${asset.color}`}
+                    style={{ width: `${asset.alloc}%` }}
+                  />
                 </div>
               </div>
-            </CardContent>
-          </Card>
+              <span className="text-xs font-medium text-muted-foreground tabular-nums w-8 text-right">
+                {asset.alloc}%
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function WelcomePage() {
+  return (
+    <div className="relative min-h-screen overflow-hidden bg-background">
+      {/* Aurora atmosphere */}
+      <div className="pointer-events-none absolute inset-0" aria-hidden>
+        <div className="absolute -top-40 -left-40 h-[480px] w-[480px] rounded-full bg-primary/20 blur-3xl dark:bg-primary/15" />
+        <div className="absolute top-1/3 -right-48 h-[520px] w-[520px] rounded-full bg-emerald-400/15 blur-3xl dark:bg-emerald-500/10" />
+        <div className="absolute -bottom-48 left-1/4 h-[420px] w-[420px] rounded-full bg-violet-400/10 blur-3xl dark:bg-violet-500/10" />
+      </div>
+
+      <main className="relative container max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-16 lg:py-0 lg:min-h-screen lg:flex lg:items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center w-full">
+          {/* Pitch */}
+          <div className="max-w-xl">
+            <div
+              className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 animate-fade-in"
+              style={{ opacity: 0 }}
+            >
+              <Sparkles className="h-3.5 w-3.5 text-primary" />
+              <span className="text-xs font-bold uppercase tracking-widest text-primary">
+                Welcome to CryptoFolio
+              </span>
+            </div>
+
+            <h1
+              className="mt-6 text-4xl sm:text-5xl lg:text-6xl font-black tracking-tighter leading-[1.05] animate-fade-in"
+              style={{ animationDelay: "120ms", opacity: 0 }}
+            >
+              Every coin.
+              <br />
+              Every exchange.
+              <br />
+              <span className="gradient-text">One clear picture.</span>
+            </h1>
+
+            <p
+              className="mt-5 text-base sm:text-lg text-muted-foreground leading-relaxed animate-fade-in"
+              style={{ animationDelay: "240ms", opacity: 0 }}
+            >
+              Create your first portfolio to unlock live tracking, AI-powered analysis, and
+              alerts that find you before the market moves on.
+            </p>
+
+            <div
+              className="mt-8 flex flex-col sm:flex-row sm:items-center gap-4 animate-fade-in"
+              style={{ animationDelay: "360ms", opacity: 0 }}
+            >
+              <Button asChild size="lg" className="gap-2 shadow-lg shadow-primary/25 text-base h-12 px-7">
+                <Link href="/portfolios/new">
+                  Create your portfolio
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+              <span className="text-sm text-muted-foreground">Takes under a minute</span>
+            </div>
+
+            <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {FEATURES.map((feature, i) => (
+                <div
+                  key={feature.title}
+                  className="flex items-start gap-3 rounded-2xl p-3 -m-1 transition-colors hover:bg-muted/40 animate-fade-in"
+                  style={{ animationDelay: `${480 + i * 100}ms`, opacity: 0 }}
+                >
+                  <div
+                    className={`flex h-9 w-9 items-center justify-center rounded-xl flex-shrink-0 ${feature.tint}`}
+                  >
+                    <feature.icon className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold leading-tight">{feature.title}</p>
+                    <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{feature.text}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Product mock */}
+          <div className="animate-fade-in px-3 sm:px-0" style={{ animationDelay: "300ms", opacity: 0 }}>
+            <DemoPortfolioCard />
+          </div>
         </div>
       </main>
     </div>

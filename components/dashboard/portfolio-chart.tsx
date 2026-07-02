@@ -14,6 +14,7 @@ import {
   Legend,
 } from "chart.js"
 import { TrendingUp} from "lucide-react"
+import { useChartTheme } from "@/hooks/use-chart-theme"
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Filler, Legend)
 
@@ -29,6 +30,17 @@ interface PortfolioChartProps {
 export function PortfolioChart({ timeframe, data, isLoading = false }: PortfolioChartProps) {
   const [chartData, setChartData] = useState<any>(null)
   const [maxTicks, setMaxTicks] = useState(8);
+  const chartTheme = useChartTheme()
+
+  // Vertical gradient fill that follows the theme's primary color
+  const gradientFill = (context: any) => {
+    const { ctx, chartArea } = context.chart
+    if (!chartArea) return chartTheme.primaryFade
+    const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom)
+    gradient.addColorStop(0, chartTheme.primaryFade)
+    gradient.addColorStop(1, "transparent")
+    return gradient
+  }
 
   useEffect(() => {
     const updateTicks = () => {
@@ -123,8 +135,8 @@ export function PortfolioChart({ timeframe, data, isLoading = false }: Portfolio
             fill: true,
             label: "Portfolio Value",
             data: new Array(labels.length).fill(0),
-            borderColor: "rgb(124, 93, 250)",
-            backgroundColor: "rgba(124, 93, 250, 0.1)",
+            borderColor: chartTheme.primary,
+            backgroundColor: gradientFill,
             tension: 0.4,
             pointRadius: 0,
             borderWidth: 2,
@@ -170,15 +182,15 @@ export function PortfolioChart({ timeframe, data, isLoading = false }: Portfolio
           fill: true,
           label: "Portfolio Value",
           data: dataPoints,
-          borderColor: "rgb(124, 93, 250)",
-          backgroundColor: "rgba(124, 93, 250, 0.1)",
+          borderColor: chartTheme.primary,
+          backgroundColor: gradientFill,
           tension: 0.4,
           pointRadius: 0,
           borderWidth: 2,
         },
       ],
     })
-  }, [timeframe, data])
+  }, [timeframe, data, chartTheme])
 
   const options = {
     responsive: true,
@@ -204,6 +216,7 @@ export function PortfolioChart({ timeframe, data, isLoading = false }: Portfolio
           maxRotation: 0,
           autoSkip: true,
           maxTicksLimit: maxTicks,
+          color: chartTheme.tick,
           font: {
             size: maxTicks === 4 ? 10 : 12,
           },
@@ -211,9 +224,10 @@ export function PortfolioChart({ timeframe, data, isLoading = false }: Portfolio
       },
       y: {
         grid: {
-          color: "rgba(0, 0, 0, 0.05)",
+          color: chartTheme.grid,
         },
         ticks: {
+          color: chartTheme.tick,
           font: {
             size: maxTicks === 4 ? 10 : 12,
           },

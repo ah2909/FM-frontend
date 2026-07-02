@@ -81,6 +81,32 @@
   .safe-area-pb {
     padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
   }
+
+  /* Gentle vertical float for decorative elements */
+  .animate-float {
+    animation: floatY 6s ease-in-out infinite;
+  }
+  .animate-float-delayed {
+    animation: floatY 7s ease-in-out 1.2s infinite;
+  }
+  @keyframes floatY {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  /* SVG line draw-in (requires pathLength="1" on the path) */
+  .animate-draw {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: drawLine 1.6s ease-out 0.4s forwards;
+  }
+  @keyframes drawLine {
+    to { stroke-dashoffset: 0; }
+  }
+
+  .animate-fade-in-late {
+    animation: fadeIn 0.5s ease 1.4s forwards;
+  }
 }
 
 @layer base {

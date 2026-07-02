@@ -13,6 +13,7 @@ import {
 } from "chart.js";
 import { TrendingUp } from "lucide-react";
 import { useGetPerformanceQuery } from "@/lib/store/services/market-api";
+import { useChartTheme } from "@/hooks/use-chart-theme";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
 
@@ -26,6 +27,7 @@ const COLORS: Record<string, string> = {
 
 export function PerformanceChart({ range }: { range: string }) {
   const { data, isLoading } = useGetPerformanceQuery(range);
+  const chartTheme = useChartTheme();
 
   const chartData = useMemo(() => {
     if (!data?.series?.length) return null;
@@ -57,7 +59,7 @@ export function PerformanceChart({ range }: { range: string }) {
     plugins: {
       legend: {
         position: "bottom" as const,
-        labels: { usePointStyle: true, boxWidth: 8, font: { size: 11 } },
+        labels: { usePointStyle: true, boxWidth: 8, font: { size: 11 }, color: chartTheme.tick },
       },
       tooltip: {
         mode: "index" as const,
@@ -73,10 +75,13 @@ export function PerformanceChart({ range }: { range: string }) {
       },
     },
     scales: {
-      x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 8 } },
+      x: {
+        grid: { display: false },
+        ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 8, color: chartTheme.tick },
+      },
       y: {
-        grid: { color: "rgba(0,0,0,0.05)" },
-        ticks: { callback: (v: any) => `${v}` },
+        grid: { color: chartTheme.grid },
+        ticks: { callback: (v: any) => `${v}`, color: chartTheme.tick },
       },
     },
     interaction: { intersect: false, mode: "index" as const },

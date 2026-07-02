@@ -7,6 +7,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BaseHeader } from "@/components/base-header";
 import { BaseShell } from "@/components/base-shell";
+import { MarketPulse } from "@/components/markets/market-pulse";
 
 const PerformanceChart = dynamic(
   () => import("@/components/markets/performance-chart").then((m) => m.PerformanceChart),
@@ -21,9 +22,12 @@ export default function MarketsPage() {
 
   return (
     <BaseShell>
-      <BaseHeader heading="Markets" text="Cross-asset performance comparison" />
+      <BaseHeader heading="Markets" text="Market sentiment, trends, and cross-asset performance" />
 
       <div className="space-y-6">
+        {/* Sentiment gauge + global stats + trending */}
+        <MarketPulse />
+
         <Card className="card-hover border-none glass shadow-sm overflow-hidden flex flex-col">
           <CardHeader className="pb-2">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
